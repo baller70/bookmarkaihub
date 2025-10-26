@@ -267,8 +267,8 @@ export function BookmarkDetailModal({
                   {/* Description */}
                   {bookmark.description && (
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-2">Description</h4>
-                      <p className="text-gray-600">{bookmark.description}</p>
+                      <h4 className="font-medium text-foreground mb-2">Description</h4>
+                      <p className="text-muted-foreground">{bookmark.description}</p>
                     </div>
                   )}
 
@@ -276,7 +276,7 @@ export function BookmarkDetailModal({
                   <div className="grid grid-cols-2 gap-6">
                     {bookmark.categories?.length > 0 && (
                       <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Categories</h4>
+                        <h4 className="font-medium text-foreground mb-2">Categories</h4>
                         <div className="flex flex-wrap gap-2">
                           {bookmark.categories.map((cat: any) => (
                             <Badge
@@ -297,7 +297,7 @@ export function BookmarkDetailModal({
 
                     {bookmark.tags?.length > 0 && (
                       <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Tags</h4>
+                        <h4 className="font-medium text-foreground mb-2">Tags</h4>
                         <div className="flex flex-wrap gap-2">
                           {bookmark.tags.map((tag: any) => (
                             <Badge

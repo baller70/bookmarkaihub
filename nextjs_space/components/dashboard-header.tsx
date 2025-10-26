@@ -66,21 +66,6 @@ export function DashboardHeader({
           <Plus className="h-4 w-4 mr-2" />
           ADD BOOKMARK
         </Button>
-        
-        <Button
-          variant="outline"
-          className="h-12 px-6 border-gray-200 text-gray-700 hover:bg-gray-50 rounded-md"
-        >
-          <FolderOpen className="h-4 w-4 mr-2" />
-          BULK SELECT
-        </Button>
-        
-        <Button
-          variant="outline"
-          className="h-12 px-6 border-gray-200 text-gray-700 hover:bg-gray-50 rounded-md"
-        >
-          Breakdown
-        </Button>
       </div>
 
       {/* View Mode Toggles */}

@@ -12,10 +12,9 @@ interface DashboardAuthProps {
 export function DashboardAuth({ children }: DashboardAuthProps) {
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
-
-  // Only call useSession after component mounts
-  const sessionResult = mounted ? useSession() : { data: null, status: "loading" }
-  const { data: session, status } = sessionResult
+  
+  // Always call hooks unconditionally - this is a React rule
+  const { data: session, status } = useSession() || {}
 
   useEffect(() => {
     setMounted(true)

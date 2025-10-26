@@ -129,23 +129,7 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Upgrade to Pro Card */}
-      <div className="p-4 border-t border-gray-200">
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-4 text-white">
-          <Zap className="h-6 w-6 mb-2" />
-          <p className="text-sm font-medium mb-2">Upgrade to Pro</p>
-          <p className="text-xs opacity-90 mb-3">
-            Get pro now to own all dashboards, templates and components for life.
-          </p>
-          <Button 
-            variant="secondary" 
-            size="sm" 
-            className="w-full bg-black text-white hover:bg-gray-800"
-          >
-            Get Shadcn UI Kit
-          </Button>
-        </div>
-      </div>
+      {/* Upgrade Card - Removed for now */}
 
       {/* User & Logout */}
       {session && (
