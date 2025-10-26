@@ -19,7 +19,6 @@ import {
   Share2, 
   Copy,
   ExternalLink,
-  Eye,
   Clock,
   Activity,
   Globe,
@@ -683,40 +682,6 @@ export function BookmarkDetailModal({
                     </p>
                   )}
                 </div>
-              </div>
-            </div>
-
-            {/* Analytics Section */}
-            <div className="mt-8 pt-8 border-t">
-              <div className="flex gap-4 mb-6">
-                <div className="flex items-center gap-3 px-6 py-3 bg-gray-50 rounded-lg">
-                  <Eye className="h-6 w-6 text-gray-700" />
-                  <div className="text-2xl font-bold text-gray-900">{currentVisits}</div>
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                </div>
-                <div className="flex items-center gap-3 px-6 py-3 bg-gray-50 rounded-lg">
-                  <Clock className="h-6 w-6 text-gray-700" />
-                  <div className="text-2xl font-bold text-gray-900">{currentTimeSpent}m</div>
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  className="flex-1 !bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900 rounded-lg h-12 font-medium uppercase"
-                  onClick={handleViewAnalytics}
-                >
-                  View Full Analytics
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1 !bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900 rounded-lg h-12 font-medium uppercase"
-                  onClick={handleCheckHealth}
-                >
-                  <Stethoscope className="h-4 w-4 mr-2" />
-                  Check Health
-                </Button>
               </div>
             </div>
 
