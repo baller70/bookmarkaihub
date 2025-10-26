@@ -217,8 +217,14 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
               </div>
             </div>
 
-            {/* Task Stats */}
-            <div className="space-y-2.5 mb-4">
+            {/* Progress */}
+            <div className="flex items-center justify-between py-2 border-t border-gray-200 mb-3">
+              <span className="text-sm text-gray-500 font-saira">Progress</span>
+              <span className="text-sm font-bold text-green-500 font-saira">{progress.toFixed(0)}%</span>
+            </div>
+
+            {/* Task Stats - Below the line */}
+            <div className="space-y-2.5">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-russo text-slate-800">OPEN TASK</span>
                 <span className="text-sm text-gray-500 font-saira">TOTAL: {bookmark.openTasks || 0}</span>
@@ -227,12 +233,6 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
                 <span className="text-sm font-russo text-slate-800">COMPLETED TASK</span>
                 <span className="text-sm text-gray-500 font-saira">TOTAL: {bookmark.completedTasks || 0}</span>
               </div>
-            </div>
-
-            {/* Progress */}
-            <div className="flex items-center justify-between pt-2 border-t border-gray-200">
-              <span className="text-sm text-gray-500 font-saira">Progress</span>
-              <span className="text-sm font-bold text-green-500 font-saira">{progress.toFixed(0)}%</span>
             </div>
           </div>
 
