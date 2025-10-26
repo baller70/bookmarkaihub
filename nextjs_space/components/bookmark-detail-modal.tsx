@@ -512,7 +512,7 @@ export function BookmarkDetailModal({
                         value={tags}
                         onChange={(e) => setTags(e.target.value)}
                         placeholder="vibe-crafting, tool, personalization, atmosphere"
-                        className="text-sm !bg-white border-gray-300"
+                        className="text-sm !bg-white border-gray-300 !text-gray-900"
                       />
                       <div className="flex gap-2">
                         <Button
@@ -544,7 +544,7 @@ export function BookmarkDetailModal({
                           <Badge
                             key={tag.tag.id}
                             variant="outline"
-                            className="rounded-full px-3 py-1 text-xs font-medium border-gray-300 flex items-center gap-2"
+                            className="rounded-full px-3 py-1 text-xs font-medium border-gray-300 flex items-center gap-2 !bg-white !text-gray-900"
                           >
                             <span className="mr-1">🏷️</span>
                             {tag.tag.name.toUpperCase()}
