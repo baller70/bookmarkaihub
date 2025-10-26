@@ -193,10 +193,10 @@ export function BookmarkDetailModal({
               </Button>
               <Button
                 onClick={handleVisit}
-                className="bg-black hover:bg-gray-800 text-white rounded-lg"
+                className="bg-black hover:bg-gray-800 text-white rounded-lg uppercase"
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
-                VISIT SITE
+                Visit Site
               </Button>
             </div>
           </div>
@@ -281,7 +281,7 @@ export function BookmarkDetailModal({
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
-                    className="flex-1 rounded-lg border-2"
+                    className="flex-1 rounded-lg border-2 uppercase"
                     onClick={handleImageUpload}
                   >
                     <Camera className="h-4 w-4 mr-2" />
@@ -292,13 +292,13 @@ export function BookmarkDetailModal({
                 <div className="flex gap-2">
                   <Button
                     variant="default"
-                    className="bg-black hover:bg-gray-800 text-white rounded-lg flex-1"
+                    className="bg-black hover:bg-gray-800 text-white rounded-lg flex-1 uppercase"
                   >
                     Front Background
                   </Button>
                   <Button
                     variant="outline"
-                    className="rounded-lg flex-1"
+                    className="rounded-lg flex-1 uppercase"
                   >
                     Favicon
                   </Button>
@@ -329,7 +329,7 @@ export function BookmarkDetailModal({
                         <Button
                           size="sm"
                           onClick={handleSaveDescription}
-                          className="bg-black hover:bg-gray-800 text-white"
+                          className="bg-black hover:bg-gray-800 text-white uppercase"
                         >
                           Save
                         </Button>
@@ -340,6 +340,7 @@ export function BookmarkDetailModal({
                             setIsEditingDescription(false)
                             setDescription(bookmark.description || "")
                           }}
+                          className="uppercase"
                         >
                           Cancel
                         </Button>
@@ -404,7 +405,7 @@ export function BookmarkDetailModal({
                             setIsEditingNotes(false)
                             toast.success("Notes saved")
                           }}
-                          className="bg-black hover:bg-gray-800 text-white"
+                          className="bg-black hover:bg-gray-800 text-white uppercase"
                         >
                           Save
                         </Button>
@@ -412,6 +413,7 @@ export function BookmarkDetailModal({
                           size="sm"
                           variant="outline"
                           onClick={() => setIsEditingNotes(false)}
+                          className="uppercase"
                         >
                           Cancel
                         </Button>
@@ -464,12 +466,12 @@ export function BookmarkDetailModal({
               </div>
 
               <div className="flex gap-3">
-                <Button className="flex-1 bg-black hover:bg-gray-800 text-white rounded-lg h-12 font-medium">
-                  VIEW FULL ANALYTICS
+                <Button className="flex-1 bg-black hover:bg-gray-800 text-white rounded-lg h-12 font-medium uppercase">
+                  View Full Analytics
                 </Button>
-                <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg h-12 font-medium">
+                <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg h-12 font-medium uppercase">
                   <Stethoscope className="h-4 w-4 mr-2" />
-                  CHECK HEALTH
+                  Check Health
                 </Button>
               </div>
             </div>
@@ -478,9 +480,9 @@ export function BookmarkDetailModal({
             <div className="mt-8 pt-8 border-t">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-gray-900">RELATED BOOKMARKS</h3>
-                <Button variant="outline" size="sm" className="rounded-lg">
+                <Button variant="outline" size="sm" className="rounded-lg uppercase">
                   <Plus className="h-4 w-4 mr-2" />
-                  BROWSE ALL BOOKMARKS TO ADD MORE
+                  Browse All Bookmarks to Add More
                 </Button>
               </div>
               <div className="text-center py-12 bg-gray-50 rounded-lg">
@@ -491,9 +493,9 @@ export function BookmarkDetailModal({
               </div>
               
               <div className="text-center mt-6">
-                <Button variant="ghost" className="text-gray-500">
+                <Button variant="ghost" className="text-gray-500 uppercase">
                   <Plus className="h-4 w-4 mr-2" />
-                  BROWSE ALL BOOKMARKS TO ADD MORE
+                  Browse All Bookmarks to Add More
                 </Button>
               </div>
             </div>
@@ -502,9 +504,9 @@ export function BookmarkDetailModal({
             <div className="mt-8 pt-8 border-t">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-gray-900">GOALS</h3>
-                <Button variant="outline" size="sm" className="rounded-lg">
+                <Button variant="outline" size="sm" className="rounded-lg uppercase">
                   <Plus className="h-4 w-4 mr-2" />
-                  ADD GOAL
+                  Add Goal
                 </Button>
               </div>
               <div className="text-center py-12 bg-gray-50 rounded-lg">
