@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { 
   Heart, 
@@ -46,12 +47,20 @@ export function BookmarkDetailModal({
   const [notes, setNotes] = useState("")
   const [isEditingDescription, setIsEditingDescription] = useState(false)
   const [isEditingNotes, setIsEditingNotes] = useState(false)
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
+  const [title, setTitle] = useState(bookmark?.title || "")
+  const [isEditingTags, setIsEditingTags] = useState(false)
+  const [newTag, setNewTag] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const logoInputRef = useRef<HTMLInputElement>(null)
+  const faviconInputRef = useRef<HTMLInputElement>(null)
+  const backgroundInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (bookmark) {
       setIsFavorite(bookmark.isFavorite || false)
       setDescription(bookmark.description || "")
+      setTitle(bookmark.title || "")
     }
   }, [bookmark])
 
@@ -124,6 +133,132 @@ export function BookmarkDetailModal({
     }
   }
 
+  const handleSaveTitle = async () => {
+    try {
+      const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
+      })
+
+      if (response.ok) {
+        toast.success("Title updated")
+        setIsEditingTitle(false)
+        onUpdate()
+      }
+    } catch (error) {
+      toast.error("Failed to update title")
+    }
+  }
+
+  const handleLogoUpload = () => {
+    logoInputRef.current?.click()
+  }
+
+  const handleFaviconUpload = () => {
+    faviconInputRef.current?.click()
+  }
+
+  const handleBackgroundUpload = () => {
+    backgroundInputRef.current?.click()
+  }
+
+  const handleLogoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      toast.info("Custom logo upload functionality coming soon")
+    }
+  }
+
+  const handleFaviconFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      toast.info("Favicon upload functionality coming soon")
+    }
+  }
+
+  const handleBackgroundFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      toast.info("Background upload functionality coming soon")
+    }
+  }
+
+  const handleAddTag = async () => {
+    if (!newTag.trim()) return
+    
+    try {
+      // First create or get the tag
+      const tagResponse = await fetch("/api/tags", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newTag }),
+      })
+
+      if (tagResponse.ok) {
+        const tag = await tagResponse.json()
+        
+        // Then associate it with the bookmark
+        const bookmarkResponse = await fetch(`/api/bookmarks/${bookmark.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            tagIds: [...(bookmark.tags?.map((t: any) => t.tag.id) || []), tag.id]
+          }),
+        })
+
+        if (bookmarkResponse.ok) {
+          toast.success("Tag added")
+          setNewTag("")
+          setIsEditingTags(false)
+          onUpdate()
+        }
+      }
+    } catch (error) {
+      toast.error("Failed to add tag")
+    }
+  }
+
+  const handleRemoveTag = async (tagId: string) => {
+    try {
+      const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          tagIds: bookmark.tags?.filter((t: any) => t.tag.id !== tagId).map((t: any) => t.tag.id) || []
+        }),
+      })
+
+      if (response.ok) {
+        toast.success("Tag removed")
+        onUpdate()
+      }
+    } catch (error) {
+      toast.error("Failed to remove tag")
+    }
+  }
+
+  const handleViewAnalytics = () => {
+    toast.info("Opening full analytics dashboard...")
+    // You can navigate to an analytics page here
+  }
+
+  const handleCheckHealth = () => {
+    toast.info("Checking bookmark health...")
+    // Check if URL is still valid
+    window.open(`https://www.isitdownrightnow.com/check.php?domain=${encodeURIComponent(bookmark.url)}`, '_blank')
+  }
+
+  const handleBrowseBookmarks = () => {
+    toast.info("Browse bookmarks feature coming soon")
+    // You can implement a bookmark picker modal here
+  }
+
+  const handleAddGoal = () => {
+    toast.info("Add goal feature coming soon")
+    // You can implement a goal creation/linking modal here
+  }
+
   if (!bookmark) return null
 
   return (
@@ -135,6 +270,27 @@ export function BookmarkDetailModal({
           accept="image/*"
           className="hidden"
           onChange={handleFileChange}
+        />
+        <input
+          ref={logoInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleLogoFileChange}
+        />
+        <input
+          ref={faviconInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFaviconFileChange}
+        />
+        <input
+          ref={backgroundInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleBackgroundFileChange}
         />
         
         {/* Header */}
@@ -153,12 +309,45 @@ export function BookmarkDetailModal({
                 </div>
               )}
               <div>
-                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                  {bookmark.title}
-                  <button className="p-1 hover:bg-gray-100 rounded">
-                    <Edit className="h-4 w-4 text-gray-400" />
-                  </button>
-                </h2>
+                {isEditingTitle ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      className="text-xl font-bold text-gray-900 border-b-2 border-gray-300 focus:border-black outline-none bg-transparent"
+                      autoFocus
+                    />
+                    <Button
+                      size="sm"
+                      onClick={handleSaveTitle}
+                      className="bg-black hover:bg-gray-800 text-white h-7 text-xs uppercase"
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditingTitle(false)
+                        setTitle(bookmark.title || "")
+                      }}
+                      className="h-7 text-xs uppercase"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    {title}
+                    <button 
+                      className="p-1 hover:bg-gray-100 rounded"
+                      onClick={() => setIsEditingTitle(true)}
+                    >
+                      <Edit className="h-4 w-4 text-gray-400" />
+                    </button>
+                  </h2>
+                )}
                 <p className="text-sm text-gray-500">{bookmark.url}</p>
               </div>
             </div>
@@ -278,7 +467,7 @@ export function BookmarkDetailModal({
                 <div className="flex gap-2">
                   <Button
                     className="flex-1 rounded-lg bg-black hover:bg-gray-800 text-white uppercase"
-                    onClick={handleImageUpload}
+                    onClick={handleLogoUpload}
                   >
                     <Camera className="h-4 w-4 mr-2" />
                     Custom Logo
@@ -288,11 +477,13 @@ export function BookmarkDetailModal({
                 <div className="flex gap-2">
                   <Button
                     className="bg-black hover:bg-gray-800 text-white rounded-lg flex-1 uppercase"
+                    onClick={handleBackgroundUpload}
                   >
                     Front Background
                   </Button>
                   <Button
                     className="bg-black hover:bg-gray-800 text-white rounded-lg flex-1 uppercase"
+                    onClick={handleFaviconUpload}
                   >
                     Favicon
                   </Button>
@@ -351,20 +542,54 @@ export function BookmarkDetailModal({
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-bold text-gray-900">TAGS</h3>
-                    <button className="p-1 hover:bg-gray-100 rounded">
+                    <button 
+                      className="p-1 hover:bg-gray-100 rounded"
+                      onClick={() => setIsEditingTags(!isEditingTags)}
+                    >
                       <Edit className="h-4 w-4 text-gray-400" />
                     </button>
                   </div>
+                  {isEditingTags && (
+                    <div className="mb-3 flex gap-2">
+                      <input
+                        type="text"
+                        value={newTag}
+                        onChange={(e) => setNewTag(e.target.value)}
+                        placeholder="Add new tag..."
+                        className="flex-1 text-sm border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-black"
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            handleAddTag()
+                          }
+                        }}
+                      />
+                      <Button
+                        size="sm"
+                        onClick={handleAddTag}
+                        className="bg-black hover:bg-gray-800 text-white uppercase"
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-2">
                     {bookmark.tags && bookmark.tags.length > 0 ? (
                       bookmark.tags.map((tag: any) => (
                         <Badge
                           key={tag.tag.id}
                           variant="outline"
-                          className="rounded-full px-3 py-1 text-xs font-medium border-gray-300"
+                          className="rounded-full px-3 py-1 text-xs font-medium border-gray-300 flex items-center gap-2"
                         >
                           <span className="mr-1">🏷️</span>
                           {tag.tag.name.toUpperCase()}
+                          {isEditingTags && (
+                            <button
+                              onClick={() => handleRemoveTag(tag.tag.id)}
+                              className="text-gray-500 hover:text-red-600 ml-1"
+                            >
+                              ×
+                            </button>
+                          )}
                         </Badge>
                       ))
                     ) : (
@@ -460,10 +685,16 @@ export function BookmarkDetailModal({
               </div>
 
               <div className="flex gap-3">
-                <Button className="flex-1 bg-black hover:bg-gray-800 text-white rounded-lg h-12 font-medium uppercase">
+                <Button 
+                  className="flex-1 bg-black hover:bg-gray-800 text-white rounded-lg h-12 font-medium uppercase"
+                  onClick={handleViewAnalytics}
+                >
                   View Full Analytics
                 </Button>
-                <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg h-12 font-medium uppercase">
+                <Button 
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg h-12 font-medium uppercase"
+                  onClick={handleCheckHealth}
+                >
                   <Stethoscope className="h-4 w-4 mr-2" />
                   Check Health
                 </Button>
@@ -474,7 +705,11 @@ export function BookmarkDetailModal({
             <div className="mt-8 pt-8 border-t">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-gray-900">RELATED BOOKMARKS</h3>
-                <Button size="sm" className="rounded-lg bg-black hover:bg-gray-800 text-white uppercase">
+                <Button 
+                  size="sm" 
+                  className="rounded-lg bg-black hover:bg-gray-800 text-white uppercase"
+                  onClick={handleBrowseBookmarks}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Browse All Bookmarks to Add More
                 </Button>
@@ -487,7 +722,10 @@ export function BookmarkDetailModal({
               </div>
               
               <div className="text-center mt-6">
-                <Button className="bg-black hover:bg-gray-800 text-white uppercase">
+                <Button 
+                  className="bg-black hover:bg-gray-800 text-white uppercase"
+                  onClick={handleBrowseBookmarks}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Browse All Bookmarks to Add More
                 </Button>
@@ -498,7 +736,11 @@ export function BookmarkDetailModal({
             <div className="mt-8 pt-8 border-t">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-gray-900">GOALS</h3>
-                <Button size="sm" className="rounded-lg bg-black hover:bg-gray-800 text-white uppercase">
+                <Button 
+                  size="sm" 
+                  className="rounded-lg bg-black hover:bg-gray-800 text-white uppercase"
+                  onClick={handleAddGoal}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Goal
                 </Button>
