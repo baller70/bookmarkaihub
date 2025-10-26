@@ -17,7 +17,8 @@ import {
   Copy,
   Folder,
   Target,
-  Clock
+  Clock,
+  GripVertical
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
@@ -95,6 +96,11 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
           <div className="absolute top-0 right-0 w-48 h-48 bg-blue-100/20 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-100/20 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
           <div className="absolute inset-0 bg-white/40 backdrop-blur-[100px]" />
+        </div>
+
+        {/* Drag Handle */}
+        <div className="absolute top-3 right-3 z-10 cursor-grab active:cursor-grabbing">
+          <GripVertical className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors" />
         </div>
 
         <div className="relative flex h-full">
