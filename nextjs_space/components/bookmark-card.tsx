@@ -99,11 +99,11 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
 
         <div className="relative flex h-full">
           {/* Main Content Area */}
-          <div className="flex-1 p-5 flex flex-col">
+          <div className="flex-1 p-6 flex flex-col">
             {/* Header with logo and title */}
-            <div className="flex items-start space-x-3 mb-3">
+            <div className="flex items-start space-x-4 mb-4">
               {/* Logo */}
-              <div className="relative w-14 h-14 flex-shrink-0 bg-black rounded-2xl overflow-hidden shadow-sm">
+              <div className="relative w-16 h-16 flex-shrink-0 bg-black rounded-2xl overflow-hidden shadow-sm">
                 {bookmark.favicon ? (
                   <Image
                     src={bookmark.favicon}
@@ -131,8 +131,8 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
             </div>
 
             {/* Center Image */}
-            <div className="flex items-center justify-center my-3">
-              <div className="relative w-28 h-28 bg-white rounded-3xl shadow-lg overflow-hidden border-4 border-white">
+            <div className="flex items-center justify-center my-4">
+              <div className="relative w-32 h-32 bg-white rounded-3xl shadow-lg overflow-hidden border-4 border-white">
                 {bookmark.favicon ? (
                   <Image
                     src={bookmark.favicon}
@@ -150,12 +150,12 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
             </div>
 
             {/* Description */}
-            <p className="text-sm text-gray-700 mb-3 line-clamp-2 h-10 leading-5 font-saira">
+            <p className="text-sm text-gray-700 mb-4 line-clamp-2 h-10 leading-5 font-saira">
               {bookmark.description || "No description available"}
             </p>
 
             {/* Tags */}
-            <div className="flex flex-wrap gap-2 mb-3">
+            <div className="flex flex-wrap gap-2 mb-4">
               <Badge 
                 className={cn(
                   "text-xs px-3 py-1.5 rounded-lg font-medium",
@@ -180,7 +180,7 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
             </div>
 
             {/* Stats Row */}
-            <div className="flex items-start justify-between mb-3 min-h-[70px]">
+            <div className="flex items-start justify-between mb-4 min-h-[70px]">
               <div className="flex flex-col space-y-2">
                 <div className="flex items-center space-x-2 bg-green-50/50 rounded-xl px-3 py-1.5">
                   <Eye className="h-4 w-4 text-gray-600" />
@@ -218,7 +218,7 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
             </div>
 
             {/* Task Stats */}
-            <div className="space-y-2 mb-3">
+            <div className="space-y-2.5 mb-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-russo text-slate-800">OPEN TASK</span>
                 <span className="text-sm text-gray-500 font-saira">TOTAL: {bookmark.openTasks || 0}</span>
