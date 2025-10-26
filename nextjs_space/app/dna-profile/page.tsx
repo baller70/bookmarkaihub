@@ -1,6 +1,7 @@
 
 "use client"
 
+import { useRouter } from "next/navigation"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { DashboardAuth } from "@/components/dashboard-auth"
 import { Card } from "@/components/ui/card"
@@ -28,6 +29,11 @@ import {
 
 export default function DnaProfilePage() {
   const { data: session } = useSession() || {}
+  const router = useRouter()
+  
+  const handleEditProfile = () => {
+    router.push("/settings")
+  }
 
   const userStats = {
     totalBookmarks: 15,
@@ -83,7 +89,7 @@ export default function DnaProfilePage() {
                   <Badge className="bg-purple-100 text-purple-800">Verified</Badge>
                 </div>
               </div>
-              <Button size="lg">
+              <Button size="lg" onClick={handleEditProfile}>
                 <Settings className="h-4 w-4 mr-2" />
                 Edit Profile
               </Button>
