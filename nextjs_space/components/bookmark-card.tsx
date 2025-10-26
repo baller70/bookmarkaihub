@@ -132,7 +132,7 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
 
             {/* Center Image */}
             <div className="flex items-center justify-center my-3">
-              <div className="relative w-36 h-36 bg-white rounded-3xl shadow-lg overflow-hidden border-4 border-white">
+              <div className="relative w-28 h-28 bg-white rounded-3xl shadow-lg overflow-hidden border-4 border-white">
                 {bookmark.favicon ? (
                   <Image
                     src={bookmark.favicon}
@@ -142,7 +142,7 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
                     unoptimized
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white text-5xl font-bold">
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white text-4xl font-bold">
                     {bookmark.title?.charAt(0)?.toUpperCase()}
                   </div>
                 )}
@@ -206,7 +206,7 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-red-500 font-audiowide">
+                    <span className="text-lg font-bold text-red-500 font-audiowide">
                       {bookmark.usagePercentage?.toFixed(0) || 95}%
                     </span>
                   </div>
@@ -219,13 +219,13 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
 
             {/* Task Stats */}
             <div className="space-y-1.5 mb-2.5">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-gray-800 font-audiowide">OPEN TASK</span>
-                <span className="text-gray-600 font-medium font-saira">TOTAL: {bookmark.openTasks || 0}</span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-gray-800 font-audiowide">OPEN TASK</span>
+                <span className="text-xs text-gray-600 font-medium font-saira">TOTAL: {bookmark.openTasks || 0}</span>
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-gray-800 font-audiowide">COMPLETED TASK</span>
-                <span className="text-gray-600 font-medium font-saira">TOTAL: {bookmark.completedTasks || 0}</span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-gray-800 font-audiowide">COMPLETED TASK</span>
+                <span className="text-xs text-gray-600 font-medium font-saira">TOTAL: {bookmark.completedTasks || 0}</span>
               </div>
             </div>
 
