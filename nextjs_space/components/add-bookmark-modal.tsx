@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
+import { Loader2 } from "lucide-react"
 
 interface AddBookmarkModalProps {
   open: boolean
@@ -23,6 +24,7 @@ interface AddBookmarkModalProps {
 
 export function AddBookmarkModal({ open, onOpenChange, onSuccess }: AddBookmarkModalProps) {
   const [loading, setLoading] = useState(false)
+  const [fetchingMetadata, setFetchingMetadata] = useState(false)
   const [categories, setCategories] = useState<any[]>([])
   const [tags, setTags] = useState<any[]>([])
   const [formData, setFormData] = useState({
@@ -34,6 +36,7 @@ export function AddBookmarkModal({ open, onOpenChange, onSuccess }: AddBookmarkM
     categoryIds: [] as string[],
     tagIds: [] as string[],
   })
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     if (open) {
@@ -65,6 +68,64 @@ export function AddBookmarkModal({ open, onOpenChange, onSuccess }: AddBookmarkM
       console.error("Error fetching tags:", error)
     }
   }
+
+  const fetchMetadata = async (url: string) => {
+    // Validate URL format
+    try {
+      new URL(url)
+    } catch {
+      return // Invalid URL, don't fetch
+    }
+
+    setFetchingMetadata(true)
+    try {
+      const response = await fetch(`/api/metadata?url=${encodeURIComponent(url)}`)
+      if (response.ok) {
+        const metadata = await response.json()
+        
+        // Only update fields that are empty
+        setFormData(prev => ({
+          ...prev,
+          title: prev.title || metadata.title || "",
+          description: prev.description || metadata.description || "",
+          favicon: prev.favicon || metadata.favicon || "",
+        }))
+        
+        toast.success("Metadata fetched successfully")
+      } else {
+        console.error("Failed to fetch metadata")
+      }
+    } catch (error) {
+      console.error("Error fetching metadata:", error)
+    } finally {
+      setFetchingMetadata(false)
+    }
+  }
+
+  const handleUrlChange = (url: string) => {
+    setFormData({ ...formData, url })
+
+    // Clear existing timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+
+    // Set new timer to fetch metadata after 1 second of no typing
+    if (url) {
+      debounceTimerRef.current = setTimeout(() => {
+        fetchMetadata(url)
+      }, 1000)
+    }
+  }
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -130,15 +191,21 @@ export function AddBookmarkModal({ open, onOpenChange, onSuccess }: AddBookmarkM
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="url">URL *</Label>
+              <Label htmlFor="url" className="flex items-center gap-2">
+                URL *
+                {fetchingMetadata && (
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Fetching metadata...
+                  </span>
+                )}
+              </Label>
               <Input
                 id="url"
                 type="url"
                 placeholder="https://example.com"
                 value={formData.url}
-                onChange={(e) =>
-                  setFormData({ ...formData, url: e.target.value })
-                }
+                onChange={(e) => handleUrlChange(e.target.value)}
                 required
               />
             </div>
