@@ -280,8 +280,7 @@ export function BookmarkDetailModal({
                 
                 <div className="flex gap-2">
                   <Button
-                    variant="outline"
-                    className="flex-1 rounded-lg border-2 uppercase"
+                    className="flex-1 rounded-lg bg-black hover:bg-gray-800 text-white uppercase"
                     onClick={handleImageUpload}
                   >
                     <Camera className="h-4 w-4 mr-2" />
@@ -291,14 +290,12 @@ export function BookmarkDetailModal({
                 
                 <div className="flex gap-2">
                   <Button
-                    variant="default"
                     className="bg-black hover:bg-gray-800 text-white rounded-lg flex-1 uppercase"
                   >
                     Front Background
                   </Button>
                   <Button
-                    variant="outline"
-                    className="rounded-lg flex-1 uppercase"
+                    className="bg-black hover:bg-gray-800 text-white rounded-lg flex-1 uppercase"
                   >
                     Favicon
                   </Button>
@@ -480,7 +477,7 @@ export function BookmarkDetailModal({
             <div className="mt-8 pt-8 border-t">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-gray-900">RELATED BOOKMARKS</h3>
-                <Button variant="outline" size="sm" className="rounded-lg uppercase">
+                <Button size="sm" className="rounded-lg bg-black hover:bg-gray-800 text-white uppercase">
                   <Plus className="h-4 w-4 mr-2" />
                   Browse All Bookmarks to Add More
                 </Button>
@@ -493,7 +490,7 @@ export function BookmarkDetailModal({
               </div>
               
               <div className="text-center mt-6">
-                <Button variant="ghost" className="text-gray-500 uppercase">
+                <Button className="bg-black hover:bg-gray-800 text-white uppercase">
                   <Plus className="h-4 w-4 mr-2" />
                   Browse All Bookmarks to Add More
                 </Button>
@@ -504,7 +501,7 @@ export function BookmarkDetailModal({
             <div className="mt-8 pt-8 border-t">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-gray-900">GOALS</h3>
-                <Button variant="outline" size="sm" className="rounded-lg uppercase">
+                <Button size="sm" className="rounded-lg bg-black hover:bg-gray-800 text-white uppercase">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Goal
                 </Button>
