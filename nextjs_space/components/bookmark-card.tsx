@@ -304,6 +304,9 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
               </div>
             </div>
 
+            {/* Divider Line */}
+            <div className="border-t border-gray-200 mb-3"></div>
+
             {/* Task Stats */}
             <div className="space-y-2.5 mb-3">
               <div className="flex items-center justify-between">
@@ -316,8 +319,8 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
               </div>
             </div>
 
-            {/* Progress Section at the bottom with divider above */}
-            <div className="flex items-center justify-between py-2 border-t border-gray-200">
+            {/* Progress Section at the bottom */}
+            <div className="flex items-center justify-between py-2">
               <span className="text-sm text-gray-500 font-saira uppercase">PROGRESS</span>
               <span className="text-sm font-bold text-green-500 font-saira">{progress.toFixed(0)}%</span>
             </div>
