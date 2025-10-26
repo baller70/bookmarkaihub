@@ -23,6 +23,7 @@ import { useState } from "react"
 
 export default function MarketplacePage() {
   const [searchQuery, setSearchQuery] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("All")
 
   const templates = [
     {
@@ -107,6 +108,26 @@ export default function MarketplacePage() {
     { name: "Productivity", count: 1, icon: FileText },
   ]
 
+  const handleSearch = () => {
+    // Search is handled by the filteredTemplates below
+  }
+
+  const handleInstall = (templateId: number) => {
+    alert(`Installing template ${templateId}...`)
+  }
+
+  // Filter templates based on search query and selected category
+  const filteredTemplates = templates.filter((template) => {
+    const matchesSearch = searchQuery === "" || 
+      template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      template.category.toLowerCase().includes(searchQuery.toLowerCase())
+    
+    const matchesCategory = selectedCategory === "All" || template.category === selectedCategory
+    
+    return matchesSearch && matchesCategory
+  })
+
   return (
     <DashboardAuth>
       <DashboardLayout>
@@ -133,10 +154,14 @@ export default function MarketplacePage() {
                   placeholder="Search templates, collections, and tools..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                   className="pl-10 h-12"
                 />
               </div>
-              <Button className="h-12 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              <Button 
+                onClick={handleSearch}
+                className="h-12 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              >
                 <Search className="h-4 w-4 mr-2" />
                 Search
               </Button>
@@ -150,7 +175,8 @@ export default function MarketplacePage() {
               return (
                 <Button
                   key={category.name}
-                  variant="outline"
+                  variant={selectedCategory === category.name ? "default" : "outline"}
+                  onClick={() => setSelectedCategory(category.name)}
                   className="flex items-center gap-2 whitespace-nowrap"
                 >
                   <Icon className="h-4 w-4" />
@@ -165,7 +191,7 @@ export default function MarketplacePage() {
 
           {/* Templates Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {templates.map((template) => (
+            {filteredTemplates.map((template) => (
               <Card key={template.id} className="p-6 hover:shadow-lg transition-shadow cursor-pointer group">
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
@@ -216,7 +242,13 @@ export default function MarketplacePage() {
                       {template.price}
                     </Badge>
                   </div>
-                  <Button size="sm">
+                  <Button 
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleInstall(template.id)
+                    }}
+                  >
                     Install
                   </Button>
                 </div>
@@ -225,7 +257,7 @@ export default function MarketplacePage() {
           </div>
 
           {/* Empty State for Search */}
-          {searchQuery && (
+          {filteredTemplates.length === 0 && (
             <div className="text-center py-12 mt-8">
               <Store className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No results found</h3>

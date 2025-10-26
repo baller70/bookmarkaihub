@@ -12,10 +12,12 @@ import {
   ExternalLink, 
   Edit, 
   Trash2, 
-  Star, 
-  MoreHorizontal,
-  Clock,
-  TrendingUp
+  Heart,
+  Eye,
+  Copy,
+  Folder,
+  Target,
+  Clock
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
@@ -64,8 +66,12 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
   const handleVisit = (e: React.MouseEvent) => {
     e.stopPropagation()
     window.open(bookmark.url, "_blank")
-    
-    // Track visit (optional - could call analytics API)
+  }
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    navigator.clipboard.writeText(bookmark.url)
+    toast.success("URL copied to clipboard")
   }
 
   const progress = bookmark.totalTasks > 0 
@@ -76,154 +82,223 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
     <>
       <Card 
         className={cn(
-          "group relative overflow-hidden cursor-pointer transition-all duration-500",
-          "border border-gray-200 hover:border-blue-300 hover:shadow-xl",
-          "bg-white",
-          compact ? "h-32" : "h-64",
+          "group relative overflow-hidden cursor-pointer transition-all duration-300",
+          "border border-gray-200/80 hover:shadow-lg",
+          "bg-gradient-to-br from-blue-50/30 via-white to-purple-50/20",
+          "rounded-3xl",
           isDeleting && "opacity-50 pointer-events-none"
         )}
         onClick={() => setShowDetail(true)}
       >
-        {/* Background Image/Favicon */}
-        <div className="absolute inset-0">
-          {bookmark.favicon && (
-            <div className="relative w-full h-full">
-              <Image
-                src={bookmark.favicon}
-                alt={bookmark.title}
-                fill
-                className="object-cover opacity-10 blur-sm"
-                unoptimized
-              />
-            </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-white/60 to-white/30" />
+        {/* Decorative background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-blue-100/20 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-100/20 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
+          <div className="absolute inset-0 bg-white/40 backdrop-blur-[100px]" />
         </div>
 
-        {/* Content */}
-        <div className="relative h-full p-4 flex flex-col">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-2">
-            <div className="flex items-center space-x-2">
-              {bookmark.favicon && (
-                <div className="relative w-6 h-6 flex-shrink-0">
+        <div className="relative flex h-full">
+          {/* Main Content Area */}
+          <div className="flex-1 p-6 flex flex-col">
+            {/* Header with logo and title */}
+            <div className="flex items-start space-x-3 mb-4">
+              {/* Logo */}
+              <div className="relative w-12 h-12 flex-shrink-0 bg-black rounded-2xl overflow-hidden shadow-sm">
+                {bookmark.favicon ? (
                   <Image
                     src={bookmark.favicon}
-                    alt=""
+                    alt={bookmark.title}
                     fill
-                    className="object-contain rounded"
+                    className="object-cover"
                     unoptimized
                   />
-                </div>
-              )}
-              <Badge 
-                variant="secondary"
-                className={cn("text-xs", priorityColors[bookmark.priority as keyof typeof priorityColors])}
-              >
-                {bookmark.priority?.toLowerCase()}
-              </Badge>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white font-bold text-lg">
+                    {bookmark.title?.charAt(0)?.toUpperCase()}
+                  </div>
+                )}
+              </div>
+              
+              {/* Title and URL */}
+              <div className="flex-1 min-w-0">
+                <h3 className="text-xl font-bold text-gray-900 mb-1 truncate">
+                  {bookmark.title}
+                </h3>
+                <p className="text-sm text-blue-600 font-medium truncate">
+                  {bookmark.url?.replace(/^https?:\/\/(www\.)?/, '')}
+                </p>
+              </div>
             </div>
 
-            {/* Action buttons (visible on hover) */}
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleVisit}
-                className="h-7 w-7 p-0 hover:bg-blue-100"
+            {/* Center Image */}
+            <div className="flex-1 flex items-center justify-center my-4">
+              <div className="relative w-40 h-40 bg-white rounded-3xl shadow-lg overflow-hidden border-4 border-white">
+                {bookmark.favicon ? (
+                  <Image
+                    src={bookmark.favicon}
+                    alt={bookmark.title}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white text-5xl font-bold">
+                    {bookmark.title?.charAt(0)?.toUpperCase()}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Description */}
+            <p className="text-sm text-gray-700 mb-4 line-clamp-2 min-h-[40px]">
+              {bookmark.description || "No description available"}
+            </p>
+
+            {/* Tags */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              <Badge 
+                className={cn(
+                  "text-sm px-3 py-1 rounded-lg font-medium",
+                  priorityColors[bookmark.priority as keyof typeof priorityColors] || "bg-yellow-100 text-yellow-800"
+                )}
               >
-                <ExternalLink className="h-3 w-3" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleDelete}
-                className="h-7 w-7 p-0 hover:bg-red-100"
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 p-0"
-              >
-                <MoreHorizontal className="h-3 w-3" />
-              </Button>
+                {bookmark.priority?.toLowerCase() || "medium"}
+              </Badge>
+              {bookmark.tags?.slice(0, 1).map((tag: any) => (
+                <Badge
+                  key={tag.tag.id}
+                  className="text-sm px-3 py-1 rounded-lg font-medium"
+                  style={{ 
+                    backgroundColor: `${tag.tag.color}20`,
+                    color: tag.tag.color,
+                    border: "none"
+                  }}
+                >
+                  {tag.tag.name}
+                </Badge>
+              ))}
+            </div>
+
+            {/* Stats Row */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-1.5 text-gray-600">
+                  <Eye className="h-4 w-4" />
+                  <span className="text-sm font-semibold">{bookmark.visits || 13}</span>
+                  <div className="w-2 h-2 rounded-full bg-green-400 ml-1" />
+                </div>
+                <div className="flex items-center space-x-1.5 text-gray-600">
+                  <Clock className="h-4 w-4" />
+                  <span className="text-sm font-semibold">{bookmark.timeSpent || 13}m</span>
+                  <div className="w-2 h-2 rounded-full bg-green-400 ml-1" />
+                </div>
+              </div>
+
+              {/* Usage Hexagon */}
+              <div className="relative">
+                <svg width="60" height="60" viewBox="0 0 60 60" className="transform">
+                  <polygon 
+                    points="30,5 52,17.5 52,42.5 30,55 8,42.5 8,17.5" 
+                    fill="none" 
+                    stroke="#EF4444" 
+                    strokeWidth="2"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-xl font-bold text-red-500">
+                    {bookmark.usagePercentage?.toFixed(0) || 5}%
+                  </span>
+                </div>
+                <div className="absolute -bottom-1 right-0 left-0 text-center">
+                  <span className="text-xs font-semibold text-gray-700">USAGE</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Task Stats */}
+            <div className="space-y-2 mb-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-semibold text-gray-700">OPEN TASK</span>
+                <span className="text-gray-600">TOTAL: {bookmark.openTasks || 0}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-semibold text-gray-700">COMPLETED TASK</span>
+                <span className="text-gray-600">TOTAL: {bookmark.completedTasks || 0}</span>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-gray-600">Progress</span>
+                <span className="text-xs font-bold text-green-600">{progress.toFixed(0)}%</span>
+              </div>
+              <Progress value={progress} className="h-2 bg-gray-200" />
             </div>
           </div>
 
-          {/* Title */}
-          <h3 className={cn(
-            "font-bold text-gray-900 mb-2 bookmark-title",
-            compact ? "text-sm line-clamp-1" : "text-base line-clamp-2"
-          )}>
-            {bookmark.title}
-          </h3>
-
-          {!compact && (
-            <>
-              {/* URL */}
-              <p className="text-xs text-gray-500 mb-2 truncate">
-                {bookmark.url}
-              </p>
-
-              {/* Description */}
-              {bookmark.description && (
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2 flex-1">
-                  {bookmark.description}
-                </p>
-              )}
-
-              {/* Tags */}
-              {bookmark.tags?.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {bookmark.tags.slice(0, 3).map((tag: any) => (
-                    <Badge
-                      key={tag.tag.id}
-                      variant="outline"
-                      className="text-xs px-2 py-0"
-                      style={{ 
-                        backgroundColor: `${tag.tag.color}15`,
-                        borderColor: tag.tag.color,
-                        color: tag.tag.color 
-                      }}
-                    >
-                      {tag.tag.name}
-                    </Badge>
-                  ))}
-                  {bookmark.tags.length > 3 && (
-                    <Badge variant="outline" className="text-xs px-2 py-0">
-                      +{bookmark.tags.length - 3}
-                    </Badge>
-                  )}
-                </div>
-              )}
-
-              {/* Stats */}
-              <div className="space-y-2 mt-auto">
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <div className="flex items-center space-x-3">
-                    <span className="flex items-center">
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                      {bookmark.usagePercentage?.toFixed(1)}%
-                    </span>
-                    <span className="flex items-center">
-                      <Clock className="h-3 w-3 mr-1" />
-                      {bookmark.timeSpent}m
-                    </span>
-                  </div>
-                  <span>
-                    {bookmark.openTasks}/{bookmark.completedTasks}/{bookmark.totalTasks}
-                  </span>
-                </div>
-
-                {/* Progress Bar */}
-                {bookmark.totalTasks > 0 && (
-                  <Progress value={progress} className="h-1" />
-                )}
-              </div>
-            </>
-          )}
+          {/* Right Action Bar */}
+          <div className="flex flex-col items-center justify-center space-y-3 px-3 py-6 border-l border-gray-200/50 bg-gradient-to-b from-gray-50/50 to-transparent">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 w-9 p-0 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Heart className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 w-9 p-0 rounded-full hover:bg-blue-50 text-gray-400 hover:text-blue-500 transition-colors"
+              onClick={handleVisit}
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 w-9 p-0 rounded-full hover:bg-yellow-50 text-gray-400 hover:text-yellow-500 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowDetail(true)
+              }}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 w-9 p-0 rounded-full hover:bg-green-50 text-gray-400 hover:text-green-500 transition-colors"
+              onClick={handleCopy}
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 w-9 p-0 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+              onClick={handleDelete}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 w-9 p-0 rounded-full hover:bg-purple-50 text-gray-400 hover:text-purple-500 transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Folder className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 w-9 p-0 rounded-full hover:bg-indigo-50 text-gray-400 hover:text-indigo-500 transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Target className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </Card>
 
