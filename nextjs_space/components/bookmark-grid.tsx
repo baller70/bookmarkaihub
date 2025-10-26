@@ -1,8 +1,24 @@
 
 "use client"
 
+import { useState, useEffect } from "react"
 import { BookmarkCard } from "@/components/bookmark-card"
 import { cn } from "@/lib/utils"
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core"
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable"
 
 interface BookmarkGridProps {
   bookmarks: any[]
@@ -11,6 +27,37 @@ interface BookmarkGridProps {
 }
 
 export function BookmarkGrid({ bookmarks, compact = false, onUpdate }: BookmarkGridProps) {
+  const [items, setItems] = useState(bookmarks)
+  
+  // Update items when bookmarks prop changes
+  useEffect(() => {
+    setItems(bookmarks)
+  }, [bookmarks])
+  
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (over && active.id !== over.id) {
+      setItems((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id)
+        const newIndex = items.findIndex((item) => item.id === over.id)
+
+        return arrayMove(items, oldIndex, newIndex)
+      })
+    }
+  }
+
   if (!bookmarks?.length) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -26,20 +73,28 @@ export function BookmarkGrid({ bookmarks, compact = false, onUpdate }: BookmarkG
   }
 
   return (
-    <div className={cn(
-      "grid gap-6",
-      compact 
-        ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
-        : "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
-    )}>
-      {bookmarks.map((bookmark) => (
-        <BookmarkCard 
-          key={bookmark.id} 
-          bookmark={bookmark} 
-          compact={compact}
-          onUpdate={onUpdate}
-        />
-      ))}
-    </div>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext items={items.map(item => item.id)} strategy={rectSortingStrategy}>
+        <div className={cn(
+          "grid gap-6",
+          compact 
+            ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
+            : "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+        )}>
+          {items.map((bookmark) => (
+            <BookmarkCard 
+              key={bookmark.id} 
+              bookmark={bookmark} 
+              compact={compact}
+              onUpdate={onUpdate}
+            />
+          ))}
+        </div>
+      </SortableContext>
+    </DndContext>
   )
 }

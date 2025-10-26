@@ -22,6 +22,8 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { useSortable } from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 
 interface BookmarkCardProps {
   bookmark: any
@@ -39,6 +41,20 @@ const priorityColors = {
 export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCardProps) {
   const [showDetail, setShowDetail] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: bookmark.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -82,12 +98,15 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
   return (
     <>
       <Card 
+        ref={setNodeRef}
+        style={style}
         className={cn(
           "group relative overflow-hidden cursor-pointer transition-all duration-300",
           "border border-gray-200/80 hover:shadow-lg",
           "bg-gradient-to-br from-blue-50/30 via-white to-purple-50/20",
           "rounded-3xl h-[640px]",
-          isDeleting && "opacity-50 pointer-events-none"
+          isDeleting && "opacity-50 pointer-events-none",
+          isDragging && "opacity-50 z-50"
         )}
         onClick={() => setShowDetail(true)}
       >
@@ -99,7 +118,12 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
         </div>
 
         {/* Drag Handle */}
-        <div className="absolute top-3 right-3 z-10 cursor-grab active:cursor-grabbing">
+        <div 
+          {...attributes}
+          {...listeners}
+          className="absolute top-3 right-3 z-10 cursor-grab active:cursor-grabbing touch-none"
+          onClick={(e) => e.stopPropagation()}
+        >
           <GripVertical className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors" />
         </div>
 
