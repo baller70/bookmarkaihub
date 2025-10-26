@@ -646,7 +646,7 @@ export function BookmarkDetailModal({
                 <h3 className="text-lg font-bold text-gray-900">RELATED BOOKMARKS</h3>
                 <Button
                   variant="outline"
-                  className="text-sm uppercase"
+                  className="text-sm uppercase text-gray-900 border-gray-300 hover:bg-gray-50"
                   onClick={() => {
                     toast.info("Feature to browse and add related bookmarks")
                   }}
@@ -665,7 +665,7 @@ export function BookmarkDetailModal({
               <div className="flex justify-center">
                 <Button
                   variant="outline"
-                  className="uppercase"
+                  className="uppercase text-gray-900 border-gray-300 hover:bg-gray-50"
                   onClick={() => {
                     toast.info("Feature to browse and add related bookmarks")
                   }}
@@ -681,7 +681,7 @@ export function BookmarkDetailModal({
                 <h3 className="text-lg font-bold text-gray-900">GOALS</h3>
                 <Button
                   variant="outline"
-                  className="text-sm uppercase"
+                  className="text-sm uppercase text-gray-900 border-gray-300 hover:bg-gray-50"
                   onClick={() => {
                     toast.info("Feature to add or link goals to this bookmark")
                   }}
