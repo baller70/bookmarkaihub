@@ -143,6 +143,8 @@ export function BookmarkDetailModal({
         if (response.ok) {
           const data = await response.json()
           setCurrentVisits(data.totalVisits)
+          // Immediately refresh parent component to show updated count on card
+          onUpdate()
         }
       } catch (error) {
         console.error('Error tracking visit:', error)
@@ -170,6 +172,8 @@ export function BookmarkDetailModal({
           if (response.ok) {
             const data = await response.json()
             setCurrentTimeSpent(data.timeSpent)
+            // Update parent to show new time on card
+            onUpdate()
           }
         } catch (error) {
           console.error('Error tracking time:', error)
@@ -181,15 +185,23 @@ export function BookmarkDetailModal({
     if (open && bookmark?.id) {
       modalOpenTimeRef.current = new Date()
       trackVisit()
-    }
-
-    // When modal closes
-    return () => {
-      if (open && bookmark?.id && modalOpenTimeRef.current) {
+      
+      // Track time spent every 5 seconds while modal is open
+      const timeTrackingInterval = setInterval(() => {
         trackTimeSpent()
-        modalOpenTimeRef.current = null
+      }, 5000) // Update every 5 seconds
+      
+      // Cleanup on close
+      return () => {
+        clearInterval(timeTrackingInterval)
+        // Track final time when modal closes
+        if (modalOpenTimeRef.current) {
+          trackTimeSpent()
+          modalOpenTimeRef.current = null
+        }
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, bookmark?.id])
 
   const handleFavorite = async () => {
