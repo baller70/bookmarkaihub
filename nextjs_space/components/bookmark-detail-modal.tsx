@@ -74,6 +74,11 @@ export function BookmarkDetailModal({
   const [isTimerRunning, setIsTimerRunning] = useState(false)
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null)
   
+  // Analytics tracking state
+  const modalOpenTimeRef = useRef<Date | null>(null)
+  const [currentVisits, setCurrentVisits] = useState(bookmark?.totalVisits || 0)
+  const [currentTimeSpent, setCurrentTimeSpent] = useState(bookmark?.timeSpent || 0)
+  
   // Notification state
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   
@@ -93,6 +98,9 @@ export function BookmarkDetailModal({
       // Convert tags array to comma-separated string
       const tagNames = bookmark.tags?.map((t: any) => t.tag.name).join(", ") || ""
       setTags(tagNames)
+      // Update analytics state
+      setCurrentVisits(bookmark.totalVisits || 0)
+      setCurrentTimeSpent(bookmark.timeSpent || 0)
     }
   }, [bookmark])
 
@@ -121,6 +129,68 @@ export function BookmarkDetailModal({
       }
     }
   }, [isTimerRunning, timerTime])
+
+  // Analytics tracking: Track visits and time spent
+  useEffect(() => {
+    const trackVisit = async () => {
+      if (!bookmark?.id) return
+      
+      try {
+        const response = await fetch(`/api/bookmarks/${bookmark.id}/track-visit`, {
+          method: 'POST',
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          setCurrentVisits(data.totalVisits)
+        }
+      } catch (error) {
+        console.error('Error tracking visit:', error)
+      }
+    }
+
+    const trackTimeSpent = async () => {
+      if (!bookmark?.id || !modalOpenTimeRef.current) return
+      
+      const now = new Date()
+      const timeSpentSeconds = (now.getTime() - modalOpenTimeRef.current.getTime()) / 1000
+      const timeSpentMinutes = timeSpentSeconds / 60
+      
+      // Only track if at least 1 second has passed
+      if (timeSpentSeconds >= 1) {
+        try {
+          const response = await fetch(`/api/bookmarks/${bookmark.id}/track-time`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ timeSpentMinutes }),
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            setCurrentTimeSpent(data.timeSpent)
+          }
+        } catch (error) {
+          console.error('Error tracking time:', error)
+        }
+      }
+    }
+
+    // When modal opens
+    if (open && bookmark?.id) {
+      modalOpenTimeRef.current = new Date()
+      trackVisit()
+    }
+
+    // When modal closes
+    return () => {
+      if (open && bookmark?.id && modalOpenTimeRef.current) {
+        trackTimeSpent()
+        modalOpenTimeRef.current = null
+      }
+    }
+  }, [open, bookmark?.id])
 
   const handleFavorite = async () => {
     try {
@@ -609,12 +679,12 @@ export function BookmarkDetailModal({
               <div className="flex gap-4 mb-6">
                 <div className="flex items-center gap-3 px-6 py-3 bg-gray-50 rounded-lg">
                   <Eye className="h-6 w-6 text-gray-700" />
-                  <div className="text-2xl font-bold text-gray-900">{bookmark.totalVisits || 0}</div>
+                  <div className="text-2xl font-bold text-gray-900">{currentVisits}</div>
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 </div>
                 <div className="flex items-center gap-3 px-6 py-3 bg-gray-50 rounded-lg">
                   <Clock className="h-6 w-6 text-gray-700" />
-                  <div className="text-2xl font-bold text-gray-900">{bookmark.timeSpent || 0}m</div>
+                  <div className="text-2xl font-bold text-gray-900">{currentTimeSpent}m</div>
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 </div>
               </div>
