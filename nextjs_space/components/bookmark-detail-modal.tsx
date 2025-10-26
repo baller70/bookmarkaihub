@@ -165,29 +165,26 @@ export function BookmarkDetailModal({
             
             <div className="flex items-center gap-2">
               <Button
-                variant="outline"
                 size="icon"
                 onClick={handleFavorite}
                 className={cn(
-                  "rounded-lg",
+                  "rounded-lg bg-black hover:bg-gray-800 text-white",
                   isFavorite && "text-red-500"
                 )}
               >
                 <Heart className={cn("h-4 w-4", isFavorite && "fill-current")} />
               </Button>
               <Button
-                variant="outline"
                 size="icon"
                 onClick={handleShare}
-                className="rounded-lg"
+                className="rounded-lg bg-black hover:bg-gray-800 text-white"
               >
                 <Share2 className="h-4 w-4" />
               </Button>
               <Button
-                variant="outline"
                 size="icon"
                 onClick={handleCopyUrl}
-                className="rounded-lg"
+                className="rounded-lg bg-black hover:bg-gray-800 text-white"
               >
                 <Copy className="h-4 w-4" />
               </Button>
