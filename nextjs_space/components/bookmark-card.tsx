@@ -288,12 +288,12 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
               <div className="flex flex-col space-y-2">
                 <div className="flex items-center space-x-2 bg-green-50/50 rounded-xl px-3 py-1.5">
                   <Eye className="h-4 w-4 text-gray-600" />
-                  <span className="text-base font-bold text-gray-800 font-russo">{bookmark.visits || 13}</span>
+                  <span className="text-base font-bold text-gray-800 font-russo">{bookmark.totalVisits || 0}</span>
                   <div className="w-2 h-2 rounded-full bg-green-400" />
                 </div>
                 <div className="flex items-center space-x-2 bg-green-50/50 rounded-xl px-3 py-1.5">
                   <Clock className="h-4 w-4 text-green-600" />
-                  <span className="text-base font-bold text-gray-800 font-russo">{bookmark.timeSpent || 13}m</span>
+                  <span className="text-base font-bold text-gray-800 font-russo">{bookmark.timeSpent || 0}m</span>
                   <div className="w-2 h-2 rounded-full bg-green-400" />
                 </div>
               </div>
@@ -311,7 +311,7 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-lg font-bold text-red-500 font-audiowide">
-                      {bookmark.usagePercentage?.toFixed(0) || 95}%
+                      {bookmark.usagePercentage?.toFixed(0) || 0}%
                     </span>
                   </div>
                 </div>
