@@ -1,35 +1,32 @@
 
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
+import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { 
-  ExternalLink, 
-  Edit, 
-  Trash2, 
-  Share,
+  Heart, 
+  Share2, 
+  Copy,
+  ExternalLink,
+  Eye,
   Clock,
-  TrendingUp,
-  FileText,
-  CheckSquare,
-  History,
-  Settings
+  Activity,
+  Globe,
+  Camera,
+  Edit,
+  Plus,
+  Stethoscope
 } from "lucide-react"
 import { toast } from "sonner"
-import { format } from "date-fns"
+import { cn } from "@/lib/utils"
 
 interface BookmarkDetailModalProps {
   bookmark: any
@@ -44,86 +41,36 @@ export function BookmarkDetailModal({
   onOpenChange, 
   onUpdate 
 }: BookmarkDetailModalProps) {
-  const [isEditing, setIsEditing] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState({
-    title: "",
-    url: "",
-    description: "",
-    favicon: "",
-    priority: "MEDIUM",
-  })
+  const [isFavorite, setIsFavorite] = useState(bookmark?.isFavorite || false)
+  const [description, setDescription] = useState(bookmark?.description || "")
+  const [notes, setNotes] = useState("")
+  const [isEditingDescription, setIsEditingDescription] = useState(false)
+  const [isEditingNotes, setIsEditingNotes] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (bookmark) {
-      setFormData({
-        title: bookmark.title || "",
-        url: bookmark.url || "",
-        description: bookmark.description || "",
-        favicon: bookmark.favicon || "",
-        priority: bookmark.priority || "MEDIUM",
-      })
+      setIsFavorite(bookmark.isFavorite || false)
+      setDescription(bookmark.description || "")
     }
   }, [bookmark])
 
-  const handleSave = async () => {
-    if (!formData.title || !formData.url) {
-      toast.error("Title and URL are required")
-      return
-    }
-
-    setLoading(true)
+  const handleFavorite = async () => {
     try {
       const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isFavorite: !isFavorite }),
       })
 
       if (response.ok) {
-        toast.success("Bookmark updated successfully")
-        setIsEditing(false)
+        setIsFavorite(!isFavorite)
+        toast.success(isFavorite ? "Removed from favorites" : "Added to favorites")
         onUpdate()
-      } else {
-        const error = await response.json()
-        toast.error(error.error || "Failed to update bookmark")
       }
     } catch (error) {
-      console.error("Error updating bookmark:", error)
-      toast.error("Failed to update bookmark")
-    } finally {
-      setLoading(false)
+      toast.error("Failed to update favorite status")
     }
-  }
-
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this bookmark?")) return
-    
-    setLoading(true)
-    try {
-      const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
-        method: "DELETE",
-      })
-      
-      if (response.ok) {
-        toast.success("Bookmark deleted successfully")
-        onUpdate()
-        onOpenChange(false)
-      } else {
-        toast.error("Failed to delete bookmark")
-      }
-    } catch (error) {
-      console.error("Error deleting bookmark:", error)
-      toast.error("Failed to delete bookmark")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleVisit = () => {
-    window.open(bookmark.url, "_blank")
   }
 
   const handleShare = () => {
@@ -138,324 +85,465 @@ export function BookmarkDetailModal({
     }
   }
 
-  const progress = bookmark?.totalTasks > 0 
-    ? (bookmark.completedTasks / bookmark.totalTasks) * 100 
-    : 0
+  const handleCopyUrl = () => {
+    navigator.clipboard.writeText(bookmark.url)
+    toast.success("URL copied to clipboard")
+  }
+
+  const handleVisit = () => {
+    window.open(bookmark.url, "_blank")
+  }
+
+  const handleSaveDescription = async () => {
+    try {
+      const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description }),
+      })
+
+      if (response.ok) {
+        toast.success("Description updated")
+        setIsEditingDescription(false)
+        onUpdate()
+      }
+    } catch (error) {
+      toast.error("Failed to update description")
+    }
+  }
+
+  const handleImageUpload = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Handle image upload logic here
+      toast.info("Image upload functionality coming soon")
+    }
+  }
 
   if (!bookmark) return null
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <div className="flex items-center space-x-3">
-            {bookmark.favicon && (
-              <div className="relative w-8 h-8">
-                <Image
-                  src={bookmark.favicon}
-                  alt=""
-                  fill
-                  className="object-contain rounded"
-                  unoptimized
-                />
-              </div>
-            )}
-            <div>
-              <DialogTitle className="text-xl font-bold bookmark-title">
-                {bookmark.title}
-              </DialogTitle>
-              <p className="text-sm text-gray-500 truncate">
-                {bookmark.url}
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleVisit}
-            >
-              <ExternalLink className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsEditing(!isEditing)}
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleShare}
-            >
-              <Share className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDelete}
-              disabled={loading}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        </DialogHeader>
-
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">OVERVIEW</TabsTrigger>
-            <TabsTrigger value="notes">NOTES</TabsTrigger>
-            <TabsTrigger value="tasks">TASKS</TabsTrigger>
-            <TabsTrigger value="history">HISTORY</TabsTrigger>
-            <TabsTrigger value="settings">SETTINGS</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="space-y-6">
-            {/* Basic Info */}
-            <div className="space-y-4">
-              {isEditing ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="edit-title">Title</Label>
-                      <Input
-                        id="edit-title"
-                        value={formData.title}
-                        onChange={(e) =>
-                          setFormData({ ...formData, title: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="edit-url">URL</Label>
-                      <Input
-                        id="edit-url"
-                        value={formData.url}
-                        onChange={(e) =>
-                          setFormData({ ...formData, url: e.target.value })
-                        }
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-description">Description</Label>
-                    <Textarea
-                      id="edit-description"
-                      value={formData.description}
-                      onChange={(e) =>
-                        setFormData({ ...formData, description: e.target.value })
-                      }
-                      rows={3}
-                    />
-                  </div>
-                  <div className="flex justify-end space-x-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsEditing(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button onClick={handleSave} disabled={loading}>
-                      {loading ? "Saving..." : "Save Changes"}
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {/* Description */}
-                  {bookmark.description && (
-                    <div>
-                      <h4 className="font-medium text-foreground mb-2">Description</h4>
-                      <p className="text-muted-foreground">{bookmark.description}</p>
-                    </div>
-                  )}
-
-                  {/* Categories and Tags */}
-                  <div className="grid grid-cols-2 gap-6">
-                    {bookmark.categories?.length > 0 && (
-                      <div>
-                        <h4 className="font-medium text-foreground mb-2">Categories</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {bookmark.categories.map((cat: any) => (
-                            <Badge
-                              key={cat.category.id}
-                              variant="outline"
-                              style={{ 
-                                backgroundColor: `${cat.category.color}15`,
-                                borderColor: cat.category.color,
-                                color: cat.category.color 
-                              }}
-                            >
-                              {cat.category.name}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {bookmark.tags?.length > 0 && (
-                      <div>
-                        <h4 className="font-medium text-foreground mb-2">Tags</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {bookmark.tags.map((tag: any) => (
-                            <Badge
-                              key={tag.tag.id}
-                              variant="outline"
-                              style={{ 
-                                backgroundColor: `${tag.tag.color}15`,
-                                borderColor: tag.tag.color,
-                                color: tag.tag.color 
-                              }}
-                            >
-                              {tag.tag.name}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Stats */}
-                  <div className="grid grid-cols-3 gap-4 pt-4">
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <div className="text-2xl font-bold text-gray-900">
-                        {bookmark.totalVisits}
-                      </div>
-                      <div className="text-sm text-gray-500">Total Visits</div>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <div className="text-2xl font-bold text-gray-900">
-                        {bookmark.engagementScore}
-                      </div>
-                      <div className="text-sm text-gray-500">Engagement</div>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <div className="text-2xl font-bold text-gray-900">
-                        {bookmark.timeSpent}m
-                      </div>
-                      <div className="text-sm text-gray-500">Time Spent</div>
-                    </div>
-                  </div>
-
-                  {/* Task Progress */}
-                  {bookmark.totalTasks > 0 && (
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Task Progress</span>
-                        <span>
-                          {bookmark.completedTasks}/{bookmark.totalTasks} completed
-                        </span>
-                      </div>
-                      <Progress value={progress} className="h-3" />
-                    </div>
-                  )}
+      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto p-0">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+        
+        {/* Header */}
+        <div className="border-b px-6 py-4 bg-white">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              {bookmark.favicon && (
+                <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-black">
+                  <Image
+                    src={bookmark.favicon}
+                    alt=""
+                    fill
+                    className="object-contain"
+                    unoptimized
+                  />
                 </div>
               )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="notes" className="space-y-4">
-            <div className="flex items-center space-x-2 text-gray-500">
-              <FileText className="h-4 w-4" />
-              <span className="text-sm">Notes for this bookmark</span>
-            </div>
-            <Textarea
-              placeholder="Add your notes here..."
-              rows={10}
-              className="w-full"
-            />
-            <Button className="w-full">Save Notes</Button>
-          </TabsContent>
-
-          <TabsContent value="tasks" className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 text-gray-500">
-                <CheckSquare className="h-4 w-4" />
-                <span className="text-sm">Task management</span>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  {bookmark.title}
+                  <button className="p-1 hover:bg-gray-100 rounded">
+                    <Edit className="h-4 w-4 text-gray-400" />
+                  </button>
+                </h2>
+                <p className="text-sm text-gray-500">{bookmark.url}</p>
               </div>
-              <Button size="sm">Add Task</Button>
             </div>
             
-            <div className="text-center py-8 text-gray-500">
-              <CheckSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p>No tasks yet. Create your first task to get started.</p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleFavorite}
+                className={cn(
+                  "rounded-lg",
+                  isFavorite && "text-red-500"
+                )}
+              >
+                <Heart className={cn("h-4 w-4", isFavorite && "fill-current")} />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleShare}
+                className="rounded-lg"
+              >
+                <Share2 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleCopyUrl}
+                className="rounded-lg"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+              <Button
+                onClick={handleVisit}
+                className="bg-black hover:bg-gray-800 text-white rounded-lg"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                VISIT SITE
+              </Button>
             </div>
-          </TabsContent>
+          </div>
+        </div>
 
-          <TabsContent value="history" className="space-y-4">
-            <div className="flex items-center space-x-2 text-gray-500 mb-4">
-              <History className="h-4 w-4" />
-              <span className="text-sm">Activity history</span>
-            </div>
-            
-            {bookmark.history?.length > 0 ? (
-              <div className="space-y-3">
-                {bookmark.history.map((item: any) => (
-                  <div key={item.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">
-                        {item.action.replace('_', ' ').toLowerCase()}
-                      </p>
-                      {item.details && (
-                        <p className="text-sm text-gray-600">{item.details}</p>
-                      )}
-                      <p className="text-xs text-gray-500">
-                        {format(new Date(item.createdAt), "MMM d, yyyy 'at' h:mm a")}
-                      </p>
+        {/* Tabs */}
+        <Tabs defaultValue="overview" className="w-full">
+          <div className="border-b px-6 bg-gray-50">
+            <TabsList className="bg-transparent h-auto p-0 gap-8">
+              <TabsTrigger 
+                value="overview" 
+                className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-3 font-medium text-gray-600 data-[state=active]:text-gray-900"
+              >
+                OVERVIEW
+              </TabsTrigger>
+              <TabsTrigger 
+                value="arp"
+                className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-3 font-medium text-gray-600 data-[state=active]:text-gray-900"
+              >
+                ARP
+              </TabsTrigger>
+              <TabsTrigger 
+                value="notification"
+                className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-3 font-medium text-gray-600 data-[state=active]:text-gray-900"
+              >
+                NOTIFICATION
+              </TabsTrigger>
+              <TabsTrigger 
+                value="task"
+                className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-3 font-medium text-gray-600 data-[state=active]:text-gray-900"
+              >
+                TASK
+              </TabsTrigger>
+              <TabsTrigger 
+                value="media"
+                className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-3 font-medium text-gray-600 data-[state=active]:text-gray-900"
+              >
+                MEDIA
+              </TabsTrigger>
+              <TabsTrigger 
+                value="comment"
+                className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-3 font-medium text-gray-600 data-[state=active]:text-gray-900"
+              >
+                COMMENT
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="overview" className="p-6 mt-0">
+            <div className="grid grid-cols-2 gap-8">
+              {/* Left Column - Logo */}
+              <div className="space-y-6">
+                <div className="relative aspect-square bg-gray-100 rounded-lg flex items-center justify-center group">
+                  {bookmark.favicon ? (
+                    <Image
+                      src={bookmark.favicon}
+                      alt={bookmark.title}
+                      fill
+                      className="object-contain p-8"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="text-6xl font-bold text-gray-300">
+                      {bookmark.title.charAt(0).toUpperCase()}
                     </div>
+                  )}
+                  
+                  <button 
+                    onClick={handleImageUpload}
+                    className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg"
+                  >
+                    <div className="bg-white rounded-full p-3">
+                      <Camera className="h-6 w-6 text-gray-900" />
+                    </div>
+                  </button>
+                </div>
+                
+                <p className="text-center text-sm text-gray-500">
+                  Click the camera icon to update image
+                </p>
+                
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1 rounded-lg border-2"
+                    onClick={handleImageUpload}
+                  >
+                    <Camera className="h-4 w-4 mr-2" />
+                    Custom Logo
+                  </Button>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button
+                    variant="default"
+                    className="bg-black hover:bg-gray-800 text-white rounded-lg flex-1"
+                  >
+                    Front Background
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="rounded-lg flex-1"
+                  >
+                    Favicon
+                  </Button>
+                </div>
+              </div>
+
+              {/* Right Column - Details */}
+              <div className="space-y-6">
+                {/* Description */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-bold text-gray-900">DESCRIPTION</h3>
+                    <button 
+                      onClick={() => setIsEditingDescription(!isEditingDescription)}
+                      className="p-1 hover:bg-gray-100 rounded"
+                    >
+                      <Edit className="h-4 w-4 text-gray-400" />
+                    </button>
                   </div>
-                ))}
+                  {isEditingDescription ? (
+                    <div className="space-y-2">
+                      <Textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        className="min-h-[120px] text-sm"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={handleSaveDescription}
+                          className="bg-black hover:bg-gray-800 text-white"
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setIsEditingDescription(false)
+                            setDescription(bookmark.description || "")
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      {description || "No description available."}
+                    </p>
+                  )}
+                </div>
+
+                {/* Tags */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-bold text-gray-900">TAGS</h3>
+                    <button className="p-1 hover:bg-gray-100 rounded">
+                      <Edit className="h-4 w-4 text-gray-400" />
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {bookmark.tags && bookmark.tags.length > 0 ? (
+                      bookmark.tags.map((tag: any) => (
+                        <Badge
+                          key={tag.tag.id}
+                          variant="outline"
+                          className="rounded-full px-3 py-1 text-xs font-medium border-gray-300"
+                        >
+                          <span className="mr-1">🏷️</span>
+                          {tag.tag.name.toUpperCase()}
+                        </Badge>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">No tags</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-bold text-gray-900">NOTES</h3>
+                    <button 
+                      onClick={() => setIsEditingNotes(!isEditingNotes)}
+                      className="p-1 hover:bg-gray-100 rounded"
+                    >
+                      <Edit className="h-4 w-4 text-gray-400" />
+                    </button>
+                  </div>
+                  {isEditingNotes ? (
+                    <div className="space-y-2">
+                      <Textarea
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        placeholder="Add notes..."
+                        className="min-h-[80px] text-sm"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setIsEditingNotes(false)
+                            toast.success("Notes saved")
+                          }}
+                          className="bg-black hover:bg-gray-800 text-white"
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setIsEditingNotes(false)}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      {notes || "No notes"}
+                    </p>
+                  )}
+                </div>
               </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <History className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>No activity history available.</p>
+            </div>
+
+            {/* Analytics Section */}
+            <div className="mt-8 pt-8 border-t">
+              <div className="grid grid-cols-4 gap-4 mb-6">
+                <div className="text-center p-6 bg-gray-50 rounded-lg">
+                  <Eye className="h-6 w-6 text-blue-500 mx-auto mb-2" />
+                  <div className="text-3xl font-bold text-gray-900 mb-1">
+                    {bookmark.totalVisits || 6}
+                  </div>
+                  <div className="text-xs text-gray-500 font-medium">TOTAL VISITS</div>
+                  <div className="w-2 h-2 bg-green-500 rounded-full mx-auto mt-2"></div>
+                </div>
+                <div className="text-center p-6 bg-gray-50 rounded-lg">
+                  <Clock className="h-6 w-6 text-green-500 mx-auto mb-2" />
+                  <div className="text-3xl font-bold text-gray-900 mb-1">
+                    {bookmark.timeSpent || 5}m
+                  </div>
+                  <div className="text-xs text-gray-500 font-medium">TIME SPENT</div>
+                  <div className="w-2 h-2 bg-green-500 rounded-full mx-auto mt-2"></div>
+                </div>
+                <div className="text-center p-6 bg-gray-50 rounded-lg">
+                  <Activity className="h-6 w-6 text-purple-500 mx-auto mb-2" />
+                  <div className="text-3xl font-bold text-gray-900 mb-1">
+                    {bookmark.weeklyVisits || 5}
+                  </div>
+                  <div className="text-xs text-gray-500 font-medium">THIS WEEK</div>
+                  <div className="w-2 h-2 bg-green-500 rounded-full mx-auto mt-2"></div>
+                </div>
+                <div className="text-center p-6 bg-gray-50 rounded-lg">
+                  <Globe className="h-6 w-6 text-gray-500 mx-auto mb-2" />
+                  <div className="text-3xl font-bold text-gray-900 mb-1">
+                    0
+                  </div>
+                  <div className="text-xs text-gray-500 font-medium">BROKEN</div>
+                  <div className="w-2 h-2 bg-red-500 rounded-full mx-auto mt-2"></div>
+                </div>
               </div>
-            )}
+
+              <div className="flex gap-3">
+                <Button className="flex-1 bg-black hover:bg-gray-800 text-white rounded-lg h-12 font-medium">
+                  VIEW FULL ANALYTICS
+                </Button>
+                <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg h-12 font-medium">
+                  <Stethoscope className="h-4 w-4 mr-2" />
+                  CHECK HEALTH
+                </Button>
+              </div>
+            </div>
+
+            {/* Related Bookmarks */}
+            <div className="mt-8 pt-8 border-t">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-gray-900">RELATED BOOKMARKS</h3>
+                <Button variant="outline" size="sm" className="rounded-lg">
+                  <Plus className="h-4 w-4 mr-2" />
+                  BROWSE ALL BOOKMARKS TO ADD MORE
+                </Button>
+              </div>
+              <div className="text-center py-12 bg-gray-50 rounded-lg">
+                <p className="text-gray-500">No related bookmarks yet.</p>
+                <p className="text-sm text-gray-400 mt-2">
+                  Click "Browse All Bookmarks to add more" to add related bookmarks.
+                </p>
+              </div>
+              
+              <div className="text-center mt-6">
+                <Button variant="ghost" className="text-gray-500">
+                  <Plus className="h-4 w-4 mr-2" />
+                  BROWSE ALL BOOKMARKS TO ADD MORE
+                </Button>
+              </div>
+            </div>
+
+            {/* Goals */}
+            <div className="mt-8 pt-8 border-t">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-gray-900">GOALS</h3>
+                <Button variant="outline" size="sm" className="rounded-lg">
+                  <Plus className="h-4 w-4 mr-2" />
+                  ADD GOAL
+                </Button>
+              </div>
+              <div className="text-center py-12 bg-gray-50 rounded-lg">
+                <p className="text-gray-500">No goals linked yet.</p>
+                <p className="text-sm text-gray-400 mt-2">
+                  Click "ADD GOAL" to link existing goals to this bookmark.
+                </p>
+              </div>
+            </div>
           </TabsContent>
 
-          <TabsContent value="settings" className="space-y-4">
-            <div className="flex items-center space-x-2 text-gray-500 mb-4">
-              <Settings className="h-4 w-4" />
-              <span className="text-sm">Bookmark settings</span>
+          {/* Other Tabs */}
+          <TabsContent value="arp" className="p-6">
+            <div className="text-center py-12 text-gray-500">
+              <p>ARP content coming soon</p>
             </div>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <h4 className="font-medium">Priority Level</h4>
-                  <p className="text-sm text-gray-500">Current: {bookmark.priority}</p>
-                </div>
-                <Badge className={
-                  bookmark.priority === 'URGENT' ? 'bg-red-100 text-red-800' :
-                  bookmark.priority === 'HIGH' ? 'bg-orange-100 text-orange-800' :
-                  bookmark.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-green-100 text-green-800'
-                }>
-                  {bookmark.priority}
-                </Badge>
-              </div>
-              
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <h4 className="font-medium">Created</h4>
-                  <p className="text-sm text-gray-500">
-                    {format(new Date(bookmark.createdAt), "MMM d, yyyy 'at' h:mm a")}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <h4 className="font-medium">Last Updated</h4>
-                  <p className="text-sm text-gray-500">
-                    {format(new Date(bookmark.updatedAt), "MMM d, yyyy 'at' h:mm a")}
-                  </p>
-                </div>
-              </div>
+          </TabsContent>
+
+          <TabsContent value="notification" className="p-6">
+            <div className="text-center py-12 text-gray-500">
+              <p>Notification content coming soon</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="task" className="p-6">
+            <div className="text-center py-12 text-gray-500">
+              <p>Task content coming soon</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="media" className="p-6">
+            <div className="text-center py-12 text-gray-500">
+              <p>Media content coming soon</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="comment" className="p-6">
+            <div className="text-center py-12 text-gray-500">
+              <p>Comment content coming soon</p>
             </div>
           </TabsContent>
         </Tabs>
