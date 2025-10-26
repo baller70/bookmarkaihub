@@ -333,28 +333,32 @@ export function BookmarkDetailModal({
             <div className="flex items-center gap-2">
               <Button
                 size="icon"
+                variant="outline"
                 onClick={handleFavorite}
-                className="rounded-lg bg-black hover:bg-gray-800"
+                className="rounded-lg !bg-white border-gray-300 hover:!bg-gray-50"
               >
-                <Heart className={cn("h-4 w-4 text-white", isFavorite && "fill-current text-red-500")} />
+                <Heart className={cn("h-4 w-4 text-gray-700", isFavorite && "fill-current text-red-500")} />
               </Button>
               <Button
                 size="icon"
+                variant="outline"
                 onClick={handleShare}
-                className="rounded-lg bg-black hover:bg-gray-800"
+                className="rounded-lg !bg-white border-gray-300 hover:!bg-gray-50"
               >
-                <Share2 className="h-4 w-4 text-white" />
+                <Share2 className="h-4 w-4 text-gray-700" />
               </Button>
               <Button
                 size="icon"
+                variant="outline"
                 onClick={handleCopyUrl}
-                className="rounded-lg bg-black hover:bg-gray-800"
+                className="rounded-lg !bg-white border-gray-300 hover:!bg-gray-50"
               >
-                <Copy className="h-4 w-4 text-white" />
+                <Copy className="h-4 w-4 text-gray-700" />
               </Button>
               <Button
+                variant="outline"
                 onClick={handleVisit}
-                className="bg-black hover:bg-gray-800 text-white rounded-lg uppercase"
+                className="!bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900 rounded-lg uppercase"
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Visit Site
@@ -415,7 +419,8 @@ export function BookmarkDetailModal({
                 
                 <div className="flex gap-2">
                   <Button
-                    className="flex-1 rounded-lg bg-black hover:bg-gray-800 text-white uppercase"
+                    variant="outline"
+                    className="flex-1 rounded-lg !bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900 uppercase"
                     onClick={() => logoInputRef.current?.click()}
                   >
                     <Camera className="h-4 w-4 mr-2" />
@@ -425,13 +430,15 @@ export function BookmarkDetailModal({
                 
                 <div className="flex gap-2">
                   <Button
-                    className="bg-black hover:bg-gray-800 text-white rounded-lg flex-1 uppercase"
+                    variant="outline"
+                    className="!bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900 rounded-lg flex-1 uppercase"
                     onClick={() => backgroundInputRef.current?.click()}
                   >
                     Front Background
                   </Button>
                   <Button
-                    className="bg-black hover:bg-gray-800 text-white rounded-lg flex-1 uppercase"
+                    variant="outline"
+                    className="!bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900 rounded-lg flex-1 uppercase"
                     onClick={() => faviconInputRef.current?.click()}
                   >
                     Favicon
@@ -457,13 +464,14 @@ export function BookmarkDetailModal({
                       <Textarea
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-                        className="min-h-[120px] text-sm"
+                        className="min-h-[120px] text-sm !bg-white border-gray-300"
                       />
                       <div className="flex gap-2">
                         <Button
                           size="sm"
+                          variant="outline"
                           onClick={handleSaveDescription}
-                          className="bg-black hover:bg-gray-800 text-white uppercase"
+                          className="!bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900 uppercase"
                         >
                           Save
                         </Button>
@@ -474,7 +482,7 @@ export function BookmarkDetailModal({
                             setIsEditingDescription(false)
                             setDescription(bookmark.description || "")
                           }}
-                          className="uppercase"
+                          className="!bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900 uppercase"
                         >
                           Cancel
                         </Button>
@@ -504,13 +512,14 @@ export function BookmarkDetailModal({
                         value={tags}
                         onChange={(e) => setTags(e.target.value)}
                         placeholder="vibe-crafting, tool, personalization, atmosphere"
-                        className="text-sm"
+                        className="text-sm !bg-white border-gray-300"
                       />
                       <div className="flex gap-2">
                         <Button
                           size="sm"
+                          variant="outline"
                           onClick={handleSaveTags}
-                          className="bg-black hover:bg-gray-800 text-white uppercase"
+                          className="!bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900 uppercase"
                         >
                           Save
                         </Button>
@@ -522,7 +531,7 @@ export function BookmarkDetailModal({
                             const tagNames = bookmark.tags?.map((t: any) => t.tag.name).join(", ") || ""
                             setTags(tagNames)
                           }}
-                          className="uppercase"
+                          className="!bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900 uppercase"
                         >
                           Cancel
                         </Button>
@@ -565,13 +574,14 @@ export function BookmarkDetailModal({
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         placeholder="No notes"
-                        className="min-h-[80px] text-sm"
+                        className="min-h-[80px] text-sm !bg-white border-gray-300"
                       />
                       <div className="flex gap-2">
                         <Button
                           size="sm"
+                          variant="outline"
                           onClick={handleSaveNotes}
-                          className="bg-black hover:bg-gray-800 text-white uppercase"
+                          className="!bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900 uppercase"
                         >
                           Save
                         </Button>
@@ -579,7 +589,7 @@ export function BookmarkDetailModal({
                           size="sm"
                           variant="outline"
                           onClick={() => setIsEditingNotes(false)}
-                          className="uppercase"
+                          className="!bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900 uppercase"
                         >
                           Cancel
                         </Button>
@@ -624,14 +634,16 @@ export function BookmarkDetailModal({
               </div>
 
               <div className="flex gap-3">
-                <Button 
-                  className="flex-1 bg-black hover:bg-gray-800 text-white rounded-lg h-12 font-medium uppercase"
+                <Button
+                  variant="outline"
+                  className="flex-1 !bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900 rounded-lg h-12 font-medium uppercase"
                   onClick={handleViewAnalytics}
                 >
                   View Full Analytics
                 </Button>
-                <Button 
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg h-12 font-medium uppercase"
+                <Button
+                  variant="outline"
+                  className="flex-1 !bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900 rounded-lg h-12 font-medium uppercase"
                   onClick={handleCheckHealth}
                 >
                   <Stethoscope className="h-4 w-4 mr-2" />
@@ -812,7 +824,7 @@ export function BookmarkDetailModal({
                     <h3 className="text-lg font-bold">NOTIFICATIONS & REMINDERS</h3>
                     <p className="text-sm text-gray-500">Schedule reminders for &quot;21ST.DEV&quot;</p>
                   </div>
-                  <Button className="bg-black hover:bg-gray-800 text-white uppercase">
+                  <Button variant="outline" className="!bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900 uppercase">
                     <Plus className="w-4 h-4 mr-2" />
                     New Reminder
                   </Button>
@@ -998,15 +1010,15 @@ export function BookmarkDetailModal({
                 <div className="p-4">
                   <Input
                     placeholder="Search files, folders, and documents..."
-                    className="mb-4"
+                    className="mb-4 !bg-white border-gray-300"
                   />
                   
                   <div className="flex gap-2 mb-6">
-                    <Button className="bg-black hover:bg-gray-800 text-white">
+                    <Button variant="outline" className="!bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900">
                       <Upload className="w-4 h-4 mr-2" />
                       Upload Files
                     </Button>
-                    <Button variant="outline">
+                    <Button variant="outline" className="!bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900">
                       <FolderPlus className="w-4 h-4 mr-2" />
                       New Folder
                     </Button>
@@ -1033,7 +1045,7 @@ export function BookmarkDetailModal({
                   <h3 className="font-bold">Comments</h3>
                   <Badge variant="outline">{comments.length}</Badge>
                 </div>
-                <Button className="bg-black hover:bg-gray-800 text-white">
+                <Button variant="outline" className="!bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900">
                   <Plus className="w-4 w-4 mr-2" />
                   Add Comment
                 </Button>
@@ -1042,15 +1054,15 @@ export function BookmarkDetailModal({
               <div className="flex gap-2">
                 <Input
                   placeholder="Search comments..."
-                  className="flex-1"
+                  className="flex-1 !bg-white border-gray-300"
                 />
-                <Button variant="outline">
+                <Button variant="outline" className="!bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900">
                   All Tags
                 </Button>
-                <Button variant="outline">
+                <Button variant="outline" className="!bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900">
                   Newest
                 </Button>
-                <label className="flex items-center gap-2 px-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                <label className="flex items-center gap-2 px-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 bg-white">
                   <input type="checkbox" className="rounded" />
                   <span className="text-sm">Show Resolved</span>
                 </label>
@@ -1063,8 +1075,9 @@ export function BookmarkDetailModal({
                   <p className="text-sm text-gray-500 mb-6">
                     Be the first to share your thoughts about this bookmark.
                   </p>
-                  <Button 
-                    className="bg-black hover:bg-gray-800 text-white"
+                  <Button
+                    variant="outline"
+                    className="!bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900"
                     onClick={() => {
                       const comment = prompt("Enter your comment:")
                       if (comment) {
