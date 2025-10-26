@@ -74,7 +74,24 @@ export async function GET(request: Request) {
       },
     })
 
-    return NextResponse.json(bookmarks)
+    // Calculate total visits across all user's bookmarks
+    const totalVisitsAcrossAll = bookmarks.reduce((sum, bookmark) => {
+      return sum + (bookmark.totalVisits || 0)
+    }, 0)
+
+    // Calculate usage percentage for each bookmark
+    const bookmarksWithUsage = bookmarks.map(bookmark => {
+      const usagePercentage = totalVisitsAcrossAll > 0 
+        ? (bookmark.totalVisits / totalVisitsAcrossAll) * 100 
+        : 0
+      
+      return {
+        ...bookmark,
+        usagePercentage
+      }
+    })
+
+    return NextResponse.json(bookmarksWithUsage)
   } catch (error) {
     console.error("Error fetching bookmarks:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
