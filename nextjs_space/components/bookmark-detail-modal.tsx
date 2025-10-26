@@ -606,30 +606,16 @@ export function BookmarkDetailModal({
 
             {/* Analytics Section */}
             <div className="mt-8 pt-8 border-t">
-              <div className="grid grid-cols-4 gap-4 mb-6">
-                <div className="text-center p-6 bg-gray-50 rounded-lg">
-                  <Eye className="h-6 w-6 text-blue-500 mx-auto mb-2" />
-                  <div className="text-3xl font-bold text-gray-900 mb-1">3</div>
-                  <div className="text-xs text-gray-500 font-medium">TOTAL VISITS</div>
-                  <div className="w-2 h-2 bg-green-500 rounded-full mx-auto mt-2"></div>
+              <div className="flex gap-4 mb-6">
+                <div className="flex items-center gap-3 px-6 py-3 bg-gray-50 rounded-lg">
+                  <Eye className="h-6 w-6 text-gray-700" />
+                  <div className="text-2xl font-bold text-gray-900">{bookmark.totalVisits || 0}</div>
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 </div>
-                <div className="text-center p-6 bg-gray-50 rounded-lg">
-                  <Clock className="h-6 w-6 text-green-500 mx-auto mb-2" />
-                  <div className="text-3xl font-bold text-gray-900 mb-1">3m</div>
-                  <div className="text-xs text-gray-500 font-medium">TIME SPENT</div>
-                  <div className="w-2 h-2 bg-green-500 rounded-full mx-auto mt-2"></div>
-                </div>
-                <div className="text-center p-6 bg-gray-50 rounded-lg">
-                  <Activity className="h-6 w-6 text-purple-500 mx-auto mb-2" />
-                  <div className="text-3xl font-bold text-gray-900 mb-1">2</div>
-                  <div className="text-xs text-gray-500 font-medium">THIS WEEK</div>
-                  <div className="w-2 h-2 bg-green-500 rounded-full mx-auto mt-2"></div>
-                </div>
-                <div className="text-center p-6 bg-gray-50 rounded-lg">
-                  <Globe className="h-6 w-6 text-gray-500 mx-auto mb-2" />
-                  <div className="text-3xl font-bold text-gray-900 mb-1">0</div>
-                  <div className="text-xs text-gray-500 font-medium">BROKEN</div>
-                  <div className="w-2 h-2 bg-red-500 rounded-full mx-auto mt-2"></div>
+                <div className="flex items-center gap-3 px-6 py-3 bg-gray-50 rounded-lg">
+                  <Clock className="h-6 w-6 text-gray-700" />
+                  <div className="text-2xl font-bold text-gray-900">{bookmark.timeSpent || 0}m</div>
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 </div>
               </div>
 
