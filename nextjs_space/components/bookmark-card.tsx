@@ -174,6 +174,23 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
           <div className="absolute inset-0 bg-white/40 backdrop-blur-[100px]" />
         </div>
 
+        {/* Background Logo - Faint watermark */}
+        {bookmark.favicon && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+            <div className="relative w-full h-full flex items-center justify-center">
+              <Image
+                src={bookmark.favicon}
+                alt=""
+                width={400}
+                height={400}
+                className="opacity-[0.05] object-contain"
+                style={{ filter: 'grayscale(30%)' }}
+                unoptimized
+              />
+            </div>
+          </div>
+        )}
+
         {/* Drag Handle */}
         <div 
           {...attributes}

@@ -5,6 +5,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
+import { getFaviconUrl } from "@/lib/favicon-service"
 
 export async function GET(request: Request) {
   try {
@@ -93,12 +94,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Title and URL are required" }, { status: 400 })
     }
 
+    // Auto-fetch high-quality favicon if not provided
+    let finalFavicon = favicon;
+    if (!finalFavicon) {
+      try {
+        finalFavicon = await getFaviconUrl(url);
+      } catch (error) {
+        console.error('Error fetching favicon:', error);
+        finalFavicon = '';
+      }
+    }
+
     const bookmark = await prisma.bookmark.create({
       data: {
         title,
         url,
         description: description || "",
-        favicon: favicon || "",
+        favicon: finalFavicon || "",
         priority: priority || "MEDIUM",
         userId: session.user.id,
         categories: categoryIds?.length > 0 ? {
