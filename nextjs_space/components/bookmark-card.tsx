@@ -121,10 +121,10 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
               
               {/* Title and URL */}
               <div className="flex-1 min-w-0 pt-1">
-                <h3 className="text-lg font-bold text-gray-900 mb-0.5 truncate tracking-tight">
+                <h3 className="text-lg font-bold text-gray-900 mb-0.5 truncate tracking-tight font-audiowide">
                   {bookmark.title}
                 </h3>
-                <p className="text-sm text-blue-600 font-medium truncate">
+                <p className="text-sm text-blue-600 font-medium truncate font-saira">
                   {bookmark.url?.replace(/^https?:\/\/(www\.)?/, '')}
                 </p>
               </div>
@@ -150,7 +150,7 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
             </div>
 
             {/* Description */}
-            <p className="text-sm text-gray-700 mb-3 line-clamp-2 h-10 leading-5">
+            <p className="text-sm text-gray-700 mb-3 line-clamp-2 h-10 leading-5 font-saira">
               {bookmark.description || "No description available"}
             </p>
 
@@ -184,33 +184,35 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
               <div className="flex flex-col space-y-2">
                 <div className="flex items-center space-x-2 bg-green-50/50 rounded-xl px-3 py-1.5">
                   <Eye className="h-4 w-4 text-gray-600" />
-                  <span className="text-base font-bold text-gray-800">{bookmark.visits || 13}</span>
+                  <span className="text-base font-bold text-gray-800 font-audiowide">{bookmark.visits || 13}</span>
                   <div className="w-2 h-2 rounded-full bg-green-400" />
                 </div>
                 <div className="flex items-center space-x-2 bg-green-50/50 rounded-xl px-3 py-1.5">
                   <Clock className="h-4 w-4 text-green-600" />
-                  <span className="text-base font-bold text-gray-800">{bookmark.timeSpent || 13}m</span>
+                  <span className="text-base font-bold text-gray-800 font-audiowide">{bookmark.timeSpent || 13}m</span>
                   <div className="w-2 h-2 rounded-full bg-green-400" />
                 </div>
               </div>
 
               {/* Usage Hexagon */}
               <div className="relative flex flex-col items-center">
-                <svg width="70" height="70" viewBox="0 0 70 70" className="transform">
-                  <polygon 
-                    points="35,8 58,21 58,49 35,62 12,49 12,21" 
-                    fill="none" 
-                    stroke="#EF4444" 
-                    strokeWidth="2.5"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center pt-2">
-                  <span className="text-2xl font-bold text-red-500">
-                    {bookmark.usagePercentage?.toFixed(0) || 5}%
-                  </span>
+                <div className="relative">
+                  <svg width="70" height="70" viewBox="0 0 70 70" className="transform">
+                    <polygon 
+                      points="35,8 58,21 58,49 35,62 12,49 12,21" 
+                      fill="none" 
+                      stroke="#EF4444" 
+                      strokeWidth="2.5"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-2xl font-bold text-red-500 font-audiowide">
+                      {bookmark.usagePercentage?.toFixed(0) || 95}%
+                    </span>
+                  </div>
                 </div>
                 <div className="mt-1">
-                  <span className="text-[10px] font-bold text-gray-700 tracking-wider">USAGE</span>
+                  <span className="text-[10px] font-bold text-gray-700 tracking-wider font-audiowide">USAGE</span>
                 </div>
               </div>
             </div>
@@ -218,20 +220,20 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
             {/* Task Stats */}
             <div className="space-y-1.5 mb-2.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-gray-800">OPEN TASK</span>
-                <span className="text-gray-600 font-medium">TOTAL: {bookmark.openTasks || 0}</span>
+                <span className="font-bold text-gray-800 font-audiowide">OPEN TASK</span>
+                <span className="text-gray-600 font-medium font-saira">TOTAL: {bookmark.openTasks || 0}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-gray-800">COMPLETED TASK</span>
-                <span className="text-gray-600 font-medium">TOTAL: {bookmark.completedTasks || 0}</span>
+                <span className="font-bold text-gray-800 font-audiowide">COMPLETED TASK</span>
+                <span className="text-gray-600 font-medium font-saira">TOTAL: {bookmark.completedTasks || 0}</span>
               </div>
             </div>
 
             {/* Progress Bar */}
             <div className="space-y-1 mt-auto">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-gray-600">Progress</span>
-                <span className="text-xs font-bold text-green-600">{progress.toFixed(0)}%</span>
+                <span className="text-xs font-medium text-gray-600 font-saira">Progress</span>
+                <span className="text-xs font-bold text-green-600 font-audiowide">{progress.toFixed(0)}%</span>
               </div>
               <Progress value={progress} className="h-2 bg-gray-200" />
             </div>

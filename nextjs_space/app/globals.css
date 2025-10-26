@@ -58,6 +58,9 @@
   body {
     @apply bg-white text-stone-950 font-[family-name:Saira,system-ui,sans-serif];
   }
+  h1, h2, h3 {
+    font-family: 'Audiowide', cursive;
+  }
 }
 
 /* Custom styles for BookmarkHub */
