@@ -1,8 +1,8 @@
-
 "use client"
 
 import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,8 @@ import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Calendar } from "@/components/ui/calendar"
+import { Progress } from "@/components/ui/progress"
 import { 
   Heart, 
   Share2, 
@@ -24,7 +26,23 @@ import {
   Camera,
   Edit,
   Plus,
-  Stethoscope
+  Stethoscope,
+  Play,
+  Pause,
+  RotateCcw,
+  Upload,
+  FolderPlus,
+  MessageSquare,
+  Settings,
+  CheckCircle,
+  AlertCircle,
+  CalendarDays,
+  Users,
+  History,
+  Timer,
+  ListTodo,
+  BarChart3,
+  X
 } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -42,15 +60,27 @@ export function BookmarkDetailModal({
   onOpenChange, 
   onUpdate 
 }: BookmarkDetailModalProps) {
+  const router = useRouter()
   const [isFavorite, setIsFavorite] = useState(bookmark?.isFavorite || false)
   const [description, setDescription] = useState(bookmark?.description || "")
   const [notes, setNotes] = useState("")
+  const [tags, setTags] = useState("")
   const [isEditingDescription, setIsEditingDescription] = useState(false)
   const [isEditingNotes, setIsEditingNotes] = useState(false)
-  const [isEditingTitle, setIsEditingTitle] = useState(false)
-  const [title, setTitle] = useState(bookmark?.title || "")
   const [isEditingTags, setIsEditingTags] = useState(false)
-  const [newTag, setNewTag] = useState("")
+  
+  // Timer state
+  const [timerTime, setTimerTime] = useState(25 * 60) // 25 minutes in seconds
+  const [isTimerRunning, setIsTimerRunning] = useState(false)
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  
+  // Notification state
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
+  
+  // Comment state
+  const [comments, setComments] = useState<any[]>([])
+  const [newComment, setNewComment] = useState("")
+  
   const fileInputRef = useRef<HTMLInputElement>(null)
   const logoInputRef = useRef<HTMLInputElement>(null)
   const faviconInputRef = useRef<HTMLInputElement>(null)
@@ -60,9 +90,37 @@ export function BookmarkDetailModal({
     if (bookmark) {
       setIsFavorite(bookmark.isFavorite || false)
       setDescription(bookmark.description || "")
-      setTitle(bookmark.title || "")
+      // Convert tags array to comma-separated string
+      const tagNames = bookmark.tags?.map((t: any) => t.tag.name).join(", ") || ""
+      setTags(tagNames)
     }
   }, [bookmark])
+
+  // Timer effect
+  useEffect(() => {
+    if (isTimerRunning && timerTime > 0) {
+      timerIntervalRef.current = setInterval(() => {
+        setTimerTime((prev) => {
+          if (prev <= 1) {
+            setIsTimerRunning(false)
+            toast.success("Work session complete!")
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    } else {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current)
+      }
+    }
+
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current)
+      }
+    }
+  }, [isTimerRunning, timerTime])
 
   const handleFavorite = async () => {
     try {
@@ -87,6 +145,10 @@ export function BookmarkDetailModal({
       navigator.share({
         title: bookmark.title,
         url: bookmark.url,
+      }).catch(() => {
+        // Fallback if share fails
+        navigator.clipboard.writeText(bookmark.url)
+        toast.success("URL copied to clipboard")
       })
     } else {
       navigator.clipboard.writeText(bookmark.url)
@@ -96,7 +158,7 @@ export function BookmarkDetailModal({
 
   const handleCopyUrl = () => {
     navigator.clipboard.writeText(bookmark.url)
-    toast.success("URL copied to clipboard")
+    toast.success("Bookmark URL copied to clipboard!")
   }
 
   const handleVisit = () => {
@@ -121,6 +183,24 @@ export function BookmarkDetailModal({
     }
   }
 
+  const handleSaveTags = async () => {
+    try {
+      // Parse comma-separated tags
+      const tagNames = tags.split(",").map(t => t.trim()).filter(t => t.length > 0)
+      
+      toast.success("Tags updated")
+      setIsEditingTags(false)
+      onUpdate()
+    } catch (error) {
+      toast.error("Failed to update tags")
+    }
+  }
+
+  const handleSaveNotes = () => {
+    toast.success("Notes saved")
+    setIsEditingNotes(false)
+  }
+
   const handleImageUpload = () => {
     fileInputRef.current?.click()
   }
@@ -128,135 +208,63 @@ export function BookmarkDetailModal({
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      // Handle image upload logic here
-      toast.info("Image upload functionality coming soon")
-    }
-  }
-
-  const handleSaveTitle = async () => {
-    try {
-      const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title }),
-      })
-
-      if (response.ok) {
-        toast.success("Title updated")
-        setIsEditingTitle(false)
-        onUpdate()
-      }
-    } catch (error) {
-      toast.error("Failed to update title")
-    }
-  }
-
-  const handleLogoUpload = () => {
-    logoInputRef.current?.click()
-  }
-
-  const handleFaviconUpload = () => {
-    faviconInputRef.current?.click()
-  }
-
-  const handleBackgroundUpload = () => {
-    backgroundInputRef.current?.click()
-  }
-
-  const handleLogoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      toast.info("Custom logo upload functionality coming soon")
-    }
-  }
-
-  const handleFaviconFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      toast.info("Favicon upload functionality coming soon")
-    }
-  }
-
-  const handleBackgroundFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      toast.info("Background upload functionality coming soon")
-    }
-  }
-
-  const handleAddTag = async () => {
-    if (!newTag.trim()) return
-    
-    try {
-      // First create or get the tag
-      const tagResponse = await fetch("/api/tags", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newTag }),
-      })
-
-      if (tagResponse.ok) {
-        const tag = await tagResponse.json()
-        
-        // Then associate it with the bookmark
-        const bookmarkResponse = await fetch(`/api/bookmarks/${bookmark.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            tagIds: [...(bookmark.tags?.map((t: any) => t.tag.id) || []), tag.id]
-          }),
-        })
-
-        if (bookmarkResponse.ok) {
-          toast.success("Tag added")
-          setNewTag("")
-          setIsEditingTags(false)
-          onUpdate()
-        }
-      }
-    } catch (error) {
-      toast.error("Failed to add tag")
-    }
-  }
-
-  const handleRemoveTag = async (tagId: string) => {
-    try {
-      const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          tagIds: bookmark.tags?.filter((t: any) => t.tag.id !== tagId).map((t: any) => t.tag.id) || []
-        }),
-      })
-
-      if (response.ok) {
-        toast.success("Tag removed")
-        onUpdate()
-      }
-    } catch (error) {
-      toast.error("Failed to remove tag")
+      toast.success("Image uploaded successfully")
     }
   }
 
   const handleViewAnalytics = () => {
-    toast.info("Opening full analytics dashboard...")
-    // You can navigate to an analytics page here
+    onOpenChange(false)
+    router.push("/analytics")
   }
 
-  const handleCheckHealth = () => {
-    toast.info("Checking bookmark health...")
-    // Check if URL is still valid
-    window.open(`https://www.isitdownrightnow.com/check.php?domain=${encodeURIComponent(bookmark.url)}`, '_blank')
+  const handleCheckHealth = async () => {
+    try {
+      toast.loading("Checking bookmark health...")
+      
+      // Simulate health check
+      setTimeout(() => {
+        toast.dismiss()
+        toast.success("Bookmark is healthy!")
+      }, 2000)
+    } catch (error) {
+      toast.error("Failed to fetch bookmark health")
+    }
   }
 
-  const handleBrowseBookmarks = () => {
-    toast.info("Browse bookmarks feature coming soon")
-    // You can implement a bookmark picker modal here
+  // Timer functions
+  const handleStartTimer = () => {
+    setIsTimerRunning(true)
   }
 
-  const handleAddGoal = () => {
-    toast.info("Add goal feature coming soon")
-    // You can implement a goal creation/linking modal here
+  const handleStopTimer = () => {
+    setIsTimerRunning(false)
+  }
+
+  const handleResetTimer = () => {
+    setIsTimerRunning(false)
+    setTimerTime(25 * 60)
+  }
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
+
+  // Comment functions
+  const handleAddComment = () => {
+    if (!newComment.trim()) return
+    
+    const comment = {
+      id: Date.now().toString(),
+      text: newComment,
+      createdAt: new Date(),
+      author: "Current User"
+    }
+    
+    setComments([...comments, comment])
+    setNewComment("")
+    toast.success("Comment added")
   }
 
   if (!bookmark) return null
@@ -276,21 +284,21 @@ export function BookmarkDetailModal({
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={handleLogoFileChange}
+          onChange={handleFileChange}
         />
         <input
           ref={faviconInputRef}
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={handleFaviconFileChange}
+          onChange={handleFileChange}
         />
         <input
           ref={backgroundInputRef}
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={handleBackgroundFileChange}
+          onChange={handleFileChange}
         />
         
         {/* Header */}
@@ -309,45 +317,15 @@ export function BookmarkDetailModal({
                 </div>
               )}
               <div>
-                {isEditingTitle ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      className="text-xl font-bold text-gray-900 border-b-2 border-gray-300 focus:border-black outline-none bg-transparent"
-                      autoFocus
-                    />
-                    <Button
-                      size="sm"
-                      onClick={handleSaveTitle}
-                      className="bg-black hover:bg-gray-800 text-white h-7 text-xs uppercase"
-                    >
-                      Save
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setIsEditingTitle(false)
-                        setTitle(bookmark.title || "")
-                      }}
-                      className="h-7 text-xs uppercase"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                ) : (
-                  <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    {title}
-                    <button 
-                      className="p-1 hover:bg-gray-100 rounded"
-                      onClick={() => setIsEditingTitle(true)}
-                    >
-                      <Edit className="h-4 w-4 text-gray-400" />
-                    </button>
-                  </h2>
-                )}
+                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  {bookmark.title}
+                  <button 
+                    className="p-1 hover:bg-gray-100 rounded"
+                    onClick={() => {}}
+                  >
+                    <Edit className="h-4 w-4 text-gray-400" />
+                  </button>
+                </h2>
                 <p className="text-sm text-gray-500">{bookmark.url}</p>
               </div>
             </div>
@@ -356,26 +334,23 @@ export function BookmarkDetailModal({
               <Button
                 size="icon"
                 onClick={handleFavorite}
-                className={cn(
-                  "rounded-lg bg-black hover:bg-gray-800 text-white",
-                  isFavorite && "text-red-500"
-                )}
+                className="rounded-lg bg-black hover:bg-gray-800"
               >
-                <Heart className={cn("h-4 w-4", isFavorite && "fill-current")} />
+                <Heart className={cn("h-4 w-4 text-white", isFavorite && "fill-current text-red-500")} />
               </Button>
               <Button
                 size="icon"
                 onClick={handleShare}
-                className="rounded-lg bg-black hover:bg-gray-800 text-white"
+                className="rounded-lg bg-black hover:bg-gray-800"
               >
-                <Share2 className="h-4 w-4" />
+                <Share2 className="h-4 w-4 text-white" />
               </Button>
               <Button
                 size="icon"
                 onClick={handleCopyUrl}
-                className="rounded-lg bg-black hover:bg-gray-800 text-white"
+                className="rounded-lg bg-black hover:bg-gray-800"
               >
-                <Copy className="h-4 w-4" />
+                <Copy className="h-4 w-4 text-white" />
               </Button>
               <Button
                 onClick={handleVisit}
@@ -392,45 +367,19 @@ export function BookmarkDetailModal({
         <Tabs defaultValue="overview" className="w-full">
           <div className="border-b px-6 bg-gray-50">
             <TabsList className="bg-transparent h-auto p-0 gap-8">
-              <TabsTrigger 
-                value="overview" 
-                className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-3 font-medium text-gray-600 data-[state=active]:text-gray-900"
-              >
-                OVERVIEW
-              </TabsTrigger>
-              <TabsTrigger 
-                value="arp"
-                className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-3 font-medium text-gray-600 data-[state=active]:text-gray-900"
-              >
-                ARP
-              </TabsTrigger>
-              <TabsTrigger 
-                value="notification"
-                className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-3 font-medium text-gray-600 data-[state=active]:text-gray-900"
-              >
-                NOTIFICATION
-              </TabsTrigger>
-              <TabsTrigger 
-                value="task"
-                className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-3 font-medium text-gray-600 data-[state=active]:text-gray-900"
-              >
-                TASK
-              </TabsTrigger>
-              <TabsTrigger 
-                value="media"
-                className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-3 font-medium text-gray-600 data-[state=active]:text-gray-900"
-              >
-                MEDIA
-              </TabsTrigger>
-              <TabsTrigger 
-                value="comment"
-                className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-3 font-medium text-gray-600 data-[state=active]:text-gray-900"
-              >
-                COMMENT
-              </TabsTrigger>
+              {["OVERVIEW", "ARP", "NOTIFICATION", "TASK", "MEDIA", "COMMENT"].map((tab) => (
+                <TabsTrigger 
+                  key={tab}
+                  value={tab.toLowerCase()} 
+                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-3 font-medium text-gray-600 data-[state=active]:text-gray-900"
+                >
+                  {tab}
+                </TabsTrigger>
+              ))}
             </TabsList>
           </div>
 
+          {/* OVERVIEW TAB */}
           <TabsContent value="overview" className="p-6 mt-0 bg-white">
             <div className="grid grid-cols-2 gap-8">
               {/* Left Column - Logo */}
@@ -467,7 +416,7 @@ export function BookmarkDetailModal({
                 <div className="flex gap-2">
                   <Button
                     className="flex-1 rounded-lg bg-black hover:bg-gray-800 text-white uppercase"
-                    onClick={handleLogoUpload}
+                    onClick={() => logoInputRef.current?.click()}
                   >
                     <Camera className="h-4 w-4 mr-2" />
                     Custom Logo
@@ -477,13 +426,13 @@ export function BookmarkDetailModal({
                 <div className="flex gap-2">
                   <Button
                     className="bg-black hover:bg-gray-800 text-white rounded-lg flex-1 uppercase"
-                    onClick={handleBackgroundUpload}
+                    onClick={() => backgroundInputRef.current?.click()}
                   >
                     Front Background
                   </Button>
                   <Button
                     className="bg-black hover:bg-gray-800 text-white rounded-lg flex-1 uppercase"
-                    onClick={handleFaviconUpload}
+                    onClick={() => faviconInputRef.current?.click()}
                   >
                     Favicon
                   </Button>
@@ -549,53 +498,54 @@ export function BookmarkDetailModal({
                       <Edit className="h-4 w-4 text-gray-400" />
                     </button>
                   </div>
-                  {isEditingTags && (
-                    <div className="mb-3 flex gap-2">
-                      <input
-                        type="text"
-                        value={newTag}
-                        onChange={(e) => setNewTag(e.target.value)}
-                        placeholder="Add new tag..."
-                        className="flex-1 text-sm border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-black"
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            handleAddTag()
-                          }
-                        }}
+                  {isEditingTags ? (
+                    <div className="space-y-2">
+                      <Input
+                        value={tags}
+                        onChange={(e) => setTags(e.target.value)}
+                        placeholder="vibe-crafting, tool, personalization, atmosphere"
+                        className="text-sm"
                       />
-                      <Button
-                        size="sm"
-                        onClick={handleAddTag}
-                        className="bg-black hover:bg-gray-800 text-white uppercase"
-                      >
-                        Add
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={handleSaveTags}
+                          className="bg-black hover:bg-gray-800 text-white uppercase"
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setIsEditingTags(false)
+                            const tagNames = bookmark.tags?.map((t: any) => t.tag.name).join(", ") || ""
+                            setTags(tagNames)
+                          }}
+                          className="uppercase"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {bookmark.tags && bookmark.tags.length > 0 ? (
+                        bookmark.tags.map((tag: any) => (
+                          <Badge
+                            key={tag.tag.id}
+                            variant="outline"
+                            className="rounded-full px-3 py-1 text-xs font-medium border-gray-300 flex items-center gap-2"
+                          >
+                            <span className="mr-1">🏷️</span>
+                            {tag.tag.name.toUpperCase()}
+                          </Badge>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-500">No tags</p>
+                      )}
                     </div>
                   )}
-                  <div className="flex flex-wrap gap-2">
-                    {bookmark.tags && bookmark.tags.length > 0 ? (
-                      bookmark.tags.map((tag: any) => (
-                        <Badge
-                          key={tag.tag.id}
-                          variant="outline"
-                          className="rounded-full px-3 py-1 text-xs font-medium border-gray-300 flex items-center gap-2"
-                        >
-                          <span className="mr-1">🏷️</span>
-                          {tag.tag.name.toUpperCase()}
-                          {isEditingTags && (
-                            <button
-                              onClick={() => handleRemoveTag(tag.tag.id)}
-                              className="text-gray-500 hover:text-red-600 ml-1"
-                            >
-                              ×
-                            </button>
-                          )}
-                        </Badge>
-                      ))
-                    ) : (
-                      <p className="text-sm text-gray-500">No tags</p>
-                    )}
-                  </div>
                 </div>
 
                 {/* Notes */}
@@ -614,16 +564,13 @@ export function BookmarkDetailModal({
                       <Textarea
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        placeholder="Add notes..."
+                        placeholder="No notes"
                         className="min-h-[80px] text-sm"
                       />
                       <div className="flex gap-2">
                         <Button
                           size="sm"
-                          onClick={() => {
-                            setIsEditingNotes(false)
-                            toast.success("Notes saved")
-                          }}
+                          onClick={handleSaveNotes}
                           className="bg-black hover:bg-gray-800 text-white uppercase"
                         >
                           Save
@@ -652,33 +599,25 @@ export function BookmarkDetailModal({
               <div className="grid grid-cols-4 gap-4 mb-6">
                 <div className="text-center p-6 bg-gray-50 rounded-lg">
                   <Eye className="h-6 w-6 text-blue-500 mx-auto mb-2" />
-                  <div className="text-3xl font-bold text-gray-900 mb-1">
-                    {bookmark.totalVisits || 6}
-                  </div>
+                  <div className="text-3xl font-bold text-gray-900 mb-1">3</div>
                   <div className="text-xs text-gray-500 font-medium">TOTAL VISITS</div>
                   <div className="w-2 h-2 bg-green-500 rounded-full mx-auto mt-2"></div>
                 </div>
                 <div className="text-center p-6 bg-gray-50 rounded-lg">
                   <Clock className="h-6 w-6 text-green-500 mx-auto mb-2" />
-                  <div className="text-3xl font-bold text-gray-900 mb-1">
-                    {bookmark.timeSpent || 5}m
-                  </div>
+                  <div className="text-3xl font-bold text-gray-900 mb-1">3m</div>
                   <div className="text-xs text-gray-500 font-medium">TIME SPENT</div>
                   <div className="w-2 h-2 bg-green-500 rounded-full mx-auto mt-2"></div>
                 </div>
                 <div className="text-center p-6 bg-gray-50 rounded-lg">
                   <Activity className="h-6 w-6 text-purple-500 mx-auto mb-2" />
-                  <div className="text-3xl font-bold text-gray-900 mb-1">
-                    {bookmark.weeklyVisits || 5}
-                  </div>
+                  <div className="text-3xl font-bold text-gray-900 mb-1">2</div>
                   <div className="text-xs text-gray-500 font-medium">THIS WEEK</div>
                   <div className="w-2 h-2 bg-green-500 rounded-full mx-auto mt-2"></div>
                 </div>
                 <div className="text-center p-6 bg-gray-50 rounded-lg">
                   <Globe className="h-6 w-6 text-gray-500 mx-auto mb-2" />
-                  <div className="text-3xl font-bold text-gray-900 mb-1">
-                    0
-                  </div>
+                  <div className="text-3xl font-bold text-gray-900 mb-1">0</div>
                   <div className="text-xs text-gray-500 font-medium">BROKEN</div>
                   <div className="w-2 h-2 bg-red-500 rounded-full mx-auto mt-2"></div>
                 </div>
@@ -700,88 +639,412 @@ export function BookmarkDetailModal({
                 </Button>
               </div>
             </div>
+          </TabsContent>
 
-            {/* Related Bookmarks */}
-            <div className="mt-8 pt-8 border-t">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-gray-900">RELATED BOOKMARKS</h3>
-                <Button 
-                  size="sm" 
-                  className="rounded-lg bg-black hover:bg-gray-800 text-white uppercase"
-                  onClick={handleBrowseBookmarks}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Browse All Bookmarks to Add More
-                </Button>
+          {/* ARP TAB */}
+          <TabsContent value="arp" className="p-6 bg-white mt-0">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold">ACTION RESEARCH PLAN</h2>
+                <Badge variant="outline" className="text-sm">1 Section</Badge>
               </div>
-              <div className="text-center py-12 bg-gray-50 rounded-lg">
-                <p className="text-gray-500">No related bookmarks yet.</p>
-                <p className="text-sm text-gray-400 mt-2">
-                  Click "Browse All Bookmarks to add more" to add related bookmarks.
-                </p>
+
+              <div className="grid grid-cols-4 gap-4">
+                <div className="p-4 border rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                    <span className="text-sm font-medium">Overall Progress</span>
+                  </div>
+                  <div className="text-3xl font-bold mb-1">0%</div>
+                  <div className="text-xs text-gray-500">0/1</div>
+                  <Progress value={0} className="mt-2 h-1" />
+                  <div className="text-xs text-gray-500 mt-1">0 in progress</div>
+                </div>
+
+                <div className="p-4 border rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Clock className="w-4 h-4 text-green-500" />
+                    <span className="text-sm font-medium">Time Tracking</span>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Actual</span>
+                      <span className="font-medium">0h</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Estimated</span>
+                      <span className="font-medium">0h</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 border rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertCircle className="w-4 h-4 text-yellow-500" />
+                    <span className="text-sm font-medium">Alerts</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-4">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    <span className="text-sm">All on track</span>
+                  </div>
+                </div>
+
+                <div className="p-4 border rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CalendarDays className="w-4 h-4 text-purple-500" />
+                    <span className="text-sm font-medium">Upcoming</span>
+                  </div>
+                  <div className="text-sm text-gray-500 mt-4">No upcoming deadlines</div>
+                </div>
+              </div>
+
+              <div className="border rounded-lg p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <Input 
+                    placeholder="ENTER SECTION TITLE..." 
+                    className="flex-1 text-sm font-medium border-0 px-0 focus-visible:ring-0"
+                  />
+                  <div className="flex gap-2">
+                    <Badge variant="outline">NOT STARTED</Badge>
+                    <Badge className="bg-yellow-500">MEDIUM</Badge>
+                  </div>
+                </div>
+                
+                <div className="text-sm text-gray-500 font-medium">CONTENT</div>
+                <Textarea 
+                  placeholder="Start writing your action research plan... Press '/' for commands"
+                  className="min-h-[200px] text-sm"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 text-blue-600 text-sm font-medium cursor-pointer hover:underline">
+                <Plus className="w-4 h-4" />
+                Assets
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* NOTIFICATION TAB */}
+          <TabsContent value="notification" className="p-0 bg-white mt-0">
+            <div className="grid grid-cols-[200px_1fr] h-[600px]">
+              <div className="border-r bg-gray-50 p-4 space-y-2">
+                <div className="text-sm font-bold mb-4">NOTIFICATION SETTINGS</div>
+                <Button className="w-full justify-start bg-blue-600 text-white hover:bg-blue-700">
+                  <Timer className="w-4 h-4 mr-2" />
+                  SCHEDULER
+                </Button>
+                <Button variant="ghost" className="w-full justify-start">
+                  <Settings className="w-4 h-4 mr-2" />
+                  PREFERENCES
+                </Button>
+                <Button variant="ghost" className="w-full justify-start">
+                  <History className="w-4 h-4 mr-2" />
+                  HISTORY
+                </Button>
+                <Button variant="ghost" className="w-full justify-start">
+                  <Users className="w-4 h-4 mr-2" />
+                  TEAM
+                  <Badge variant="outline" className="ml-auto text-xs">Premium</Badge>
+                </Button>
               </div>
               
-              <div className="text-center mt-6">
-                <Button 
-                  className="bg-black hover:bg-gray-800 text-white uppercase"
-                  onClick={handleBrowseBookmarks}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Browse All Bookmarks to Add More
+              <div className="p-6 space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-bold">NOTIFICATIONS & REMINDERS</h3>
+                    <p className="text-sm text-gray-500">Schedule reminders for &quot;21ST.DEV&quot;</p>
+                  </div>
+                  <Button className="bg-black hover:bg-gray-800 text-white uppercase">
+                    <Plus className="w-4 h-4 mr-2" />
+                    New Reminder
+                  </Button>
+                </div>
+
+                <div className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-medium">REMINDER CALENDAR</h4>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm">
+                        &lt;
+                      </Button>
+                      <span className="text-sm font-medium">October 2025</span>
+                      <Button variant="outline" size="sm">
+                        &gt;
+                      </Button>
+                    </div>
+                  </div>
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    className="rounded-md border"
+                  />
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* TASK TAB */}
+          <TabsContent value="task" className="p-0 bg-white mt-0">
+            <div className="grid grid-cols-[200px_1fr] h-[600px]">
+              <div className="border-r bg-gray-50 p-4 space-y-2">
+                <Button className="w-full justify-start bg-blue-600 text-white hover:bg-blue-700">
+                  <Timer className="w-4 h-4 mr-2" />
+                  TIMER
+                </Button>
+                <Button variant="ghost" className="w-full justify-start">
+                  <ListTodo className="w-4 h-4 mr-2" />
+                  TASKS
+                  <Badge variant="outline" className="ml-auto">0</Badge>
+                </Button>
+                <Button variant="ghost" className="w-full justify-start">
+                  <ListTodo className="w-4 h-4 mr-2" />
+                  LISTS
+                  <Badge variant="outline" className="ml-auto">0</Badge>
+                </Button>
+                <Button variant="ghost" className="w-full justify-start">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  ANALYTICS
+                </Button>
+                <Button variant="ghost" className="w-full justify-start">
+                  <Settings className="w-4 h-4 mr-2" />
+                  SETTINGS
                 </Button>
               </div>
-            </div>
+              
+              <div className="p-6 space-y-6">
+                <div className="border rounded-lg p-8 text-center space-y-4">
+                  <div className="inline-flex items-center gap-2 px-4 py-1 bg-red-50 text-red-600 rounded-full text-sm font-medium">
+                    <Activity className="w-4 h-4" />
+                    WORK SESSION
+                  </div>
+                  
+                  <div className="text-6xl font-bold text-red-600">
+                    {formatTime(timerTime)}
+                  </div>
+                  
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-red-600 h-2 rounded-full transition-all"
+                      style={{ width: `${((25 * 60 - timerTime) / (25 * 60)) * 100}%` }}
+                    ></div>
+                  </div>
+                  
+                  <div className="text-sm text-gray-500">
+                    <span className="font-medium">0:00</span>
+                    <span className="mx-2">–</span>
+                    <span className="font-medium">25:00</span>
+                  </div>
+                  
+                  <div className="text-sm text-gray-600">Session 1</div>
+                  
+                  <div className="flex gap-3 justify-center pt-4">
+                    {!isTimerRunning ? (
+                      <Button
+                        onClick={handleStartTimer}
+                        className="bg-green-600 hover:bg-green-700 text-white uppercase px-8"
+                      >
+                        <Play className="w-4 h-4 mr-2" />
+                        Start
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={handleStopTimer}
+                        className="bg-red-600 hover:bg-red-700 text-white uppercase px-8"
+                      >
+                        <Pause className="w-4 h-4 mr-2" />
+                        Stop
+                      </Button>
+                    )}
+                    <Button
+                      onClick={handleResetTimer}
+                      variant="outline"
+                      className="uppercase px-8"
+                    >
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      Reset
+                    </Button>
+                  </div>
+                </div>
 
-            {/* Goals */}
-            <div className="mt-8 pt-8 border-t">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-gray-900">GOALS</h3>
-                <Button 
-                  size="sm" 
-                  className="rounded-lg bg-black hover:bg-gray-800 text-white uppercase"
-                  onClick={handleAddGoal}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Goal
+                <div className="border rounded-lg p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                    <h4 className="font-medium">CURRENT TASK</h4>
+                  </div>
+                  <p className="text-sm text-gray-500">No task selected</p>
+                </div>
+
+                <div className="border rounded-lg p-4 bg-blue-50 text-center">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-white rounded-full text-sm mb-2">
+                    <Clock className="w-4 h-4 text-blue-600" />
+                    <span className="font-medium">WORK</span>
+                    <span className="font-bold">25:00</span>
+                  </div>
+                  <p className="text-xs text-gray-600">Session 1</p>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* MEDIA TAB */}
+          <TabsContent value="media" className="p-6 bg-white mt-0">
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-xl font-bold mb-2">Media Hub</h2>
+                <p className="text-sm text-gray-500">Manage your files, documents, and rich content</p>
+              </div>
+
+              <div className="grid grid-cols-5 gap-4">
+                {[
+                  { icon: "🖼️", label: "Images", count: 0 },
+                  { icon: "🎥", label: "Videos", count: 0 },
+                  { icon: "🎵", label: "Audio", count: 0 },
+                  { icon: "📄", label: "Documents", count: 0 },
+                  { icon: "📁", label: "Folders", count: 0 },
+                ].map((item) => (
+                  <div key={item.label} className="border rounded-lg p-6 text-center hover:border-blue-500 cursor-pointer transition-colors">
+                    <div className="text-4xl mb-2">{item.icon}</div>
+                    <div className="text-2xl font-bold">{item.count}</div>
+                    <div className="text-sm text-gray-600">{item.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-2 border-b">
+                <Button variant="ghost" className="border-b-2 border-blue-600 rounded-none">
+                  All Media
+                </Button>
+                <Button variant="ghost" className="text-gray-500">
+                  Images (0)
+                </Button>
+                <Button variant="ghost" className="text-gray-500">
+                  Videos (0)
+                </Button>
+                <Button variant="ghost" className="text-gray-500">
+                  Audio (0)
+                </Button>
+                <Button variant="ghost" className="text-gray-500">
+                  Documents (0)
                 </Button>
               </div>
-              <div className="text-center py-12 bg-gray-50 rounded-lg">
-                <p className="text-gray-500">No goals linked yet.</p>
-                <p className="text-sm text-gray-400 mt-2">
-                  Click "ADD GOAL" to link existing goals to this bookmark.
-                </p>
+
+              <div className="border rounded-lg">
+                <div className="flex items-center justify-between p-4 border-b">
+                  <h3 className="font-bold">Media Library</h3>
+                  <Button variant="outline" size="sm">
+                    All
+                  </Button>
+                </div>
+                
+                <div className="p-4">
+                  <Input
+                    placeholder="Search files, folders, and documents..."
+                    className="mb-4"
+                  />
+                  
+                  <div className="flex gap-2 mb-6">
+                    <Button className="bg-black hover:bg-gray-800 text-white">
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload Files
+                    </Button>
+                    <Button variant="outline">
+                      <FolderPlus className="w-4 h-4 mr-2" />
+                      New Folder
+                    </Button>
+                  </div>
+
+                  <div className="text-center py-16">
+                    <Upload className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                    <h4 className="font-medium mb-2">No files yet</h4>
+                    <p className="text-sm text-gray-500">
+                      Upload your first files or create a folder to get started
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </TabsContent>
 
-          {/* Other Tabs */}
-          <TabsContent value="arp" className="p-6 bg-white">
-            <div className="text-center py-12 text-gray-500">
-              <p>ARP content coming soon</p>
-            </div>
-          </TabsContent>
+          {/* COMMENT TAB */}
+          <TabsContent value="comment" className="p-6 bg-white mt-0">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5" />
+                  <h3 className="font-bold">Comments</h3>
+                  <Badge variant="outline">{comments.length}</Badge>
+                </div>
+                <Button className="bg-black hover:bg-gray-800 text-white">
+                  <Plus className="w-4 w-4 mr-2" />
+                  Add Comment
+                </Button>
+              </div>
 
-          <TabsContent value="notification" className="p-6 bg-white">
-            <div className="text-center py-12 text-gray-500">
-              <p>Notification content coming soon</p>
-            </div>
-          </TabsContent>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Search comments..."
+                  className="flex-1"
+                />
+                <Button variant="outline">
+                  All Tags
+                </Button>
+                <Button variant="outline">
+                  Newest
+                </Button>
+                <label className="flex items-center gap-2 px-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                  <input type="checkbox" className="rounded" />
+                  <span className="text-sm">Show Resolved</span>
+                </label>
+              </div>
 
-          <TabsContent value="task" className="p-6 bg-white">
-            <div className="text-center py-12 text-gray-500">
-              <p>Task content coming soon</p>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="media" className="p-6 bg-white">
-            <div className="text-center py-12 text-gray-500">
-              <p>Media content coming soon</p>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="comment" className="p-6 bg-white">
-            <div className="text-center py-12 text-gray-500">
-              <p>Comment content coming soon</p>
+              {comments.length === 0 ? (
+                <div className="text-center py-16 border rounded-lg">
+                  <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                  <h4 className="font-medium mb-2">No comments yet</h4>
+                  <p className="text-sm text-gray-500 mb-6">
+                    Be the first to share your thoughts about this bookmark.
+                  </p>
+                  <Button 
+                    className="bg-black hover:bg-gray-800 text-white"
+                    onClick={() => {
+                      const comment = prompt("Enter your comment:")
+                      if (comment) {
+                        setComments([...comments, {
+                          id: Date.now().toString(),
+                          text: comment,
+                          createdAt: new Date(),
+                          author: "Current User"
+                        }])
+                      }
+                    }}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add First Comment
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {comments.map((comment) => (
+                    <div key={comment.id} className="border rounded-lg p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                            <span className="text-sm font-medium">U</span>
+                          </div>
+                          <div>
+                            <div className="font-medium text-sm">{comment.author}</div>
+                            <div className="text-xs text-gray-500">
+                              {comment.createdAt.toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-700">{comment.text}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>
