@@ -245,7 +245,7 @@ export function BookmarkDetailModal({
             </TabsList>
           </div>
 
-          <TabsContent value="overview" className="p-6 mt-0">
+          <TabsContent value="overview" className="p-6 mt-0 bg-white">
             <div className="grid grid-cols-2 gap-8">
               {/* Left Column - Logo */}
               <div className="space-y-6">
@@ -517,31 +517,31 @@ export function BookmarkDetailModal({
           </TabsContent>
 
           {/* Other Tabs */}
-          <TabsContent value="arp" className="p-6">
+          <TabsContent value="arp" className="p-6 bg-white">
             <div className="text-center py-12 text-gray-500">
               <p>ARP content coming soon</p>
             </div>
           </TabsContent>
 
-          <TabsContent value="notification" className="p-6">
+          <TabsContent value="notification" className="p-6 bg-white">
             <div className="text-center py-12 text-gray-500">
               <p>Notification content coming soon</p>
             </div>
           </TabsContent>
 
-          <TabsContent value="task" className="p-6">
+          <TabsContent value="task" className="p-6 bg-white">
             <div className="text-center py-12 text-gray-500">
               <p>Task content coming soon</p>
             </div>
           </TabsContent>
 
-          <TabsContent value="media" className="p-6">
+          <TabsContent value="media" className="p-6 bg-white">
             <div className="text-center py-12 text-gray-500">
               <p>Media content coming soon</p>
             </div>
           </TabsContent>
 
-          <TabsContent value="comment" className="p-6">
+          <TabsContent value="comment" className="p-6 bg-white">
             <div className="text-center py-12 text-gray-500">
               <p>Comment content coming soon</p>
             </div>
