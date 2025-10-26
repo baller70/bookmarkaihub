@@ -1,0 +1,269 @@
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+    output = "/home/ubuntu/bookmarkhub_clone/nextjs_space/node_modules/.prisma/client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+// NextAuth tables
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String?
+  emailVerified DateTime?
+  image         String?
+  fullName      String?
+  isAdmin       Boolean   @default(false)
+  
+  accounts      Account[]
+  sessions      Session[]
+  bookmarks     Bookmark[]
+  categories    Category[]
+  tags          Tag[]
+  analytics     Analytics[]
+  goals         Goal[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Core bookmark management
+model Bookmark {
+  id          String   @id @default(cuid())
+  title       String
+  url         String   @db.Text
+  description String?  @db.Text
+  favicon     String?  @db.Text
+  priority    Priority @default(MEDIUM)
+  
+  // Usage tracking
+  totalVisits      Int      @default(0)
+  engagementScore  Int      @default(0)
+  timeSpent        Int      @default(0) // in minutes
+  usagePercentage  Float    @default(0)
+  lastVisited      DateTime?
+  
+  // Task management
+  openTasks      Int @default(0)
+  completedTasks Int @default(0)
+  totalTasks     Int @default(0)
+  
+  // Relationships
+  userId       String
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categories   BookmarkCategory[]
+  tags         BookmarkTag[]
+  tasks        Task[]
+  notes        Note[]
+  history      BookmarkHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([userId, priority])
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  color       String    @default("#3B82F6") // Blue default
+  icon        String    @default("folder")
+  
+  userId      String
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookmarks   BookmarkCategory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, name])
+}
+
+model Tag {
+  id        String       @id @default(cuid())
+  name      String
+  color     String       @default("#10B981") // Green default
+  
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookmarks BookmarkTag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, name])
+}
+
+// Junction tables for many-to-many relationships
+model BookmarkCategory {
+  id         String   @id @default(cuid())
+  bookmarkId String
+  categoryId String
+  
+  bookmark   Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([bookmarkId, categoryId])
+}
+
+model BookmarkTag {
+  id         String   @id @default(cuid())
+  bookmarkId String
+  tagId      String
+  
+  bookmark   Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([bookmarkId, tagId])
+}
+
+// Task management
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?    @db.Text
+  status      TaskStatus @default(OPEN)
+  priority    Priority   @default(MEDIUM)
+  dueDate     DateTime?
+  
+  bookmarkId  String
+  bookmark    Bookmark   @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  
+  // Pomodoro tracking
+  pomodoroSessions Int @default(0)
+  timeSpent        Int @default(0) // in minutes
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  completedAt DateTime?
+}
+
+// Notes system
+model Note {
+  id         String  @id @default(cuid())
+  content    String  @db.Text
+  bookmarkId String
+  bookmark   Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Analytics and usage tracking
+model Analytics {
+  id     String @id @default(cuid())
+  date   DateTime @db.Date
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Daily metrics
+  totalVisits     Int @default(0)
+  engagementScore Int @default(0)
+  bookmarksAdded  Int @default(0)
+  bookmarksViewed Int @default(0)
+  timeSpent       Int @default(0) // in minutes
+
+  @@unique([userId, date])
+}
+
+// Bookmark history/activity log
+model BookmarkHistory {
+  id         String           @id @default(cuid())
+  action     BookmarkAction
+  details    String?          @db.Text
+  bookmarkId String
+  bookmark   Bookmark         @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+// Goal system (Goal 2.0)
+model Goal {
+  id          String    @id @default(cuid())
+  title       String
+  description String?   @db.Text
+  deadline    DateTime?
+  progress    Float     @default(0) // 0-100
+  status      GoalStatus @default(ACTIVE)
+  
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  completedAt DateTime?
+}
+
+// Enums
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum BookmarkAction {
+  CREATED
+  VIEWED
+  UPDATED
+  DELETED
+  TAGGED
+  CATEGORIZED
+  SHARED
+}
+
+enum GoalStatus {
+  ACTIVE
+  COMPLETED
+  PAUSED
+  CANCELLED
+}
