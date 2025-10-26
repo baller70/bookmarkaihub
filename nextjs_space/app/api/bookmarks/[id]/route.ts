@@ -149,6 +149,64 @@ export async function PUT(
   }
 }
 
+export async function PATCH(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const body = await request.json()
+
+    // Verify the bookmark belongs to the user
+    const existingBookmark = await prisma.bookmark.findFirst({
+      where: {
+        id: params.id,
+        userId: session.user.id,
+      },
+    })
+
+    if (!existingBookmark) {
+      return NextResponse.json({ error: "Bookmark not found" }, { status: 404 })
+    }
+
+    // Update only the fields provided
+    const bookmark = await prisma.bookmark.update({
+      where: { id: params.id },
+      data: body,
+      include: {
+        categories: {
+          include: {
+            category: true,
+          },
+        },
+        tags: {
+          include: {
+            tag: true,
+          },
+        },
+      },
+    })
+
+    // Log the update
+    await prisma.bookmarkHistory.create({
+      data: {
+        action: "UPDATED",
+        details: `Bookmark updated: ${Object.keys(body).join(", ")}`,
+        bookmarkId: params.id,
+      },
+    })
+
+    return NextResponse.json(bookmark)
+  } catch (error) {
+    console.error("Error patching bookmark:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
+
 export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }

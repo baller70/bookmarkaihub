@@ -75,6 +75,7 @@ model Bookmark {
   description String?  @db.Text
   favicon     String?  @db.Text
   priority    Priority @default(MEDIUM)
+  isFavorite  Boolean  @default(false)
   
   // Usage tracking
   totalVisits      Int      @default(0)

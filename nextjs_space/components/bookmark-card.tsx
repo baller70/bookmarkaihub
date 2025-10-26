@@ -41,6 +41,7 @@ const priorityColors = {
 export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCardProps) {
   const [showDetail, setShowDetail] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isFavorite, setIsFavorite] = useState(bookmark.isFavorite || false)
 
   const {
     attributes,
@@ -83,12 +84,68 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
   const handleVisit = (e: React.MouseEvent) => {
     e.stopPropagation()
     window.open(bookmark.url, "_blank")
+    toast.success("Opening bookmark in new tab")
   }
 
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation()
     navigator.clipboard.writeText(bookmark.url)
     toast.success("URL copied to clipboard")
+  }
+
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    try {
+      const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isFavorite: !isFavorite }),
+      })
+      
+      if (response.ok) {
+        setIsFavorite(!isFavorite)
+        toast.success(isFavorite ? "Removed from favorites" : "Added to favorites")
+        onUpdate()
+      } else {
+        toast.error("Failed to update favorite status")
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error)
+      toast.error("Failed to update favorite status")
+    }
+  }
+
+  const handleMoveToFolder = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    toast.info("Opening folder selector...")
+    // This could open a modal to select categories
+    setShowDetail(true)
+  }
+
+  const handleChangePriority = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    
+    const priorities = ["LOW", "MEDIUM", "HIGH", "URGENT"]
+    const currentIndex = priorities.indexOf(bookmark.priority || "MEDIUM")
+    const nextPriority = priorities[(currentIndex + 1) % priorities.length]
+    
+    try {
+      const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ priority: nextPriority }),
+      })
+      
+      if (response.ok) {
+        toast.success(`Priority changed to ${nextPriority}`)
+        onUpdate()
+      } else {
+        toast.error("Failed to update priority")
+      }
+    } catch (error) {
+      console.error("Error changing priority:", error)
+      toast.error("Failed to update priority")
+    }
   }
 
   const progress = bookmark.totalTasks > 0 
@@ -271,16 +328,21 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
-              onClick={(e) => e.stopPropagation()}
+              className={cn(
+                "h-8 w-8 p-0 rounded-full hover:bg-red-50 transition-colors",
+                isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"
+              )}
+              onClick={handleToggleFavorite}
+              title="Toggle Favorite"
             >
-              <Heart className="h-3.5 w-3.5" />
+              <Heart className={cn("h-3.5 w-3.5", isFavorite && "fill-current")} />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 rounded-full hover:bg-blue-50 text-gray-400 hover:text-blue-500 transition-colors"
               onClick={handleVisit}
+              title="Visit URL"
             >
               <Eye className="h-3.5 w-3.5" />
             </Button>
@@ -292,6 +354,7 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
                 e.stopPropagation()
                 setShowDetail(true)
               }}
+              title="Edit Bookmark"
             >
               <Edit className="h-3.5 w-3.5" />
             </Button>
@@ -300,6 +363,7 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
               size="sm"
               className="h-8 w-8 p-0 rounded-full hover:bg-green-50 text-gray-400 hover:text-green-500 transition-colors"
               onClick={handleCopy}
+              title="Copy URL"
             >
               <Copy className="h-3.5 w-3.5" />
             </Button>
@@ -308,6 +372,7 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
               size="sm"
               className="h-8 w-8 p-0 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
               onClick={handleDelete}
+              title="Delete Bookmark"
             >
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
@@ -315,7 +380,8 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 rounded-full hover:bg-purple-50 text-gray-400 hover:text-purple-500 transition-colors"
-              onClick={(e) => e.stopPropagation()}
+              onClick={handleMoveToFolder}
+              title="Move to Folder"
             >
               <Folder className="h-3.5 w-3.5" />
             </Button>
@@ -323,7 +389,8 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 rounded-full hover:bg-indigo-50 text-gray-400 hover:text-indigo-500 transition-colors"
-              onClick={(e) => e.stopPropagation()}
+              onClick={handleChangePriority}
+              title="Change Priority"
             >
               <Target className="h-3.5 w-3.5" />
             </Button>
