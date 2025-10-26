@@ -12,6 +12,7 @@ const config: Config = {
       fontFamily: {
         audiowide: ['var(--font-audiowide)', 'cursive'],
         saira: ['var(--font-saira)', 'sans-serif'],
+        russo: ['var(--font-russo)', 'sans-serif'],
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

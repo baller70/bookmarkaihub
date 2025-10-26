@@ -218,24 +218,21 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
             </div>
 
             {/* Task Stats */}
-            <div className="space-y-1.5 mb-2.5">
+            <div className="space-y-2 mb-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-gray-800 font-audiowide">OPEN TASK</span>
-                <span className="text-xs text-gray-600 font-medium font-saira">TOTAL: {bookmark.openTasks || 0}</span>
+                <span className="text-sm font-russo text-slate-800">OPEN TASK</span>
+                <span className="text-sm text-gray-500 font-saira">TOTAL: {bookmark.openTasks || 0}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-gray-800 font-audiowide">COMPLETED TASK</span>
-                <span className="text-xs text-gray-600 font-medium font-saira">TOTAL: {bookmark.completedTasks || 0}</span>
+                <span className="text-sm font-russo text-slate-800">COMPLETED TASK</span>
+                <span className="text-sm text-gray-500 font-saira">TOTAL: {bookmark.completedTasks || 0}</span>
               </div>
             </div>
 
-            {/* Progress Bar */}
-            <div className="space-y-1 mt-auto">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-gray-600 font-saira">Progress</span>
-                <span className="text-xs font-bold text-green-600 font-audiowide">{progress.toFixed(0)}%</span>
-              </div>
-              <Progress value={progress} className="h-2 bg-gray-200" />
+            {/* Progress */}
+            <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+              <span className="text-sm text-gray-500 font-saira">Progress</span>
+              <span className="text-sm font-bold text-green-500 font-saira">{progress.toFixed(0)}%</span>
             </div>
           </div>
 

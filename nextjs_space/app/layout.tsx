@@ -2,7 +2,7 @@
 export const dynamic = "force-dynamic"
 
 import type { Metadata } from "next"
-import { Audiowide, Saira } from "next/font/google"
+import { Audiowide, Saira, Russo_One } from "next/font/google"
 import "./globals.css"
 import { Providers } from "@/components/providers"
 
@@ -15,6 +15,12 @@ const audiowide = Audiowide({
 const saira = Saira({ 
   subsets: ["latin"],
   variable: "--font-saira"
+})
+
+const russoOne = Russo_One({ 
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-russo"
 })
 
 export const metadata: Metadata = {
@@ -53,7 +59,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${audiowide.variable} ${saira.variable} font-saira`}>
+      <body className={`${audiowide.variable} ${saira.variable} ${russoOne.variable} font-saira`}>
         <Providers>
           {children}
         </Providers>
