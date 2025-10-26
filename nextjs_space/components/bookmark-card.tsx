@@ -320,9 +320,17 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
             </div>
 
             {/* Progress Section at the bottom */}
-            <div className="flex items-center justify-between py-2">
-              <span className="text-sm text-gray-500 font-saira uppercase">PROGRESS</span>
-              <span className="text-sm font-bold text-green-500 font-saira">{progress.toFixed(0)}%</span>
+            <div className="py-2 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500 font-saira uppercase">PROGRESS</span>
+                <span className="text-sm font-bold text-green-500 font-saira">{progress.toFixed(0)}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
             </div>
           </div>
 
