@@ -639,6 +639,64 @@ export function BookmarkDetailModal({
                 </Button>
               </div>
             </div>
+
+            {/* Related Bookmarks Section */}
+            <div className="mt-8 pt-8 border-t">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold text-gray-900">RELATED BOOKMARKS</h3>
+                <Button
+                  variant="outline"
+                  className="text-sm uppercase"
+                  onClick={() => {
+                    toast.info("Feature to browse and add related bookmarks")
+                  }}
+                >
+                  + Browse All Bookmarks To Add More
+                </Button>
+              </div>
+              
+              <div className="text-center py-12">
+                <p className="text-gray-500 mb-2">No related bookmarks yet.</p>
+                <p className="text-sm text-gray-400">
+                  Click &quot;Browse All Bookmarks to add more&quot; to add related bookmarks.
+                </p>
+              </div>
+              
+              <div className="flex justify-center">
+                <Button
+                  variant="outline"
+                  className="uppercase"
+                  onClick={() => {
+                    toast.info("Feature to browse and add related bookmarks")
+                  }}
+                >
+                  + Browse All Bookmarks To Add More
+                </Button>
+              </div>
+            </div>
+
+            {/* Goals Section */}
+            <div className="mt-8 pt-8 border-t">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold text-gray-900">GOALS</h3>
+                <Button
+                  variant="outline"
+                  className="text-sm uppercase"
+                  onClick={() => {
+                    toast.info("Feature to add or link goals to this bookmark")
+                  }}
+                >
+                  + Add Goal
+                </Button>
+              </div>
+              
+              <div className="text-center py-12">
+                <p className="text-gray-500 mb-2">No goals linked yet.</p>
+                <p className="text-sm text-gray-400">
+                  Click &quot;ADD GOAL&quot; to link existing goals to this bookmark.
+                </p>
+              </div>
+            </div>
           </TabsContent>
 
           {/* ARP TAB */}
