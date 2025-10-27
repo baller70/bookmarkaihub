@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
-import { Sparkles, Search, Settings as SettingsIcon, HelpCircle } from 'lucide-react'
+import { Sparkles, Search, Settings as SettingsIcon, HelpCircle, FileText, Video, FileDown, Code, Database } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function ContentDiscoveryPage() {
@@ -22,6 +22,16 @@ export default function ContentDiscoveryPage() {
   const [useProfileInterests, setUseProfileInterests] = useState(true)
   const [maxResults, setMaxResults] = useState([20])
   const [topicKeywords, setTopicKeywords] = useState('')
+  const [selectedLinkTypes, setSelectedLinkTypes] = useState<string[]>(['article', 'video'])
+  const [dateRange, setDateRange] = useState('past-week')
+
+  const toggleLinkType = (type: string) => {
+    setSelectedLinkTypes(prev =>
+      prev.includes(type)
+        ? prev.filter(t => t !== type)
+        : [...prev, type]
+    )
+  }
 
   return (
     <div className="space-y-4">
@@ -172,7 +182,7 @@ export default function ContentDiscoveryPage() {
               {/* Date Range */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Date Range</Label>
-                <Select defaultValue="past-week">
+                <Select value={dateRange} onValueChange={setDateRange}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -189,21 +199,61 @@ export default function ContentDiscoveryPage() {
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Link Types</Label>
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="default" className="bg-black hover:bg-gray-800 cursor-pointer">
-                    📄 Article
-                  </Badge>
-                  <Badge variant="outline" className="cursor-pointer">
-                    🎥 Video
-                  </Badge>
-                  <Badge variant="outline" className="cursor-pointer">
-                    📑 PDF
-                  </Badge>
-                  <Badge variant="outline" className="cursor-pointer">
-                    💻 Repo
-                  </Badge>
-                  <Badge variant="outline" className="cursor-pointer">
-                    📊 Dataset
-                  </Badge>
+                  <Button
+                    variant={selectedLinkTypes.includes('article') ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => toggleLinkType('article')}
+                    className={selectedLinkTypes.includes('article') 
+                      ? 'bg-black hover:bg-gray-800 text-white' 
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}
+                  >
+                    <FileText className="h-4 w-4 mr-1" />
+                    Article
+                  </Button>
+                  <Button
+                    variant={selectedLinkTypes.includes('video') ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => toggleLinkType('video')}
+                    className={selectedLinkTypes.includes('video') 
+                      ? 'bg-black hover:bg-gray-800 text-white' 
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}
+                  >
+                    <Video className="h-4 w-4 mr-1" />
+                    Video
+                  </Button>
+                  <Button
+                    variant={selectedLinkTypes.includes('pdf') ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => toggleLinkType('pdf')}
+                    className={selectedLinkTypes.includes('pdf') 
+                      ? 'bg-black hover:bg-gray-800 text-white' 
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}
+                  >
+                    <FileDown className="h-4 w-4 mr-1" />
+                    Pdf
+                  </Button>
+                  <Button
+                    variant={selectedLinkTypes.includes('repo') ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => toggleLinkType('repo')}
+                    className={selectedLinkTypes.includes('repo') 
+                      ? 'bg-black hover:bg-gray-800 text-white' 
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}
+                  >
+                    <Code className="h-4 w-4 mr-1" />
+                    Repo
+                  </Button>
+                  <Button
+                    variant={selectedLinkTypes.includes('dataset') ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => toggleLinkType('dataset')}
+                    className={selectedLinkTypes.includes('dataset') 
+                      ? 'bg-black hover:bg-gray-800 text-white' 
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}
+                  >
+                    <Database className="h-4 w-4 mr-1" />
+                    Dataset
+                  </Button>
                 </div>
               </div>
 
