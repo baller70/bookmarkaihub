@@ -9,8 +9,10 @@ import FavoritesView from '@/components/dna-profile/favorites-view'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
-import { User, Heart, BookOpen, Search, BarChart3, Clock, ArrowLeft } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { User, Heart, BookOpen, Search, BarChart3, Clock, ArrowLeft, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
 type Section = 'about-you' | 'favorites' | 'playbooks' | 'search' | 'analytics' | 'time-capsule'
 
@@ -57,6 +59,14 @@ export default function DnaProfilePage() {
   }, [])
 
   const progressPercentage = (completedSections.length / sections.length) * 100
+
+  const handleSaveProfile = async () => {
+    toast.success('Profile saved successfully!')
+  }
+
+  const getCurrentSectionLabel = () => {
+    return sections.find(s => s.id === activeSection)?.label || 'About You'
+  }
 
   const renderSection = () => {
     switch (activeSection) {
@@ -131,6 +141,26 @@ export default function DnaProfilePage() {
               <ArrowLeft className="h-4 w-4" />
               Back to Dashboard
             </Button>
+          </div>
+
+          {/* Header Bar */}
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5" />
+                <h1 className="text-xl font-semibold">DNA Profile</h1>
+              </div>
+              <div className="h-6 w-px bg-gray-300" />
+              <span className="text-lg font-medium">{getCurrentSectionLabel()}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Badge variant="secondary" className="bg-gray-100 text-gray-700 hover:bg-gray-100">
+                AI-Powered
+              </Badge>
+              <Button onClick={handleSaveProfile} className="bg-black text-white hover:bg-gray-800">
+                Save Profile
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
