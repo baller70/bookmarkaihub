@@ -205,19 +205,19 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
           {/* Main Content Area */}
           <div className="flex-1 p-6 flex flex-col">
             {/* Header with logo and title */}
-            <div className="flex items-start space-x-4 mb-4">
+            <div className="flex items-start space-x-4 mb-6">
               {/* Logo */}
-              <div className="relative w-16 h-16 flex-shrink-0 bg-black rounded-2xl overflow-hidden shadow-sm">
+              <div className="relative w-16 h-16 flex-shrink-0 bg-white rounded-2xl overflow-hidden shadow-md border-2 border-gray-100">
                 {bookmark.favicon ? (
                   <Image
                     src={bookmark.favicon}
                     alt={bookmark.title}
                     fill
-                    className="object-cover p-2"
+                    className="object-contain p-2"
                     unoptimized
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white font-bold text-lg">
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-lg">
                     {bookmark.title?.charAt(0)?.toUpperCase()}
                   </div>
                 )}
@@ -234,27 +234,8 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
               </div>
             </div>
 
-            {/* Center Image */}
-            <div className="flex items-center justify-center my-4">
-              <div className="relative w-32 h-32 bg-white rounded-3xl shadow-lg overflow-hidden border-4 border-white">
-                {bookmark.favicon ? (
-                  <Image
-                    src={bookmark.favicon}
-                    alt={bookmark.title}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white text-4xl font-bold">
-                    {bookmark.title?.charAt(0)?.toUpperCase()}
-                  </div>
-                )}
-              </div>
-            </div>
-
             {/* Description */}
-            <p className="text-sm text-gray-700 mb-4 line-clamp-2 h-10 leading-5 font-saira">
+            <p className="text-sm text-gray-700 mb-6 line-clamp-3 min-h-[60px] leading-5 font-saira">
               {bookmark.description || "No description available"}
             </p>
 

@@ -4,16 +4,72 @@
  * Fetches title, description, and other metadata from URLs
  */
 
+import { getFaviconUrl } from './favicon-service';
+
 export interface WebsiteMetadata {
   title: string;
   description: string;
   favicon: string;
+  suggestedTags: string[];
+}
+
+/**
+ * Extract main title by removing taglines and suffixes
+ * Examples:
+ * "Netflix - Watch TV Shows Online" -> "Netflix"
+ * "YouTube | Video Sharing" -> "YouTube"
+ * "Amazon.com: Online Shopping" -> "Amazon"
+ */
+function extractMainTitle(fullTitle: string): string {
+  if (!fullTitle) return '';
+  
+  // Remove common separators and everything after them
+  const separators = [' - ', ' | ', ' :: ', ': ', ' — ', ' – '];
+  
+  let cleanTitle = fullTitle.trim();
+  
+  for (const separator of separators) {
+    const index = cleanTitle.indexOf(separator);
+    if (index > 0) {
+      cleanTitle = cleanTitle.substring(0, index).trim();
+      break;
+    }
+  }
+  
+  // Remove domain suffix if present (e.g., "Amazon.com" -> "Amazon")
+  cleanTitle = cleanTitle.replace(/\.(com|net|org|io|co)$/i, '');
+  
+  return cleanTitle;
+}
+
+/**
+ * Extract suggested tags from page content
+ */
+function extractSuggestedTags(html: string): string[] {
+  const tags = new Set<string>();
+  
+  // Extract from meta keywords
+  const keywordsMatch = html.match(/<meta[^>]*name=["']keywords["'][^>]*content=["']([^"']+)["']/i);
+  if (keywordsMatch) {
+    const keywords = keywordsMatch[1].split(',').map(k => k.trim()).filter(k => k.length > 0 && k.length < 20);
+    keywords.slice(0, 3).forEach(k => tags.add(k));
+  }
+  
+  // Extract from og:type or article:tag
+  const articleTags = html.matchAll(/<meta[^>]*(?:property|name)=["'](?:article:tag|og:type)["'][^>]*content=["']([^"']+)["']/gi);
+  for (const match of articleTags) {
+    if (match[1] && match[1].length < 20) {
+      tags.add(match[1].trim());
+    }
+  }
+  
+  return Array.from(tags).slice(0, 5);
 }
 
 export async function fetchWebsiteMetadata(url: string): Promise<WebsiteMetadata | null> {
   try {
     // Validate URL
-    new URL(url);
+    const urlObj = new URL(url);
 
     // Fetch the HTML content
     const response = await fetch(url, {
@@ -34,25 +90,31 @@ export async function fetchWebsiteMetadata(url: string): Promise<WebsiteMetadata
       title: '',
       description: '',
       favicon: '',
+      suggestedTags: [],
     };
 
-    // Extract title
-    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-    if (titleMatch) {
-      metadata.title = titleMatch[1].trim();
-    }
-
-    // Try Open Graph title first
+    // Extract title - prioritize og:title, then title tag
+    let rawTitle = '';
+    
     const ogTitleMatch = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i);
     if (ogTitleMatch) {
-      metadata.title = ogTitleMatch[1].trim();
+      rawTitle = ogTitleMatch[1].trim();
+    } else {
+      const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+      if (titleMatch) {
+        rawTitle = titleMatch[1].trim();
+      }
     }
+    
+    // Extract only the main title (before separators)
+    metadata.title = extractMainTitle(rawTitle) || urlObj.hostname.replace(/^www\./, '').split('.')[0];
 
     // Extract description - try multiple sources
     const descriptionPatterns = [
       /<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i,
       /<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i,
       /<meta[^>]*content=["']([^"']+)["'][^>]*name=["']description["']/i,
+      /<meta[^>]*name=["']twitter:description["'][^>]*content=["']([^"']+)["']/i,
     ];
 
     for (const pattern of descriptionPatterns) {
@@ -63,32 +125,11 @@ export async function fetchWebsiteMetadata(url: string): Promise<WebsiteMetadata
       }
     }
 
-    // Extract favicon
-    const urlObj = new URL(url);
-    const faviconPatterns = [
-      /<link[^>]*rel=["'](?:icon|shortcut icon)["'][^>]*href=["']([^"']+)["']/i,
-      /<link[^>]*href=["']([^"']+)["'][^>]*rel=["'](?:icon|shortcut icon)["']/i,
-    ];
+    // Extract suggested tags
+    metadata.suggestedTags = extractSuggestedTags(html);
 
-    for (const pattern of faviconPatterns) {
-      const match = html.match(pattern);
-      if (match) {
-        let faviconUrl = match[1];
-        // Make absolute URL if relative
-        if (faviconUrl.startsWith('/')) {
-          faviconUrl = `${urlObj.protocol}//${urlObj.hostname}${faviconUrl}`;
-        } else if (!faviconUrl.startsWith('http')) {
-          faviconUrl = `${urlObj.protocol}//${urlObj.hostname}/${faviconUrl}`;
-        }
-        metadata.favicon = faviconUrl;
-        break;
-      }
-    }
-
-    // Fallback favicon
-    if (!metadata.favicon) {
-      metadata.favicon = `${urlObj.protocol}//${urlObj.hostname}/favicon.ico`;
-    }
+    // Use the improved favicon service
+    metadata.favicon = await getFaviconUrl(url);
 
     return metadata;
   } catch (error) {

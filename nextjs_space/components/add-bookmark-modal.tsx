@@ -91,7 +91,12 @@ export function AddBookmarkModal({ open, onOpenChange, onSuccess }: AddBookmarkM
           favicon: prev.favicon || metadata.favicon || "",
         }))
         
-        toast.success("Metadata fetched successfully")
+        // Show suggested tags if available
+        if (metadata.suggestedTags && metadata.suggestedTags.length > 0) {
+          toast.success(`Metadata fetched! Suggested tags: ${metadata.suggestedTags.join(', ')}`)
+        } else {
+          toast.success("Metadata fetched successfully")
+        }
       } else {
         console.error("Failed to fetch metadata")
       }
