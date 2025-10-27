@@ -26,6 +26,14 @@
     --input: 12 6.5% 15.1%;
     --ring: 24 5.7% 82.9%;
     --radius: 0.5rem;
+    
+    /* Dotted background pattern */
+    --pattern-dots: radial-gradient(circle, #d1d5db 1.5px, transparent 0);
+    --pattern-grid: linear-gradient(90deg, #e5e7eb 1px, transparent 0), linear-gradient(180deg, #e5e7eb 1px, transparent 0);
+    --pattern-waves: repeating-linear-gradient(135deg, #a5b4fc 0 2px, transparent 2px 20px), repeating-linear-gradient(-135deg, #a5b4fc 0 2px, transparent 2px 20px);
+    --pattern-geometric: repeating-linear-gradient(45deg, #fbbf24 0 10px, transparent 10px 20px), repeating-linear-gradient(-45deg, #6366f1 0 10px, transparent 10px 20px);
+    --active-pattern: var(--pattern-dots);
+    --pattern-size: 24px 24px;
   }
 
   .dark {
@@ -60,6 +68,23 @@
   }
   h1, h2, h3 {
     font-family: 'Audiowide', cursive;
+  }
+  
+  /* Dotted background pattern pseudo-element */
+  html::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: var(--active-pattern) !important;
+    background-size: var(--pattern-size) !important;
+    background-repeat: repeat !important;
+    background-attachment: fixed !important;
+    background-color: rgb(255, 255, 255) !important;
+    z-index: -9999 !important;
+    pointer-events: none !important;
   }
 }
 
