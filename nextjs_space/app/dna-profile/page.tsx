@@ -153,14 +153,9 @@ export default function DnaProfilePage() {
               <div className="h-6 w-px bg-gray-300" />
               <span className="text-lg font-medium">{getCurrentSectionLabel()}</span>
             </div>
-            <div className="flex items-center gap-3">
-              <Badge variant="secondary" className="bg-gray-100 text-gray-700 hover:bg-gray-100">
-                AI-Powered
-              </Badge>
-              <Button onClick={handleSaveProfile} className="bg-black text-white hover:bg-gray-800">
-                Save Profile
-              </Button>
-            </div>
+            <Badge variant="secondary" className="bg-gray-100 text-gray-700 hover:bg-gray-100">
+              AI-Powered
+            </Badge>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
