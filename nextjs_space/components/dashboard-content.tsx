@@ -220,7 +220,7 @@ export function DashboardContent() {
               size="sm"
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="h-9 text-black"
+              className="h-9 text-black bg-white hover:bg-gray-50"
             >
               <ChevronLeft className="h-4 w-4" />
               Previous
@@ -230,7 +230,7 @@ export function DashboardContent() {
               size="sm"
               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
-              className="h-9 text-black"
+              className="h-9 text-black bg-white hover:bg-gray-50"
             >
               Next
               <ChevronRight className="h-4 w-4" />
