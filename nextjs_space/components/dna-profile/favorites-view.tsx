@@ -2,13 +2,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
-import { RefreshCw, Download, Heart, Grid3x3, List, Table, LayoutGrid } from 'lucide-react'
+import { RefreshCw, Download, Heart, Grid3x3, List, Table, LayoutGrid, ArrowLeft, Eye, TrendingUp, Star, ArrowUpDown, Calendar, FileText } from 'lucide-react'
 import { ViewMode, SortOption, FavoriteStats } from '@/lib/types'
+import { formatDistanceToNow } from 'date-fns'
 
 type Bookmark = {
   id: string
@@ -18,11 +20,13 @@ type Bookmark = {
   description?: string
   totalVisits: number
   lastVisited?: Date
+  createdAt: Date
   categories: any[]
   tags: any[]
 }
 
 export default function FavoritesView() {
+  const router = useRouter()
   const [favorites, setFavorites] = useState<Bookmark[]>([])
   const [stats, setStats] = useState<FavoriteStats>({
     totalFavorites: 0,
@@ -32,7 +36,8 @@ export default function FavoritesView() {
   })
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
-  const [sortBy, setSortBy] = useState<SortOption>('dateAdded')
+  const [sortBy, setSortBy] = useState<SortOption>('lastUpdated')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
 
   useEffect(() => {
     fetchFavorites()
@@ -70,27 +75,60 @@ export default function FavoritesView() {
   }
 
   const sortedFavorites = [...favorites].sort((a, b) => {
+    let comparison = 0
     switch (sortBy) {
       case 'title':
-        return a.title.localeCompare(b.title)
+        comparison = a.title.localeCompare(b.title)
+        break
       case 'mostVisited':
-        return b.totalVisits - a.totalVisits
+        comparison = b.totalVisits - a.totalVisits
+        break
       case 'lastUpdated':
-        return new Date(b.lastVisited || 0).getTime() - new Date(a.lastVisited || 0).getTime()
+        comparison = new Date(b.lastVisited || 0).getTime() - new Date(a.lastVisited || 0).getTime()
+        break
+      case 'dateAdded':
+        comparison = new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+        break
       default:
         return 0
     }
+    return sortOrder === 'desc' ? comparison : -comparison
   })
+
+  const formatDate = (date?: Date) => {
+    if (!date) return 'Never'
+    const d = new Date(date)
+    const month = d.toLocaleString('en', { month: 'short' })
+    const day = d.getDate()
+    const year = d.getFullYear()
+    return `${month} ${day}, ${year}`
+  }
 
   if (loading) {
     return <div className="flex items-center justify-center p-8">Loading favorites...</div>
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 p-6">
+    <div className="max-w-7xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold uppercase">Favorites</h1>
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push('/dashboard')}
+              className="text-sm"
+            >
+              <ArrowLeft className="w-4 h-4 mr-1" />
+              Back to Dashboard
+            </Button>
+          </div>
+          <h1 className="text-4xl font-bold uppercase tracking-tight">Favorites</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {favorites.length} {favorites.length === 1 ? 'bookmark' : 'bookmarks'} marked as favorite
+          </p>
+        </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={fetchFavorites}>
             <RefreshCw className="w-4 h-4 mr-2" />
@@ -105,92 +143,188 @@ export default function FavoritesView() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-4 gap-4">
-        <Card className="bg-white">
+        <Card className="bg-white border-border">
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{stats.totalFavorites}</div>
-            <div className="text-sm text-muted-foreground">Total Favorites</div>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-3xl font-bold">{stats.totalFavorites}</div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  Bookmarks marked as favorite
+                </div>
+              </div>
+              <div className="p-3 rounded-lg bg-red-50">
+                <Heart className="w-6 h-6 text-red-500" />
+              </div>
+            </div>
           </CardContent>
         </Card>
-        <Card className="bg-white">
+
+        <Card className="bg-white border-border">
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{stats.totalVisits}</div>
-            <div className="text-sm text-muted-foreground">Total Visits</div>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-3xl font-bold">{stats.totalVisits}</div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  Combined visits to favorites
+                </div>
+              </div>
+              <div className="p-3 rounded-lg bg-blue-50">
+                <Eye className="w-6 h-6 text-blue-500" />
+              </div>
+            </div>
           </CardContent>
         </Card>
-        <Card className="bg-white">
+
+        <Card className="bg-white border-border">
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{stats.avgVisits}</div>
-            <div className="text-sm text-muted-foreground">Avg Visits</div>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-3xl font-bold">{stats.avgVisits}</div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  Average visits per favorite
+                </div>
+              </div>
+              <div className="p-3 rounded-lg bg-orange-50">
+                <TrendingUp className="w-6 h-6 text-orange-500" />
+              </div>
+            </div>
           </CardContent>
         </Card>
-        <Card className="bg-white">
+
+        <Card className="bg-white border-border">
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold truncate">{stats.mostVisited.title}</div>
-            <div className="text-sm text-muted-foreground">Most Visited ({stats.mostVisited.visits} visits)</div>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-3xl font-bold">{stats.mostVisited.visits}</div>
+                <div className="text-sm text-muted-foreground mt-1 truncate">
+                  {stats.mostVisited.title}
+                </div>
+              </div>
+              <div className="p-3 rounded-lg bg-yellow-50">
+                <Star className="w-6 h-6 text-yellow-500" />
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Controls */}
       <div className="flex items-center justify-between">
-        <div className="flex gap-2">
-          <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('grid')}>
-            <Grid3x3 className="w-4 h-4" />
-          </Button>
-          <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('list')}>
-            <List className="w-4 h-4" />
-          </Button>
-          <Button variant={viewMode === 'compact' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('compact')}>
-            <LayoutGrid className="w-4 h-4" />
-          </Button>
-          <Button variant={viewMode === 'table' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('table')}>
-            <Table className="w-4 h-4" />
-          </Button>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">View:</span>
+          <div className="flex gap-1">
+            <Button 
+              variant={viewMode === 'grid' ? 'default' : 'ghost'} 
+              size="sm" 
+              onClick={() => setViewMode('grid')}
+              className="p-2"
+            >
+              <Grid3x3 className="w-4 h-4" />
+            </Button>
+            <Button 
+              variant={viewMode === 'list' ? 'default' : 'ghost'} 
+              size="sm" 
+              onClick={() => setViewMode('list')}
+              className="p-2"
+            >
+              <List className="w-4 h-4" />
+            </Button>
+            <Button 
+              variant={viewMode === 'compact' ? 'default' : 'ghost'} 
+              size="sm" 
+              onClick={() => setViewMode('compact')}
+              className="p-2"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </Button>
+            <Button 
+              variant={viewMode === 'table' ? 'default' : 'ghost'} 
+              size="sm" 
+              onClick={() => setViewMode('table')}
+              className="p-2"
+            >
+              <Table className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
-        <div className="w-48">
+        
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Sort:</span>
           <Select value={sortBy} onValueChange={(val) => setSortBy(val as SortOption)}>
-            <SelectTrigger>
+            <SelectTrigger className="w-40 h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="title">Title</SelectItem>
-              <SelectItem value="dateAdded">Date Added</SelectItem>
               <SelectItem value="lastUpdated">Last Updated</SelectItem>
+              <SelectItem value="dateAdded">Date Added</SelectItem>
+              <SelectItem value="title">Title</SelectItem>
               <SelectItem value="mostVisited">Most Visited</SelectItem>
-              <SelectItem value="folder">Folder</SelectItem>
             </SelectContent>
           </Select>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            className="p-2"
+          >
+            <ArrowUpDown className="w-4 h-4" />
+          </Button>
         </div>
       </div>
 
-      {/* Bookmarks Grid/List */}
+      {/* Bookmarks Grid View */}
       {viewMode === 'grid' && (
         <div className="grid grid-cols-3 gap-4">
           {sortedFavorites.map(bookmark => (
-            <Card key={bookmark.id} className="cursor-pointer hover:shadow-lg transition-shadow">
+            <Card key={bookmark.id} className="bg-white border-border hover:shadow-md transition-shadow cursor-pointer">
               <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                    {bookmark.favicon ? (
-                      <img src={bookmark.favicon} alt="" className="w-6 h-6" />
-                    ) : (
-                      <div className="w-6 h-6 bg-primary/10 rounded" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm truncate">{bookmark.title}</h3>
-                    <p className="text-xs text-muted-foreground truncate">{bookmark.url}</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <Heart className="w-3 h-3 fill-red-500 text-red-500" />
-                      <span className="text-xs text-muted-foreground">{bookmark.totalVisits} visits</span>
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      {bookmark.favicon ? (
+                        <img src={bookmark.favicon} alt="" className="w-6 h-6" />
+                      ) : (
+                        <FileText className="w-5 h-5 text-gray-400" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-base truncate">{bookmark.title}</h3>
+                      <p className="text-sm text-muted-foreground truncate">{bookmark.url}</p>
                     </div>
                   </div>
+                  <Heart className="w-5 h-5 fill-red-500 text-red-500 flex-shrink-0 ml-2" />
                 </div>
-                {bookmark.categories.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-3">
-                    {bookmark.categories.map(cat => (
-                      <Badge key={cat.categoryId} variant="secondary" className="text-xs">
-                        {cat.category.name}
+                
+                {bookmark.description && (
+                  <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                    {bookmark.description}
+                  </p>
+                )}
+                
+                <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+                  <div className="flex items-center gap-3">
+                    <span className="flex items-center gap-1">
+                      <Eye className="w-3 h-3" />
+                      {bookmark.totalVisits} visits
+                    </span>
+                    {bookmark.categories.length > 0 && (
+                      <span className="flex items-center gap-1">
+                        <FileText className="w-3 h-3" />
+                        {bookmark.categories[0]?.category?.name || 'Uncategorized'}
+                      </span>
+                    )}
+                  </div>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    {formatDate(bookmark.lastVisited)}
+                  </span>
+                </div>
+                
+                {bookmark.tags && bookmark.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {bookmark.tags.slice(0, 3).map((tag: any) => (
+                      <Badge key={tag.tagId} variant="secondary" className="text-xs">
+                        {tag.tag?.name || 'Tag'}
                       </Badge>
                     ))}
                   </div>
@@ -201,26 +335,95 @@ export default function FavoritesView() {
         </div>
       )}
 
+      {/* Bookmarks List View */}
       {viewMode === 'list' && (
+        <div className="space-y-3">
+          {sortedFavorites.map(bookmark => (
+            <Card key={bookmark.id} className="bg-white border-border hover:shadow-sm transition-shadow cursor-pointer">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      {bookmark.favicon ? (
+                        <img src={bookmark.favicon} alt="" className="w-6 h-6" />
+                      ) : (
+                        <FileText className="w-5 h-5 text-gray-400" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-base truncate mb-1">{bookmark.title}</h3>
+                      <p className="text-sm text-muted-foreground truncate mb-2">{bookmark.url}</p>
+                      {bookmark.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                          {bookmark.description}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Eye className="w-3 h-3" />
+                          {bookmark.totalVisits} visits
+                        </span>
+                        {bookmark.categories.length > 0 && (
+                          <span className="flex items-center gap-1">
+                            <FileText className="w-3 h-3" />
+                            {bookmark.categories[0]?.category?.name || 'Uncategorized'}
+                          </span>
+                        )}
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {formatDate(bookmark.lastVisited)}
+                        </span>
+                      </div>
+                      {bookmark.tags && bookmark.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {bookmark.tags.slice(0, 5).map((tag: any) => (
+                            <Badge key={tag.tagId} variant="secondary" className="text-xs">
+                              {tag.tag?.name || 'Tag'}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <Heart className="w-5 h-5 fill-red-500 text-red-500 flex-shrink-0 ml-4" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Bookmarks Compact View */}
+      {viewMode === 'compact' && (
         <div className="space-y-2">
           {sortedFavorites.map(bookmark => (
-            <Card key={bookmark.id} className="cursor-pointer hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                    {bookmark.favicon ? (
-                      <img src={bookmark.favicon} alt="" className="w-6 h-6" />
-                    ) : (
-                      <div className="w-6 h-6 bg-primary/10 rounded" />
-                    )}
+            <Card key={bookmark.id} className="bg-white border-border hover:shadow-sm transition-shadow cursor-pointer">
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      {bookmark.favicon ? (
+                        <img src={bookmark.favicon} alt="" className="w-5 h-5" />
+                      ) : (
+                        <FileText className="w-4 h-4 text-gray-400" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-sm truncate">{bookmark.title}</h3>
+                      <p className="text-xs text-muted-foreground truncate">{bookmark.url}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold truncate">{bookmark.title}</h3>
-                    <p className="text-sm text-muted-foreground truncate">{bookmark.url}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-4 flex-shrink-0 ml-4">
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Eye className="w-3 h-3" />
+                        {bookmark.totalVisits} visits
+                      </span>
+                      {bookmark.categories.length > 0 && (
+                        <span>{bookmark.categories[0]?.category?.name || 'Uncategorized'}</span>
+                      )}
+                    </div>
                     <Heart className="w-4 h-4 fill-red-500 text-red-500" />
-                    <span className="text-sm text-muted-foreground">{bookmark.totalVisits} visits</span>
                   </div>
                 </div>
               </CardContent>
@@ -229,72 +432,81 @@ export default function FavoritesView() {
         </div>
       )}
 
-      {viewMode === 'compact' && (
-        <div className="grid grid-cols-2 gap-2">
-          {sortedFavorites.map(bookmark => (
-            <div key={bookmark.id} className="flex items-center gap-2 p-2 rounded-lg border hover:bg-muted cursor-pointer">
-              <div className="w-8 h-8 rounded bg-muted flex items-center justify-center flex-shrink-0">
-                {bookmark.favicon ? (
-                  <img src={bookmark.favicon} alt="" className="w-5 h-5" />
-                ) : (
-                  <div className="w-5 h-5 bg-primary/10 rounded" />
-                )}
-              </div>
-              <span className="text-sm font-medium truncate flex-1">{bookmark.title}</span>
-              <Heart className="w-3 h-3 fill-red-500 text-red-500 flex-shrink-0" />
-            </div>
-          ))}
-        </div>
-      )}
-
+      {/* Bookmarks Table View */}
       {viewMode === 'table' && (
-        <div className="border rounded-lg">
-          <table className="w-full">
-            <thead className="bg-muted/50">
-              <tr>
-                <th className="text-left p-3 text-sm font-semibold">Title</th>
-                <th className="text-left p-3 text-sm font-semibold">URL</th>
-                <th className="text-left p-3 text-sm font-semibold">Visits</th>
-                <th className="text-left p-3 text-sm font-semibold">Last Visited</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedFavorites.map(bookmark => (
-                <tr key={bookmark.id} className="border-t hover:bg-muted/30 cursor-pointer">
-                  <td className="p-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded bg-muted flex items-center justify-center flex-shrink-0">
-                        {bookmark.favicon ? (
-                          <img src={bookmark.favicon} alt="" className="w-4 h-4" />
-                        ) : (
-                          <div className="w-4 h-4 bg-primary/10 rounded" />
-                        )}
-                      </div>
-                      <span className="text-sm truncate">{bookmark.title}</span>
-                    </div>
-                  </td>
-                  <td className="p-3 text-sm text-muted-foreground truncate max-w-xs">{bookmark.url}</td>
-                  <td className="p-3">
-                    <div className="flex items-center gap-1">
-                      <Heart className="w-3 h-3 fill-red-500 text-red-500" />
-                      <span className="text-sm">{bookmark.totalVisits}</span>
-                    </div>
-                  </td>
-                  <td className="p-3 text-sm text-muted-foreground">
-                    {bookmark.lastVisited ? new Date(bookmark.lastVisited).toLocaleDateString() : 'Never'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Card className="bg-white border-border">
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="text-left p-4 text-sm font-semibold text-gray-700">Title</th>
+                    <th className="text-left p-4 text-sm font-semibold text-gray-700">URL</th>
+                    <th className="text-left p-4 text-sm font-semibold text-gray-700">Category</th>
+                    <th className="text-left p-4 text-sm font-semibold text-gray-700">Visits</th>
+                    <th className="text-left p-4 text-sm font-semibold text-gray-700">Last Visited</th>
+                    <th className="text-left p-4 text-sm font-semibold text-gray-700"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedFavorites.map(bookmark => (
+                    <tr key={bookmark.id} className="border-b hover:bg-gray-50 cursor-pointer">
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                            {bookmark.favicon ? (
+                              <img src={bookmark.favicon} alt="" className="w-5 h-5" />
+                            ) : (
+                              <FileText className="w-4 h-4 text-gray-400" />
+                            )}
+                          </div>
+                          <span className="font-medium text-sm truncate max-w-xs">
+                            {bookmark.title}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <span className="text-sm text-muted-foreground truncate max-w-xs block">
+                          {bookmark.url}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <span className="text-sm">
+                          {bookmark.categories.length > 0 
+                            ? bookmark.categories[0]?.category?.name || 'Uncategorized'
+                            : 'Uncategorized'
+                          }
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <span className="text-sm">{bookmark.totalVisits}</span>
+                      </td>
+                      <td className="p-4">
+                        <span className="text-sm text-muted-foreground">
+                          {formatDate(bookmark.lastVisited)}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <Heart className="w-4 h-4 fill-red-500 text-red-500" />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {favorites.length === 0 && (
-        <div className="text-center py-12">
-          <Heart className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2 uppercase">No favorites yet</h3>
-          <p className="text-muted-foreground">Start favoriting bookmarks to see them here</p>
+        <div className="text-center py-16">
+          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+            <Heart className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-semibold mb-2">No favorites yet</h3>
+          <p className="text-muted-foreground">
+            Start favoriting bookmarks to see them here
+          </p>
         </div>
       )}
     </div>
