@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { Sparkles, ArrowLeft, Settings as SettingsIcon, Tag, FolderKanban, Search, Upload, AlertTriangle } from "lucide-react"
+import { Sparkles, ArrowLeft, Settings as SettingsIcon, Tag, FolderKanban, Search, Upload, AlertTriangle, FileText, Video, FileDown, Code, Database } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
@@ -22,6 +22,18 @@ export default function ContentDiscoveryPage() {
   const [suggestionsPerRefresh, setSuggestionsPerRefresh] = useState([5])
   const [serendipityLevel, setSerendipityLevel] = useState([50])
   const [maxResults, setMaxResults] = useState([20])
+  const [selectedLinkTypes, setSelectedLinkTypes] = useState<string[]>(['article'])
+  const [dateRange, setDateRange] = useState('past-week')
+  const [topicKeywords, setTopicKeywords] = useState('')
+  const [useProfileInterests, setUseProfileInterests] = useState(false)
+
+  const toggleLinkType = (type: string) => {
+    setSelectedLinkTypes(prev =>
+      prev.includes(type)
+        ? prev.filter(t => t !== type)
+        : [...prev, type]
+    )
+  }
 
   return (
     <DashboardAuth>
@@ -203,17 +215,19 @@ export default function ContentDiscoveryPage() {
                         <Input
                           placeholder="e.g., artificial intelligence, web development"
                           className="mb-2"
+                          value={topicKeywords}
+                          onChange={(e) => setTopicKeywords(e.target.value)}
                         />
                         <div className="flex items-center gap-2 mt-3">
                           <Sparkles className="h-4 w-4 text-purple-600" />
                           <Label className="text-sm text-gray-900 cursor-pointer flex-1">Use my profile interests</Label>
-                          <Switch defaultChecked />
+                          <Switch checked={useProfileInterests} onCheckedChange={setUseProfileInterests} />
                         </div>
                       </div>
 
                       <div>
                         <Label className="mb-2 block text-gray-900">Date Range</Label>
-                        <Select defaultValue="past-week">
+                        <Select value={dateRange} onValueChange={setDateRange}>
                           <SelectTrigger className="text-gray-900">
                             <SelectValue />
                           </SelectTrigger>
@@ -231,27 +245,58 @@ export default function ContentDiscoveryPage() {
                         <Label className="mb-3 block text-gray-900">Link Types</Label>
                         <div className="flex flex-wrap gap-2">
                           <Button 
-                            variant="secondary" 
+                            variant={selectedLinkTypes.includes('article') ? 'default' : 'outline'}
                             size="sm" 
-                            className="bg-gray-900 text-white hover:bg-gray-800 gap-2"
+                            onClick={() => toggleLinkType('article')}
+                            className={selectedLinkTypes.includes('article')
+                              ? "bg-gray-900 text-white hover:bg-gray-800"
+                              : "bg-white text-gray-900 border-gray-300 hover:bg-gray-100"}
                           >
-                            <FolderKanban className="h-4 w-4" />
+                            <FileText className="h-4 w-4 mr-1" />
                             Article
                           </Button>
-                          <Button variant="outline" size="sm" className="hover:bg-gray-100 gap-2 text-gray-900">
-                            <Upload className="h-4 w-4" />
+                          <Button 
+                            variant={selectedLinkTypes.includes('video') ? 'default' : 'outline'}
+                            size="sm" 
+                            onClick={() => toggleLinkType('video')}
+                            className={selectedLinkTypes.includes('video')
+                              ? "bg-gray-900 text-white hover:bg-gray-800"
+                              : "bg-white text-gray-900 border-gray-300 hover:bg-gray-100"}
+                          >
+                            <Video className="h-4 w-4 mr-1" />
                             Video
                           </Button>
-                          <Button variant="outline" size="sm" className="hover:bg-gray-100 gap-2 text-gray-900">
-                            <FolderKanban className="h-4 w-4" />
+                          <Button 
+                            variant={selectedLinkTypes.includes('pdf') ? 'default' : 'outline'}
+                            size="sm" 
+                            onClick={() => toggleLinkType('pdf')}
+                            className={selectedLinkTypes.includes('pdf')
+                              ? "bg-gray-900 text-white hover:bg-gray-800"
+                              : "bg-white text-gray-900 border-gray-300 hover:bg-gray-100"}
+                          >
+                            <FileDown className="h-4 w-4 mr-1" />
                             Pdf
                           </Button>
-                          <Button variant="outline" size="sm" className="hover:bg-gray-100 gap-2 text-gray-900">
-                            <Tag className="h-4 w-4" />
+                          <Button 
+                            variant={selectedLinkTypes.includes('repo') ? 'default' : 'outline'}
+                            size="sm" 
+                            onClick={() => toggleLinkType('repo')}
+                            className={selectedLinkTypes.includes('repo')
+                              ? "bg-gray-900 text-white hover:bg-gray-800"
+                              : "bg-white text-gray-900 border-gray-300 hover:bg-gray-100"}
+                          >
+                            <Code className="h-4 w-4 mr-1" />
                             Repo
                           </Button>
-                          <Button variant="outline" size="sm" className="hover:bg-gray-100 gap-2 text-gray-900">
-                            <FolderKanban className="h-4 w-4" />
+                          <Button 
+                            variant={selectedLinkTypes.includes('dataset') ? 'default' : 'outline'}
+                            size="sm" 
+                            onClick={() => toggleLinkType('dataset')}
+                            className={selectedLinkTypes.includes('dataset')
+                              ? "bg-gray-900 text-white hover:bg-gray-800"
+                              : "bg-white text-gray-900 border-gray-300 hover:bg-gray-100"}
+                          >
+                            <Database className="h-4 w-4 mr-1" />
                             Dataset
                           </Button>
                         </div>
