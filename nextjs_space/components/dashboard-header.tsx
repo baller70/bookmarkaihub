@@ -3,89 +3,105 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AddBookmarkModal } from "@/components/add-bookmark-modal"
-import { ViewMode } from "@/components/dashboard-content"
-import { Search, Filter, Plus, FolderOpen } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Check, Plus, RefreshCw, Grid3x3, List as ListIcon, LayoutGrid } from "lucide-react"
 
 interface DashboardHeaderProps {
-  viewMode: ViewMode
-  onViewModeChange: (mode: ViewMode) => void
-  searchQuery: string
-  onSearchChange: (query: string) => void
   onBookmarkCreated: () => void
+  onSyncAll?: () => void
 }
 
-const viewModes: { id: ViewMode; label: string }[] = [
-  { id: "GRID", label: "GRID" },
-  { id: "COMPACT", label: "COMPACT" },
-  { id: "LIST", label: "LIST" },
-  { id: "TIMELINE", label: "TIMELINE" },
-  { id: "HIERARCHY", label: "HIERARCHY" },
-  { id: "FOLDER", label: "FOLDER 2.0" },
-  { id: "GOAL", label: "GOAL 2.0" },
-  { id: "KANBAN", label: "KANBAN 2.0" },
-]
-
 export function DashboardHeader({
-  viewMode,
-  onViewModeChange,
-  searchQuery,
-  onSearchChange,
   onBookmarkCreated,
+  onSyncAll,
 }: DashboardHeaderProps) {
   const [showAddModal, setShowAddModal] = useState(false)
+  const [bulkSelectMode, setBulkSelectMode] = useState(false)
+  const [isSyncing, setIsSyncing] = useState(false)
+
+  const handleSyncAll = async () => {
+    setIsSyncing(true)
+    try {
+      if (onSyncAll) {
+        await onSyncAll()
+      }
+    } finally {
+      setIsSyncing(false)
+    }
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Main Title */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-4xl font-bold text-gray-900 font-audiowide">
+    <div className="flex items-start justify-between">
+      {/* Left: Title and Subtitle */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 font-audiowide tracking-tight">
           BOOKMARKHUB
         </h1>
+        <p className="text-sm text-gray-500 mt-1">Your Digital Workspace</p>
       </div>
 
-      {/* Search and Actions */}
-      <div className="flex items-center gap-4">
-        <div className="flex-1 relative max-w-2xl">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search bookmarks..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 pr-10 h-12 rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
-          <Filter className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+      {/* Right: Action Buttons */}
+      <div className="flex items-center gap-3">
+        {/* Bulk Select Button */}
+        <Button
+          variant={bulkSelectMode ? "default" : "outline"}
+          size="sm"
+          onClick={() => setBulkSelectMode(!bulkSelectMode)}
+          className="h-9 px-4 gap-2"
+        >
+          <Check className="h-4 w-4" />
+          <span className="text-xs font-medium">BULK SELECT</span>
+        </Button>
+
+        {/* All Categories Dropdown */}
+        <Select defaultValue="all">
+          <SelectTrigger className="w-[150px] h-9 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            <SelectItem value="work">Work</SelectItem>
+            <SelectItem value="personal">Personal</SelectItem>
+            <SelectItem value="entertainment">Entertainment</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Sync All Button with View Icons */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSyncAll}
+            disabled={isSyncing}
+            className="h-9 px-4 gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+            <span className="text-xs font-medium">{isSyncing ? 'Syncing...' : 'Sync All'}</span>
+          </Button>
+          
+          {/* View Icons */}
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" className="h-9 w-9">
+              <Grid3x3 className="h-4 w-4 text-blue-500" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-9 w-9">
+              <ListIcon className="h-4 w-4 text-blue-500" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-9 w-9">
+              <LayoutGrid className="h-4 w-4 text-blue-500" />
+            </Button>
+          </div>
         </div>
-        
+
+        {/* Add Bookmark Button */}
         <Button
           onClick={() => setShowAddModal(true)}
-          className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-sm"
+          className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white gap-2"
         >
-          <Plus className="h-4 w-4 mr-2" />
-          ADD BOOKMARK
+          <Plus className="h-4 w-4" />
+          <span className="text-xs font-medium">ADD BOOKMARK</span>
         </Button>
-      </div>
-
-      {/* View Mode Toggles */}
-      <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 w-fit">
-        {viewModes.map((mode) => (
-          <Button
-            key={mode.id}
-            variant="ghost"
-            size="sm"
-            onClick={() => onViewModeChange(mode.id)}
-            className={cn(
-              "px-3 py-2 text-xs font-medium rounded-md transition-colors",
-              viewMode === mode.id
-                ? "bg-gray-900 text-white shadow-sm"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
-            )}
-          >
-            {mode.label}
-          </Button>
-        ))}
       </div>
 
       {/* Add Bookmark Modal */}
