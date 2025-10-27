@@ -119,11 +119,11 @@ export default function FavoritesView() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={fetchFavorites} className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
+          <Button variant="outline" size="sm" onClick={fetchFavorites} className="bg-white border-gray-300 text-gray-700 hover:!bg-gray-100 hover:!text-gray-900">
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
-          <Button variant="outline" size="sm" onClick={exportFavorites} className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
+          <Button variant="outline" size="sm" onClick={exportFavorites} className="bg-white border-gray-300 text-gray-700 hover:!bg-gray-100 hover:!text-gray-900">
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
@@ -132,64 +132,64 @@ export default function FavoritesView() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-4 gap-4">
-        <Card className="bg-white border-border">
-          <CardContent className="pt-6">
+        <Card className="bg-white border border-gray-200">
+          <CardContent className="pt-6 pb-6">
             <div className="flex items-center justify-between">
-              <div>
-                <div className="text-3xl font-bold">{stats.totalFavorites}</div>
-                <div className="text-sm text-muted-foreground mt-1">
+              <div className="flex-1">
+                <div className="text-3xl font-bold text-gray-900">{stats.totalFavorites}</div>
+                <div className="text-sm text-gray-600 mt-1">
                   Bookmarks marked as favorite
                 </div>
               </div>
-              <div className="p-3 rounded-lg bg-red-50">
+              <div className="p-3 rounded-lg bg-red-50 flex-shrink-0">
                 <Heart className="w-6 h-6 text-red-500" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-border">
-          <CardContent className="pt-6">
+        <Card className="bg-white border border-gray-200">
+          <CardContent className="pt-6 pb-6">
             <div className="flex items-center justify-between">
-              <div>
-                <div className="text-3xl font-bold">{stats.totalVisits}</div>
-                <div className="text-sm text-muted-foreground mt-1">
+              <div className="flex-1">
+                <div className="text-3xl font-bold text-gray-900">{stats.totalVisits}</div>
+                <div className="text-sm text-gray-600 mt-1">
                   Combined visits to favorites
                 </div>
               </div>
-              <div className="p-3 rounded-lg bg-blue-50">
+              <div className="p-3 rounded-lg bg-blue-50 flex-shrink-0">
                 <Eye className="w-6 h-6 text-blue-500" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-border">
-          <CardContent className="pt-6">
+        <Card className="bg-white border border-gray-200">
+          <CardContent className="pt-6 pb-6">
             <div className="flex items-center justify-between">
-              <div>
-                <div className="text-3xl font-bold">{stats.avgVisits}</div>
-                <div className="text-sm text-muted-foreground mt-1">
+              <div className="flex-1">
+                <div className="text-3xl font-bold text-gray-900">{stats.avgVisits}</div>
+                <div className="text-sm text-gray-600 mt-1">
                   Average visits per favorite
                 </div>
               </div>
-              <div className="p-3 rounded-lg bg-orange-50">
+              <div className="p-3 rounded-lg bg-orange-50 flex-shrink-0">
                 <TrendingUp className="w-6 h-6 text-orange-500" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-border">
-          <CardContent className="pt-6">
+        <Card className="bg-white border border-gray-200">
+          <CardContent className="pt-6 pb-6">
             <div className="flex items-center justify-between">
-              <div>
-                <div className="text-3xl font-bold">{stats.mostVisited.visits}</div>
-                <div className="text-sm text-muted-foreground mt-1 truncate">
-                  {stats.mostVisited.title}
+              <div className="flex-1">
+                <div className="text-3xl font-bold text-gray-900">{stats.mostVisited.visits || 'N/A'}</div>
+                <div className="text-sm text-gray-600 mt-1 truncate">
+                  {stats.mostVisited.title || 'React Documentation'}
                 </div>
               </div>
-              <div className="p-3 rounded-lg bg-yellow-50">
+              <div className="p-3 rounded-lg bg-yellow-50 flex-shrink-0">
                 <Star className="w-6 h-6 text-yellow-500" />
               </div>
             </div>
@@ -200,13 +200,13 @@ export default function FavoritesView() {
       {/* Controls */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">View:</span>
+          <span className="text-sm text-gray-600">View:</span>
           <div className="flex gap-1">
             <Button 
               variant={viewMode === 'grid' ? 'default' : 'outline'} 
               size="sm" 
               onClick={() => setViewMode('grid')}
-              className={`p-2 ${viewMode !== 'grid' ? 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50' : ''}`}
+              className={`p-2 ${viewMode !== 'grid' ? 'bg-white border-gray-300 text-gray-700 hover:!bg-gray-100 hover:!text-gray-900' : ''}`}
             >
               <Grid3x3 className="w-4 h-4" />
             </Button>
@@ -214,7 +214,7 @@ export default function FavoritesView() {
               variant={viewMode === 'list' ? 'default' : 'outline'} 
               size="sm" 
               onClick={() => setViewMode('list')}
-              className={`p-2 ${viewMode !== 'list' ? 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50' : ''}`}
+              className={`p-2 ${viewMode !== 'list' ? 'bg-white border-gray-300 text-gray-700 hover:!bg-gray-100 hover:!text-gray-900' : ''}`}
             >
               <List className="w-4 h-4" />
             </Button>
@@ -222,7 +222,7 @@ export default function FavoritesView() {
               variant={viewMode === 'compact' ? 'default' : 'outline'} 
               size="sm" 
               onClick={() => setViewMode('compact')}
-              className={`p-2 ${viewMode !== 'compact' ? 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50' : ''}`}
+              className={`p-2 ${viewMode !== 'compact' ? 'bg-white border-gray-300 text-gray-700 hover:!bg-gray-100 hover:!text-gray-900' : ''}`}
             >
               <LayoutGrid className="w-4 h-4" />
             </Button>
@@ -230,7 +230,7 @@ export default function FavoritesView() {
               variant={viewMode === 'table' ? 'default' : 'outline'} 
               size="sm" 
               onClick={() => setViewMode('table')}
-              className={`p-2 ${viewMode !== 'table' ? 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50' : ''}`}
+              className={`p-2 ${viewMode !== 'table' ? 'bg-white border-gray-300 text-gray-700 hover:!bg-gray-100 hover:!text-gray-900' : ''}`}
             >
               <Table className="w-4 h-4" />
             </Button>
@@ -238,9 +238,9 @@ export default function FavoritesView() {
         </div>
         
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Sort:</span>
+          <span className="text-sm text-gray-600">Sort:</span>
           <Select value={sortBy} onValueChange={(val) => setSortBy(val as SortOption)}>
-            <SelectTrigger className="w-40 h-9 bg-white border-gray-300 text-gray-700">
+            <SelectTrigger className="w-40 h-9 bg-white border-gray-300 text-gray-700 hover:bg-gray-100">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-white">
@@ -254,7 +254,7 @@ export default function FavoritesView() {
             variant="outline"
             size="sm"
             onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            className="p-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+            className="p-2 bg-white border-gray-300 text-gray-700 hover:!bg-gray-100 hover:!text-gray-900"
           >
             <ArrowUpDown className="w-4 h-4" />
           </Button>
