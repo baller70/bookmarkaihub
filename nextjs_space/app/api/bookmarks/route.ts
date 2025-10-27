@@ -111,15 +111,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Title and URL are required" }, { status: 400 })
     }
 
-    // Auto-fetch high-quality favicon if not provided
-    let finalFavicon = favicon;
-    if (!finalFavicon) {
-      try {
-        finalFavicon = await getFaviconUrl(url);
-      } catch (error) {
-        console.error('Error fetching favicon:', error);
-        finalFavicon = '';
+    // Auto-fetch high-quality favicon (always prioritize high-quality PNG sources)
+    // Even if favicon is provided from metadata, we try to get a better quality one
+    let finalFavicon = '';
+    try {
+      // Always try to get high-quality favicon from our service
+      const highQualityFavicon = await getFaviconUrl(url);
+      if (highQualityFavicon) {
+        finalFavicon = highQualityFavicon;
+      } else {
+        // Fallback to provided favicon if our service fails
+        finalFavicon = favicon || '';
       }
+    } catch (error) {
+      console.error('Error fetching favicon:', error);
+      finalFavicon = favicon || '';
     }
 
     const bookmark = await prisma.bookmark.create({
