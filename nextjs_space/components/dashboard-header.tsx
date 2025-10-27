@@ -48,7 +48,7 @@ export function DashboardHeader({
           variant={bulkSelectMode ? "default" : "outline"}
           size="sm"
           onClick={() => setBulkSelectMode(!bulkSelectMode)}
-          className="h-9 px-4 gap-2"
+          className="h-9 px-4 gap-2 text-white"
         >
           <Check className="h-4 w-4" />
           <span className="text-xs font-medium">BULK SELECT</span>
@@ -56,7 +56,7 @@ export function DashboardHeader({
 
         {/* All Categories Dropdown */}
         <Select defaultValue="all">
-          <SelectTrigger className="w-[150px] h-9 text-xs">
+          <SelectTrigger className="w-[150px] h-9 text-xs text-white">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -74,7 +74,7 @@ export function DashboardHeader({
             size="sm"
             onClick={handleSyncAll}
             disabled={isSyncing}
-            className="h-9 px-4 gap-2"
+            className="h-9 px-4 gap-2 text-white"
           >
             <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
             <span className="text-xs font-medium">{isSyncing ? 'Syncing...' : 'Sync All'}</span>
