@@ -113,28 +113,17 @@ export default function FavoritesView() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push('/dashboard')}
-              className="text-sm"
-            >
-              <ArrowLeft className="w-4 h-4 mr-1" />
-              Back to Dashboard
-            </Button>
-          </div>
           <h1 className="text-4xl font-bold uppercase tracking-tight">Favorites</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {favorites.length} {favorites.length === 1 ? 'bookmark' : 'bookmarks'} marked as favorite
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={fetchFavorites}>
+          <Button variant="outline" size="sm" onClick={fetchFavorites} className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
-          <Button variant="outline" size="sm" onClick={exportFavorites}>
+          <Button variant="outline" size="sm" onClick={exportFavorites} className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
@@ -214,34 +203,34 @@ export default function FavoritesView() {
           <span className="text-sm text-muted-foreground">View:</span>
           <div className="flex gap-1">
             <Button 
-              variant={viewMode === 'grid' ? 'default' : 'ghost'} 
+              variant={viewMode === 'grid' ? 'default' : 'outline'} 
               size="sm" 
               onClick={() => setViewMode('grid')}
-              className="p-2"
+              className={`p-2 ${viewMode !== 'grid' ? 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50' : ''}`}
             >
               <Grid3x3 className="w-4 h-4" />
             </Button>
             <Button 
-              variant={viewMode === 'list' ? 'default' : 'ghost'} 
+              variant={viewMode === 'list' ? 'default' : 'outline'} 
               size="sm" 
               onClick={() => setViewMode('list')}
-              className="p-2"
+              className={`p-2 ${viewMode !== 'list' ? 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50' : ''}`}
             >
               <List className="w-4 h-4" />
             </Button>
             <Button 
-              variant={viewMode === 'compact' ? 'default' : 'ghost'} 
+              variant={viewMode === 'compact' ? 'default' : 'outline'} 
               size="sm" 
               onClick={() => setViewMode('compact')}
-              className="p-2"
+              className={`p-2 ${viewMode !== 'compact' ? 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50' : ''}`}
             >
               <LayoutGrid className="w-4 h-4" />
             </Button>
             <Button 
-              variant={viewMode === 'table' ? 'default' : 'ghost'} 
+              variant={viewMode === 'table' ? 'default' : 'outline'} 
               size="sm" 
               onClick={() => setViewMode('table')}
-              className="p-2"
+              className={`p-2 ${viewMode !== 'table' ? 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50' : ''}`}
             >
               <Table className="w-4 h-4" />
             </Button>
@@ -251,10 +240,10 @@ export default function FavoritesView() {
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Sort:</span>
           <Select value={sortBy} onValueChange={(val) => setSortBy(val as SortOption)}>
-            <SelectTrigger className="w-40 h-9">
+            <SelectTrigger className="w-40 h-9 bg-white border-gray-300 text-gray-700">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white">
               <SelectItem value="lastUpdated">Last Updated</SelectItem>
               <SelectItem value="dateAdded">Date Added</SelectItem>
               <SelectItem value="title">Title</SelectItem>
@@ -265,7 +254,7 @@ export default function FavoritesView() {
             variant="outline"
             size="sm"
             onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            className="p-2"
+            className="p-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
           >
             <ArrowUpDown className="w-4 h-4" />
           </Button>
