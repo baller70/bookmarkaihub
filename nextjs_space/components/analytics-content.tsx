@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -8,7 +8,7 @@ import {
   BookmarkIcon, Eye, TrendingUp, Clock, Target, Zap, 
   Activity, Calendar, Lightbulb, Users, BarChart3, 
   PieChart, Trash2, FileText, AlertTriangle, CheckCircle,
-  Timer, FolderOpen, Star
+  Timer, FolderOpen, Star, Loader2
 } from 'lucide-react'
 
 type Tab = 'overview' | 'timeTracking' | 'insights' | 'categories' | 'projects' | 'recommendations'
@@ -17,9 +17,86 @@ interface AnalyticsContentProps {
   showTitle?: boolean
 }
 
+interface AnalyticsData {
+  overview: {
+    totalBookmarks: number
+    totalVisits: number
+    engagementScore: number
+    activeTime: string
+    bookmarksAdded: number
+  }
+  topCategories: Array<{
+    name: string
+    time: string
+    percent: number
+    bookmarks: number
+    visits: number
+    color: string
+  }>
+  topPerformers: Array<{
+    title: string
+    visits: number
+    engagement: number
+    category: string
+  }>
+  underperformers: Array<{
+    title: string
+    visits: number
+    engagement: number
+    category: string
+  }>
+  weeklyPattern: Array<{
+    day: string
+    hours: number
+    percentage: number
+  }>
+  heatmapData: Array<{
+    date: string
+    visits: number
+    level: number
+  }>
+  categoryStats: Array<{
+    name: string
+    bookmarks: number
+    visits: number
+    timeSpent: number
+    color: string
+  }>
+}
+
 export function AnalyticsContent({ showTitle = true }: AnalyticsContentProps) {
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [timePeriod, setTimePeriod] = useState('30d')
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    fetchAnalytics()
+  }, [timePeriod])
+
+  const fetchAnalytics = async () => {
+    setIsLoading(true)
+    try {
+      const days = timePeriod === '7d' ? 7 : timePeriod === '30d' ? 30 : timePeriod === '90d' ? 90 : 365
+      const response = await fetch(`/api/analytics/comprehensive?range=${days}`)
+      if (response.ok) {
+        const data = await response.json()
+        setAnalyticsData(data)
+      }
+    } catch (error) {
+      console.error('Error fetching analytics:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -85,12 +162,12 @@ export function AnalyticsContent({ showTitle = true }: AnalyticsContentProps) {
           </div>
 
           {/* Tab Content */}
-          {activeTab === 'overview' && <OverviewTab />}
-          {activeTab === 'timeTracking' && <TimeTrackingTab />}
-          {activeTab === 'insights' && <InsightsTab />}
-          {activeTab === 'categories' && <CategoriesTab />}
+          {activeTab === 'overview' && <OverviewTab data={analyticsData} />}
+          {activeTab === 'timeTracking' && <TimeTrackingTab data={analyticsData} />}
+          {activeTab === 'insights' && <InsightsTab data={analyticsData} />}
+          {activeTab === 'categories' && <CategoriesTab data={analyticsData} />}
           {activeTab === 'projects' && <ProjectsTab />}
-          {activeTab === 'recommendations' && <RecommendationsTab />}
+          {activeTab === 'recommendations' && <RecommendationsTab data={analyticsData} />}
         </CardContent>
       </Card>
     </div>
@@ -98,7 +175,9 @@ export function AnalyticsContent({ showTitle = true }: AnalyticsContentProps) {
 }
 
 // Overview Tab Component
-function OverviewTab() {
+function OverviewTab({ data }: { data: AnalyticsData | null }) {
+  if (!data) return null
+
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
@@ -111,8 +190,8 @@ function OverviewTab() {
                   <BookmarkIcon className="w-4 h-4 text-blue-500" />
                   <span>Total Bookmarks</span>
                 </div>
-                <div className="text-3xl font-bold text-gray-900">235</div>
-                <div className="text-xs text-gray-600 mt-1">+2% this month</div>
+                <div className="text-3xl font-bold text-gray-900">{data.overview.totalBookmarks}</div>
+                <div className="text-xs text-gray-600 mt-1">+{data.overview.bookmarksAdded} this period</div>
               </div>
             </div>
           </CardContent>
@@ -126,8 +205,8 @@ function OverviewTab() {
                   <Eye className="w-4 h-4 text-green-500" />
                   <span>Total Visits</span>
                 </div>
-                <div className="text-3xl font-bold text-gray-900">291</div>
-                <div className="text-xs text-gray-600 mt-1">Last 30 days</div>
+                <div className="text-3xl font-bold text-gray-900">{data.overview.totalVisits}</div>
+                <div className="text-xs text-gray-600 mt-1">All time</div>
               </div>
             </div>
           </CardContent>
@@ -141,8 +220,8 @@ function OverviewTab() {
                   <Activity className="w-4 h-4 text-purple-500" />
                   <span>Engagement Score</span>
                 </div>
-                <div className="text-3xl font-bold text-gray-900">12.4%</div>
-                <div className="text-xs text-gray-600 mt-1">Above average</div>
+                <div className="text-3xl font-bold text-gray-900">{data.overview.engagementScore.toFixed(1)}%</div>
+                <div className="text-xs text-gray-600 mt-1">Average</div>
               </div>
             </div>
           </CardContent>
@@ -156,8 +235,8 @@ function OverviewTab() {
                   <Clock className="w-4 h-4 text-orange-500" />
                   <span>Active Time</span>
                 </div>
-                <div className="text-3xl font-bold text-gray-900">8.4h</div>
-                <div className="text-xs text-gray-600 mt-1">Today</div>
+                <div className="text-3xl font-bold text-gray-900">{data.overview.activeTime}h</div>
+                <div className="text-xs text-gray-600 mt-1">Total</div>
               </div>
             </div>
           </CardContent>
@@ -190,23 +269,21 @@ function OverviewTab() {
               <span>More active</span>
             </div>
             <div className="grid grid-cols-7 gap-2">
-              {Array.from({ length: 30 }).map((_, i) => (
+              {data.heatmapData.map((day, i) => (
                 <div key={i} className="space-y-1">
-                  {Array.from({ length: 4 }).map((_, j) => {
-                    const level = Math.floor(Math.random() * 5)
-                    return (
-                      <div
-                        key={j}
-                        className={`h-8 rounded ${
-                          level === 0 ? 'bg-gray-100' :
-                          level === 1 ? 'bg-green-100' :
-                          level === 2 ? 'bg-green-300' :
-                          level === 3 ? 'bg-green-500' :
-                          'bg-green-700'
-                        }`}
-                      />
-                    )
-                  })}
+                  {Array.from({ length: 4 }).map((_, j) => (
+                    <div
+                      key={j}
+                      className={`h-8 rounded ${
+                        day.level === 0 ? 'bg-gray-100' :
+                        day.level === 1 ? 'bg-green-100' :
+                        day.level === 2 ? 'bg-green-300' :
+                        day.level === 3 ? 'bg-green-500' :
+                        'bg-green-700'
+                      }`}
+                      title={`${new Date(day.date).toLocaleDateString()}: ${day.visits} visits`}
+                    />
+                  ))}
                 </div>
               ))}
             </div>
@@ -262,21 +339,21 @@ function OverviewTab() {
               <h3 className="text-lg font-semibold text-gray-900 uppercase">Top Categories</h3>
             </div>
             <div className="space-y-3">
-              {[
-                { name: 'Development', time: '8.4h', percent: 35 },
-                { name: 'Research', time: '6.2h', percent: 26 },
-                { name: 'Learning', time: '4.8h', percent: 20 },
-                { name: 'Design', time: '2.9h', percent: 12 },
-                { name: 'Others', time: '1.7h', percent: 7 },
-              ].map((cat) => (
-                <div key={cat.name}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-700">{cat.name}</span>
-                    <span className="text-gray-900 font-semibold">{cat.time}</span>
+              {data.topCategories.length > 0 ? (
+                data.topCategories.map((cat) => (
+                  <div key={cat.name}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-700">{cat.name}</span>
+                      <span className="text-gray-900 font-semibold">{cat.time}</span>
+                    </div>
+                    <Progress value={cat.percent} className="h-2" />
                   </div>
-                  <Progress value={cat.percent} className="h-2" />
+                ))
+              ) : (
+                <div className="text-sm text-gray-500 text-center py-4">
+                  No category data available yet
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
@@ -314,7 +391,13 @@ function OverviewTab() {
 }
 
 // Time Tracking Tab Component
-function TimeTrackingTab() {
+function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
+  if (!data) return null
+
+  const dailyAverage = data.weeklyPattern.length > 0
+    ? (data.weeklyPattern.reduce((sum, d) => sum + d.hours, 0) / data.weeklyPattern.length).toFixed(1)
+    : '0.0'
+
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
@@ -327,8 +410,8 @@ function TimeTrackingTab() {
                   <Clock className="w-4 h-4 text-blue-500" />
                   <span>Daily Average</span>
                 </div>
-                <div className="text-3xl font-bold text-gray-900">0h</div>
-                <div className="text-xs text-gray-600 mt-1">+0.5h vs last week</div>
+                <div className="text-3xl font-bold text-gray-900">{dailyAverage}h</div>
+                <div className="text-xs text-gray-600 mt-1">Last 7 days</div>
               </div>
             </div>
           </CardContent>
@@ -342,8 +425,8 @@ function TimeTrackingTab() {
                   <Timer className="w-4 h-4 text-orange-500" />
                   <span>Total Hours</span>
                 </div>
-                <div className="text-3xl font-bold text-gray-900">8.4h</div>
-                <div className="text-xs text-gray-600 mt-1">This month</div>
+                <div className="text-3xl font-bold text-gray-900">{data.overview.activeTime}h</div>
+                <div className="text-xs text-gray-600 mt-1">All time</div>
               </div>
             </div>
           </CardContent>
@@ -355,10 +438,10 @@ function TimeTrackingTab() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
                   <Target className="w-4 h-4 text-purple-500" />
-                  <span>Focus Sessions</span>
+                  <span>Total Visits</span>
                 </div>
-                <div className="text-3xl font-bold text-gray-900">23</div>
-                <div className="text-xs text-gray-600 mt-1">Avg 1.5h each</div>
+                <div className="text-3xl font-bold text-gray-900">{data.overview.totalVisits}</div>
+                <div className="text-xs text-gray-600 mt-1">All bookmarks</div>
               </div>
             </div>
           </CardContent>
@@ -372,8 +455,8 @@ function TimeTrackingTab() {
                   <TrendingUp className="w-4 h-4 text-green-500" />
                   <span>Efficiency</span>
                 </div>
-                <div className="text-3xl font-bold text-gray-900">0%</div>
-                <div className="text-xs text-gray-600 mt-1">Peak performance</div>
+                <div className="text-3xl font-bold text-gray-900">{data.overview.engagementScore.toFixed(0)}%</div>
+                <div className="text-xs text-gray-600 mt-1">Engagement score</div>
               </div>
             </div>
           </CardContent>
@@ -390,14 +473,14 @@ function TimeTrackingTab() {
             </div>
             <p className="text-sm text-gray-600 mb-4">Your bookmark usage throughout the week</p>
             <div className="space-y-3">
-              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-                <div key={day}>
+              {data.weeklyPattern.map((dayData) => (
+                <div key={dayData.day}>
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-700">{day}</span>
-                    <span className="text-gray-900 font-semibold">0h</span>
+                    <span className="text-gray-700">{dayData.day}</span>
+                    <span className="text-gray-900 font-semibold">{dayData.hours.toFixed(1)}h</span>
                   </div>
-                  <Progress value={0} className="h-2" />
-                  <div className="text-xs text-gray-500 mt-1">0%</div>
+                  <Progress value={dayData.percentage} className="h-2" />
+                  <div className="text-xs text-gray-500 mt-1">{dayData.percentage}%</div>
                 </div>
               ))}
             </div>
@@ -540,22 +623,8 @@ function TimeTrackingTab() {
 }
 
 // Insights Tab Component
-function InsightsTab() {
-  const topPerformers = [
-    { title: 'React Documentation', visits: 156, engagement: 92, category: 'Development' },
-    { title: 'GitHub Repository', visits: 142, engagement: 88, category: 'Development' },
-    { title: 'Figma Design', visits: 128, engagement: 85, category: 'Design' },
-    { title: 'Stack Overflow', visits: 115, engagement: 82, category: 'Learning' },
-    { title: 'MDN Web Docs', visits: 98, engagement: 79, category: 'Development' },
-  ]
-
-  const underperformers = [
-    { title: 'Old Project Notes', visits: 3, engagement: 12, category: 'Others' },
-    { title: 'Archived Resources', visits: 5, engagement: 15, category: 'Archive' },
-    { title: 'Outdated Tutorial', visits: 7, engagement: 18, category: 'Learning' },
-    { title: 'Broken Link Page', visits: 2, engagement: 8, category: 'Others' },
-    { title: 'Unused Tool', visits: 4, engagement: 14, category: 'Tools' },
-  ]
+function InsightsTab({ data }: { data: AnalyticsData | null }) {
+  if (!data) return null
 
   return (
     <div className="grid grid-cols-2 gap-4">
@@ -568,24 +637,30 @@ function InsightsTab() {
           </div>
           <p className="text-sm text-gray-600 mb-4">Bookmarks with highest engagement</p>
           <div className="space-y-3">
-            {topPerformers.map((item, index) => (
-              <div key={index} className="p-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1">
-                    <div className="text-sm font-semibold text-gray-900 mb-1">{item.title}</div>
-                    <div className="text-xs text-gray-600">{item.category}</div>
+            {data.topPerformers.length > 0 ? (
+              data.topPerformers.map((item, index) => (
+                <div key={index} className="p-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <div className="text-sm font-semibold text-gray-900 mb-1">{item.title}</div>
+                      <div className="text-xs text-gray-600">{item.category}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="text-xs font-semibold text-green-600">{item.engagement}%</div>
+                      <TrendingUp className="w-4 h-4 text-green-500" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="text-xs font-semibold text-green-600">{item.engagement}%</div>
-                    <TrendingUp className="w-4 h-4 text-green-500" />
+                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                    <Eye className="w-3 h-3" />
+                    <span>{item.visits} visits</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-gray-600">
-                  <Eye className="w-3 h-3" />
-                  <span>{item.visits} visits</span>
-                </div>
+              ))
+            ) : (
+              <div className="text-sm text-gray-500 text-center py-8">
+                No performance data available yet. Start using your bookmarks to see insights!
               </div>
-            ))}
+            )}
           </div>
         </CardContent>
       </Card>
@@ -599,24 +674,30 @@ function InsightsTab() {
           </div>
           <p className="text-sm text-gray-600 mb-4">Bookmarks that need attention</p>
           <div className="space-y-3">
-            {underperformers.map((item, index) => (
-              <div key={index} className="p-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1">
-                    <div className="text-sm font-semibold text-gray-900 mb-1">{item.title}</div>
-                    <div className="text-xs text-gray-600">{item.category}</div>
+            {data.underperformers.length > 0 ? (
+              data.underperformers.map((item, index) => (
+                <div key={index} className="p-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <div className="text-sm font-semibold text-gray-900 mb-1">{item.title}</div>
+                      <div className="text-xs text-gray-600">{item.category}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="text-xs font-semibold text-red-600">{item.engagement}%</div>
+                      <AlertTriangle className="w-4 h-4 text-red-500" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="text-xs font-semibold text-red-600">{item.engagement}%</div>
-                    <AlertTriangle className="w-4 h-4 text-red-500" />
+                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                    <Eye className="w-3 h-3" />
+                    <span>{item.visits} visits</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-gray-600">
-                  <Eye className="w-3 h-3" />
-                  <span>{item.visits} visits</span>
-                </div>
+              ))
+            ) : (
+              <div className="text-sm text-gray-500 text-center py-8">
+                All your bookmarks are performing well!
               </div>
-            ))}
+            )}
           </div>
         </CardContent>
       </Card>
@@ -625,23 +706,39 @@ function InsightsTab() {
 }
 
 // Categories Tab Component
-function CategoriesTab() {
-  const categoryEfficiency = [
-    { name: 'Development', bookmarks: 45, avgTime: '12.5m', efficiency: 88, color: 'bg-blue-500' },
-    { name: 'Design', bookmarks: 32, avgTime: '8.3m', efficiency: 76, color: 'bg-purple-500' },
-    { name: 'Research', bookmarks: 28, avgTime: '15.2m', efficiency: 82, color: 'bg-green-500' },
-    { name: 'Learning', bookmarks: 38, avgTime: '18.7m', efficiency: 91, color: 'bg-orange-500' },
-    { name: 'Marketing', bookmarks: 22, avgTime: '6.4m', efficiency: 68, color: 'bg-pink-500' },
-    { name: 'Tools', bookmarks: 18, avgTime: '4.2m', efficiency: 72, color: 'bg-yellow-500' },
-  ]
+function CategoriesTab({ data }: { data: AnalyticsData | null }) {
+  if (!data) return null
 
-  const productivityByCategory = [
-    { name: 'Development', hours: 42.5, percentage: 35, visits: 156, color: 'bg-blue-500' },
-    { name: 'Learning', hours: 28.8, percentage: 24, visits: 124, color: 'bg-orange-500' },
-    { name: 'Research', hours: 24.2, percentage: 20, visits: 98, color: 'bg-green-500' },
-    { name: 'Design', hours: 18.5, percentage: 15, visits: 76, color: 'bg-purple-500' },
-    { name: 'Others', hours: 7.2, percentage: 6, visits: 32, color: 'bg-gray-500' },
-  ]
+  // Calculate category efficiency from real data
+  const categoryEfficiency = data.categoryStats.map((cat, index) => {
+    const avgTime = cat.bookmarks > 0 ? (cat.timeSpent / cat.bookmarks).toFixed(1) : '0.0'
+    const efficiency = cat.visits > 0 ? Math.min(Math.round((cat.visits / cat.bookmarks) * 10), 100) : 0
+    const colors = ['bg-blue-500', 'bg-purple-500', 'bg-green-500', 'bg-orange-500', 'bg-pink-500', 'bg-yellow-500']
+    
+    return {
+      name: cat.name,
+      bookmarks: cat.bookmarks,
+      avgTime: `${avgTime}m`,
+      efficiency,
+      color: colors[index % colors.length],
+    }
+  }).slice(0, 6)
+
+  // Calculate productivity by category
+  const totalTime = data.categoryStats.reduce((sum, cat) => sum + cat.timeSpent, 0)
+  const productivityByCategory = data.categoryStats.map((cat, index) => {
+    const hours = (cat.timeSpent / 60).toFixed(1)
+    const percentage = totalTime > 0 ? Math.round((cat.timeSpent / totalTime) * 100) : 0
+    const colors = ['bg-blue-500', 'bg-orange-500', 'bg-green-500', 'bg-purple-500', 'bg-gray-500']
+    
+    return {
+      name: cat.name,
+      hours: parseFloat(hours),
+      percentage,
+      visits: cat.visits,
+      color: colors[index % colors.length],
+    }
+  }).slice(0, 5)
 
   return (
     <div className="grid grid-cols-2 gap-4">
@@ -921,102 +1018,60 @@ function ProjectsTab() {
 }
 
 // Recommendations Tab Component
-function RecommendationsTab() {
+function RecommendationsTab({ data }: { data: AnalyticsData | null }) {
+  if (!data) return null
+
   const cleanupSuggestions = [
     { 
-      title: 'Remove Broken Links',
-      description: '12 bookmarks have broken or outdated URLs',
+      title: 'Remove Low-Use Bookmarks',
+      description: `${data.underperformers.length} bookmarks have very low engagement`,
       action: 'Review Links',
-      priority: 'High',
-      impact: 'Free up 5.2MB storage'
-    },
-    { 
-      title: 'Merge Duplicate Bookmarks',
-      description: '8 bookmarks appear to be duplicates',
-      action: 'Merge Now',
       priority: 'Medium',
-      impact: 'Reduce clutter by 8 items'
-    },
-    { 
-      title: 'Archive Old Bookmarks',
-      description: '23 bookmarks haven\'t been accessed in 6+ months',
-      action: 'Archive',
-      priority: 'Low',
       impact: 'Improve organization'
     },
     { 
-      title: 'Update Outdated Categories',
-      description: '15 bookmarks are in deprecated categories',
-      action: 'Recategorize',
-      priority: 'Medium',
+      title: 'Organize By Category',
+      description: `Focus on ${data.topCategories.length} main categories for better structure`,
+      action: 'Organize',
+      priority: 'Low',
       impact: 'Better categorization'
     },
   ]
 
   const optimizationTips = [
     {
-      title: 'Use Tags More Effectively',
-      description: 'Only 45% of your bookmarks have tags. Adding tags can improve searchability by 60%.',
+      title: 'Use Categories Effectively',
+      description: `You have ${data.topCategories.length} active categories. Consider organizing bookmarks into these for better management.`,
       icon: <Target className="w-5 h-5 text-yellow-600" />,
-      action: 'Add Tags'
+      action: 'Organize Now'
     },
     {
-      title: 'Create More Collections',
-      description: 'Group related bookmarks into collections for faster access and better organization.',
-      icon: <FolderOpen className="w-5 h-5 text-yellow-600" />,
-      action: 'Create Collection'
+      title: 'Track Your Usage',
+      description: 'Keep visiting your bookmarks regularly to maintain accurate analytics and insights.',
+      icon: <Activity className="w-5 h-5 text-yellow-600" />,
+      action: 'View Dashboard'
     },
     {
-      title: 'Set Up Smart Folders',
-      description: 'Automate organization with rules based on categories, tags, and usage patterns.',
-      icon: <Zap className="w-5 h-5 text-yellow-600" />,
-      action: 'Learn More'
-    },
-    {
-      title: 'Enable Quick Access',
-      description: 'Pin your most-used bookmarks to the top for instant access.',
+      title: 'Leverage Top Performers',
+      description: `Your top ${data.topPerformers.length} bookmarks drive the most value. Consider adding similar resources.`,
       icon: <Star className="w-5 h-5 text-yellow-600" />,
-      action: 'Pin Bookmarks'
+      action: 'Explore Similar'
+    },
+    {
+      title: 'Set Weekly Goals',
+      description: 'Establish consistent bookmark usage patterns to maximize productivity.',
+      icon: <Target className="w-5 h-5 text-yellow-600" />,
+      action: 'Set Goals'
     },
   ]
 
-  const trendingItems = [
-    { 
-      title: 'React 19 Documentation',
-      category: 'Development',
-      growth: '+145%',
-      trend: 'up',
-      visits: 89
-    },
-    { 
-      title: 'AI Design Tools Collection',
-      category: 'Design',
-      growth: '+120%',
-      trend: 'up',
-      visits: 76
-    },
-    { 
-      title: 'TypeScript Best Practices',
-      category: 'Learning',
-      growth: '+98%',
-      trend: 'up',
-      visits: 65
-    },
-    { 
-      title: 'Web Performance Guide',
-      category: 'Development',
-      growth: '+82%',
-      trend: 'up',
-      visits: 54
-    },
-    { 
-      title: 'Figma Plugin Resources',
-      category: 'Design',
-      growth: '+67%',
-      trend: 'up',
-      visits: 48
-    },
-  ]
+  const trendingItems = data.topPerformers.slice(0, 5).map((item, index) => ({
+    title: item.title,
+    category: item.category,
+    growth: `+${item.engagement}%`,
+    trend: 'up',
+    visits: item.visits
+  }))
 
   return (
     <div className="grid grid-cols-3 gap-4">
