@@ -90,6 +90,24 @@ export default function AboutYou() {
 
   return (
     <div className="space-y-6">
+      {/* Header Section */}
+      <div className="flex items-start justify-between pb-6 border-b border-gray-200">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">About You</h1>
+          <p className="text-base text-gray-600">Tell us about yourself to get personalized bookmark recommendations</p>
+        </div>
+        <Button 
+          onClick={handleSave} 
+          disabled={saving}
+          className="bg-black text-white hover:bg-gray-800 px-6 py-2 h-auto"
+        >
+          <span className="flex items-center gap-2">
+            <span>💾</span>
+            Save Profile
+          </span>
+        </Button>
+      </div>
+
       {/* Basic Information */}
       <Card className="bg-white border border-gray-200 shadow-sm">
         <CardHeader className="border-b border-gray-100">
