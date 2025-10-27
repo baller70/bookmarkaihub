@@ -1,12 +1,18 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts"
 import { cn } from "@/lib/utils"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { ChevronDown } from "lucide-react"
 
 interface AnalyticsData {
   analytics: Array<{
@@ -25,6 +31,7 @@ interface AnalyticsData {
 
 interface AnalyticsChartProps {
   analytics: AnalyticsData
+  onTimeRangeChange?: (range: string) => void
 }
 
 const timeRanges = [
@@ -33,9 +40,39 @@ const timeRanges = [
   { id: "7", label: "LAST 7 DAYS" },
 ]
 
-export function AnalyticsChart({ analytics }: AnalyticsChartProps) {
+const availableMetrics = [
+  { id: "totalVisits", label: "Total Visits" },
+  { id: "engagementScore", label: "Engagement Score" },
+  { id: "clickThrough", label: "Click-through Rate" },
+  { id: "sessionDuration", label: "Session Duration" },
+  { id: "bounceRate", label: "Bounce Rate" },
+  { id: "pageViews", label: "Page Views" },
+  { id: "userRetention", label: "User Retention" },
+  { id: "conversionRate", label: "Conversion Rate" },
+  { id: "activeUsers", label: "Active Users" },
+  { id: "revenue", label: "Revenue Generated" },
+]
+
+export function AnalyticsChart({ analytics, onTimeRangeChange }: AnalyticsChartProps) {
   const [selectedRange, setSelectedRange] = useState("90")
-  const [selectedMetrics, setSelectedMetrics] = useState("2")
+  const [selectedMetrics, setSelectedMetrics] = useState<string[]>(["totalVisits", "engagementScore"])
+
+  const handleTimeRangeChange = (range: string) => {
+    setSelectedRange(range)
+    if (onTimeRangeChange) {
+      onTimeRangeChange(range)
+    }
+  }
+
+  const toggleMetric = (metricId: string) => {
+    setSelectedMetrics(prev => {
+      if (prev.includes(metricId)) {
+        return prev.filter(id => id !== metricId)
+      } else {
+        return [...prev, metricId]
+      }
+    })
+  }
 
   const chartData = analytics?.analytics?.map((item) => ({
     date: new Date(item.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
@@ -60,7 +97,7 @@ export function AnalyticsChart({ analytics }: AnalyticsChartProps) {
                 key={range.id}
                 variant="ghost"
                 size="sm"
-                onClick={() => setSelectedRange(range.id)}
+                onClick={() => handleTimeRangeChange(range.id)}
                 className={cn(
                   "px-3 py-1.5 text-xs font-medium rounded-md h-8",
                   selectedRange === range.id
@@ -82,17 +119,26 @@ export function AnalyticsChart({ analytics }: AnalyticsChartProps) {
               <p className="text-xs text-gray-500 mt-0.5">Last 28 days</p>
             </div>
             
-            {/* Metrics Dropdown */}
-            <Select value={selectedMetrics} onValueChange={setSelectedMetrics}>
-              <SelectTrigger className="w-[120px] h-8 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="2">Metrics (2)</SelectItem>
-                <SelectItem value="1">Metric (1)</SelectItem>
-                <SelectItem value="3">Metrics (3)</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Metrics Dropdown with Checkboxes */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 gap-2 text-xs">
+                  <span>Metrics ({selectedMetrics.length})</span>
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                {availableMetrics.map((metric) => (
+                  <DropdownMenuCheckboxItem
+                    key={metric.id}
+                    checked={selectedMetrics.includes(metric.id)}
+                    onCheckedChange={() => toggleMetric(metric.id)}
+                  >
+                    {metric.label}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Metrics Display */}
