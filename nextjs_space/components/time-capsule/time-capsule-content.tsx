@@ -165,7 +165,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold">Calendar View</h3>
+          <h3 className="font-semibold uppercase">Calendar View</h3>
         </div>
         
         <div className="border rounded-lg p-4">
@@ -200,7 +200,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
       return (
         <div className="flex flex-col items-center justify-center h-full text-center py-12">
           <Clock className="w-16 h-16 text-muted-foreground/40 mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Select a Capsule</h3>
+          <h3 className="text-lg font-semibold mb-2 uppercase">Select a Capsule</h3>
           <p className="text-sm text-muted-foreground">Choose a time capsule to view details</p>
         </div>
       )
@@ -210,7 +210,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
       <div className="space-y-6">
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="text-lg font-semibold mb-1 truncate text-black">{selectedCapsule.title}</h3>
+            <h3 className="text-lg font-semibold mb-1 truncate text-black uppercase">{selectedCapsule.title}</h3>
             <Badge className="bg-white text-black border hover:bg-gray-50">
               {selectedCapsule.type}
             </Badge>
@@ -218,7 +218,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
         </div>
 
         <div>
-          <h4 className="text-sm font-semibold mb-2 text-black">Description</h4>
+          <h4 className="text-sm font-semibold mb-2 text-black uppercase">Description</h4>
           <p className="text-sm text-muted-foreground">{selectedCapsule.description}</p>
         </div>
 
@@ -245,7 +245,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
         </div>
 
         <div>
-          <h4 className="text-sm font-semibold mb-2 flex items-center gap-2 text-black">
+          <h4 className="text-sm font-semibold mb-2 flex items-center gap-2 text-black uppercase">
             <Sparkles className="w-4 h-4" />
             AI Summary
           </h4>
@@ -360,7 +360,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
                           }`}
                         />
                         <div className="flex-1">
-                          <h3 className="font-semibold text-lg mb-1 text-black">{capsule.title}</h3>
+                          <h3 className="font-semibold text-lg mb-1 text-black uppercase">{capsule.title}</h3>
                           <p className="text-sm text-muted-foreground mb-3">
                             {capsule.description}
                           </p>
@@ -426,7 +426,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
           {viewMode === 'calendar' && selectedDate && (
             <div className="col-span-4">
               <Card className="p-6 bg-white">
-                <h3 className="font-semibold mb-4">
+                <h3 className="font-semibold mb-4 uppercase">
                   Capsules on {selectedDate.toLocaleDateString('en-US', { 
                     month: 'long', 
                     day: 'numeric', 
