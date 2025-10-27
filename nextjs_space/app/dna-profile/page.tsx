@@ -131,8 +131,10 @@ export default function DnaProfilePage() {
     <DashboardAuth>
       <div className="min-h-screen bg-white">
         <div className="container mx-auto py-8 px-4">
-          {/* Top Navigation Bar */}
-          <div className="mb-6 flex items-center justify-between border-b pb-4">
+          {/* Main bordered container */}
+          <div className="border border-gray-300 rounded-lg p-6 bg-white">
+            {/* Top Navigation Bar */}
+            <div className="mb-6 flex items-center justify-between border-b pb-4">
             <div className="flex items-center gap-6">
               <Button
                 variant="ghost"
@@ -211,6 +213,7 @@ export default function DnaProfilePage() {
             <div className="lg:col-span-2">
               {renderSection()}
             </div>
+          </div>
           </div>
         </div>
       </div>
