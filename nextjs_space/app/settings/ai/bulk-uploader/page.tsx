@@ -108,7 +108,7 @@ export default function BulkUploaderPage() {
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Import Links Section */}
-                <div className="lg:col-span-2">
+                <div className="lg:col-span-2 space-y-6">
                   <Card className="p-6">
                     <h3 className="text-lg font-bold mb-4">Import Links</h3>
 
@@ -129,7 +129,10 @@ export default function BulkUploaderPage() {
                       </TabsList>
 
                       <TabsContent value="drag-drop" className="mt-6">
-                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-blue-500 transition-colors cursor-pointer">
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-blue-500 transition-colors cursor-pointer relative">
+                          <div className="absolute top-2 right-2">
+                            <Badge variant="secondary" className="bg-green-100 text-green-700">●</Badge>
+                          </div>
                           <div className="flex justify-center mb-4">
                             <div className="p-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full">
                               <Upload className="h-8 w-8 text-white" />
@@ -176,6 +179,34 @@ export default function BulkUploaderPage() {
                         </Button>
                       </TabsContent>
                     </Tabs>
+                  </Card>
+
+                  {/* Preview & Edit Section */}
+                  <Card className="p-6">
+                    <h3 className="text-lg font-bold mb-4">Preview & Edit</h3>
+                    <div className="text-center py-12 text-gray-500">
+                      <div className="flex justify-center mb-4">
+                        <Upload className="h-12 w-12 text-gray-300" />
+                      </div>
+                      <p className="text-sm">No links added yet. Use the tabs above to import links.</p>
+                    </div>
+                  </Card>
+
+                  {/* Import Button */}
+                  <Button disabled className="w-full bg-gray-400 text-white cursor-not-allowed">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Import 0 Links
+                  </Button>
+
+                  {/* No Uploads Yet Section */}
+                  <Card className="p-6">
+                    <div className="text-center py-12 text-gray-500">
+                      <div className="flex justify-center mb-4">
+                        <Upload className="h-12 w-12 text-gray-300" />
+                      </div>
+                      <h4 className="font-semibold text-gray-700 mb-2">No uploads yet</h4>
+                      <p className="text-sm">Start by importing some links above to see your upload summary here</p>
+                    </div>
                   </Card>
                 </div>
 
@@ -227,12 +258,12 @@ export default function BulkUploaderPage() {
 
                     <div className="space-y-4">
                       <div>
-                        <Label className="mb-2 block">Extra tag for all</Label>
+                        <Label className="mb-2 block text-gray-900">Extra tag for all</Label>
                         <Input placeholder="e.g., imported-2024" />
                       </div>
 
                       <div>
-                        <Label className="mb-2 block">Force into folder</Label>
+                        <Label className="mb-2 block text-gray-900">Force into folder</Label>
                         <Select defaultValue="auto">
                           <SelectTrigger>
                             <SelectValue />
@@ -247,7 +278,7 @@ export default function BulkUploaderPage() {
                       </div>
 
                       <div>
-                        <Label className="mb-4 block">Privacy</Label>
+                        <Label className="mb-4 block text-gray-900">Privacy</Label>
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
                             <input
@@ -258,7 +289,7 @@ export default function BulkUploaderPage() {
                               defaultChecked
                               className="w-4 h-4"
                             />
-                            <Label htmlFor="private" className="cursor-pointer flex items-center gap-2">
+                            <Label htmlFor="private" className="cursor-pointer flex items-center gap-2 text-gray-900">
                               🔒 Private
                             </Label>
                           </div>
@@ -270,11 +301,43 @@ export default function BulkUploaderPage() {
                               value="public"
                               className="w-4 h-4"
                             />
-                            <Label htmlFor="public" className="cursor-pointer flex items-center gap-2">
+                            <Label htmlFor="public" className="cursor-pointer flex items-center gap-2 text-gray-900">
                               👁️ Public
                             </Label>
                           </div>
                         </div>
+                      </div>
+
+                      <div className="pt-4 border-t space-y-4">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-gray-900">Auto-categorize</Label>
+                          <Switch defaultChecked />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <Label className="text-gray-900">Auto-priority</Label>
+                          <Switch defaultChecked />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <Label className="text-gray-900">Run in background</Label>
+                          <Switch defaultChecked />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label className="mb-2 block text-gray-900">Duplicate strategy</Label>
+                        <Select defaultValue="auto-merge">
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="auto-merge">Auto-merge</SelectItem>
+                            <SelectItem value="skip">Skip duplicates</SelectItem>
+                            <SelectItem value="replace">Replace existing</SelectItem>
+                            <SelectItem value="keep-both">Keep both</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </Card>

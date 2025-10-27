@@ -126,7 +126,7 @@ export default function LinkValidatorPage() {
 
                   <div className="text-center">
                     <div className="flex justify-center mb-2">
-                      <Clock className="h-8 w-8 text-amber-600" />
+                      <Clock className="h-8 w-8 text-orange-600" />
                     </div>
                     <div className="text-3xl font-bold mb-1">0</div>
                     <div className="text-sm text-gray-600">Timeouts</div>
@@ -134,15 +134,15 @@ export default function LinkValidatorPage() {
 
                   <div className="text-center">
                     <div className="flex justify-center mb-2">
-                      <AlertCircle className="h-8 w-8 text-gray-600" />
+                      <AlertCircle className="h-8 w-8 text-red-600" />
                     </div>
                     <div className="text-3xl font-bold mb-1">0</div>
-                    <div className="text-sm text-gray-600">Missing</div>
+                    <div className="text-sm text-gray-600">Phishing</div>
                   </div>
                 </div>
               </Card>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Scope & Input */}
                 <Card className="p-6">
                   <div className="flex items-center gap-3 mb-4">
@@ -152,7 +152,7 @@ export default function LinkValidatorPage() {
 
                   <div className="space-y-4">
                     <div>
-                      <Label className="mb-3 block">Validation Scope</Label>
+                      <Label className="mb-3 block text-gray-900 font-medium">Validation Scope</Label>
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <input
@@ -163,7 +163,7 @@ export default function LinkValidatorPage() {
                             defaultChecked
                             className="w-4 h-4"
                           />
-                          <Label htmlFor="all-bookmarks" className="cursor-pointer">
+                          <Label htmlFor="all-bookmarks" className="cursor-pointer text-gray-900">
                             All links in my bookmarks
                           </Label>
                         </div>
@@ -175,7 +175,7 @@ export default function LinkValidatorPage() {
                             value="specific"
                             className="w-4 h-4"
                           />
-                          <Label htmlFor="specific-folders" className="cursor-pointer">
+                          <Label htmlFor="specific-folders" className="cursor-pointer text-gray-900">
                             Select specific folders/bookmarks
                           </Label>
                         </div>
@@ -183,13 +183,13 @@ export default function LinkValidatorPage() {
                     </div>
 
                     <div>
-                      <Label className="mb-2 block">Add extra links (optional)</Label>
+                      <Label className="mb-2 block text-gray-900 font-medium">Add extra links (optional)</Label>
                       <textarea
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                         rows={3}
                         placeholder="https://example.com https://another-site.com"
                       />
-                      <p className="text-xs text-gray-500 mt-1">+ will be added</p>
+                      <p className="text-xs text-gray-500 mt-1">One URL per line. Valid URLs will be added as new bookmarks.</p>
                     </div>
                   </div>
                 </Card>
@@ -203,7 +203,7 @@ export default function LinkValidatorPage() {
 
                   <div className="space-y-4">
                     <div>
-                      <Label className="mb-2 block">Automatic Schedule</Label>
+                      <Label className="mb-2 block text-gray-900 font-medium">Automatic Schedule</Label>
                       <Select defaultValue="weekly">
                         <SelectTrigger>
                           <SelectValue />
@@ -219,43 +219,70 @@ export default function LinkValidatorPage() {
                     </div>
 
                     <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <div>
-                          <Label>Email me summary</Label>
-                          <p className="text-xs text-gray-500">Get validation results via email</p>
-                        </div>
-                        <Switch />
+                      <div className="flex items-center justify-between">
+                        <Label className="text-gray-900 font-medium">Email me summary</Label>
+                        <Switch defaultChecked />
                       </div>
                     </div>
 
                     <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <div>
-                          <Label>Auto-move broken links to "Broken" folder</Label>
-                          <p className="text-xs text-gray-500">Organize broken links automatically</p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">+</span>
+                          <Label className="text-gray-900 font-medium">Auto-move broken links to "Broken" folder</Label>
                         </div>
                         <Switch />
                       </div>
                     </div>
                   </div>
                 </Card>
+
+                {/* Right Sidebar */}
+                <div className="space-y-6">
+                  {/* Status Distribution */}
+                  <Card className="p-6">
+                    <h3 className="text-lg font-bold mb-4">Status Distribution</h3>
+                    <div className="text-center py-6 text-gray-500">
+                      <p className="text-sm">No data available</p>
+                    </div>
+                  </Card>
+
+                  {/* Broken Links Trend */}
+                  <Card className="p-6">
+                    <h3 className="text-lg font-bold mb-4">Broken Links Trend</h3>
+                    <div className="text-center py-6 text-gray-500">
+                      <p className="text-sm">No trend data yet</p>
+                    </div>
+                  </Card>
+
+                  {/* Recent Scans */}
+                  <Card className="p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Clock className="h-5 w-5" />
+                      <h3 className="text-lg font-bold">Recent Scans</h3>
+                    </div>
+                    <div className="text-center py-6 text-gray-500">
+                      <p className="text-sm">No scan history yet</p>
+                    </div>
+                  </Card>
+                </div>
               </div>
 
-              {/* Status Distribution */}
+              {/* Scan Now Button */}
+              <Button className="w-full bg-black hover:bg-gray-800 text-white">
+                <Upload className="h-4 w-4 mr-2" />
+                Scan Now
+              </Button>
+
+              {/* No Results Section */}
               <Card className="p-6">
-                <h3 className="text-lg font-bold mb-4">Status Distribution</h3>
                 <div className="text-center py-12 text-gray-500">
-                  No data available
+                  <div className="flex justify-center mb-4">
+                    <AlertTriangle className="h-12 w-12 text-gray-300" />
+                  </div>
+                  <p className="text-sm">No validation results yet. Run a scan to see link health status.</p>
                 </div>
               </Card>
-
-              {/* Action Buttons */}
-              <div className="flex gap-4">
-                <Button className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                  Run Validation Now
-                </Button>
-                <Button variant="outline">View History</Button>
-              </div>
             </div>
           </div>
         </div>

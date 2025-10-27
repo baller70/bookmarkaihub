@@ -199,20 +199,20 @@ export default function ContentDiscoveryPage() {
 
                     <div className="space-y-6">
                       <div>
-                        <Label className="mb-2 block">Topic / Keywords</Label>
+                        <Label className="mb-2 block text-gray-900 font-medium">Topic / Keywords</Label>
                         <Input
                           placeholder="e.g., artificial intelligence, web development"
                           className="mb-2"
                         />
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 mt-3">
                           <Sparkles className="h-4 w-4 text-purple-600" />
-                          <Label className="text-sm">Use my profile interests</Label>
-                          <Switch defaultChecked />
+                          <Label className="text-sm text-gray-900 cursor-pointer">Use my profile interests</Label>
+                          <Switch defaultChecked className="ml-auto" />
                         </div>
                       </div>
 
                       <div>
-                        <Label className="mb-2 block">Date Range</Label>
+                        <Label className="mb-2 block text-gray-900 font-medium">Date Range</Label>
                         <Select defaultValue="past-week">
                           <SelectTrigger>
                             <SelectValue />
@@ -228,28 +228,31 @@ export default function ContentDiscoveryPage() {
                       </div>
 
                       <div>
-                        <Label className="mb-2 block">Link Types</Label>
+                        <Label className="mb-3 block text-gray-900 font-medium">Link Types</Label>
                         <div className="flex flex-wrap gap-2">
-                          <Badge variant="outline" className="cursor-pointer bg-gray-900 text-white hover:bg-gray-800">
+                          <Button variant="secondary" size="sm" className="bg-gray-900 text-white hover:bg-gray-800">
                             📄 Article
-                          </Badge>
-                          <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">
+                          </Button>
+                          <Button variant="outline" size="sm" className="hover:bg-gray-100">
                             🎥 Video
-                          </Badge>
-                          <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">
+                          </Button>
+                          <Button variant="outline" size="sm" className="hover:bg-gray-100">
                             📑 Pdf
-                          </Badge>
-                          <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">
+                          </Button>
+                          <Button variant="outline" size="sm" className="hover:bg-gray-100">
                             📦 Repo
-                          </Badge>
-                          <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">
+                          </Button>
+                          <Button variant="outline" size="sm" className="hover:bg-gray-100">
                             📊 Dataset
-                          </Badge>
+                          </Button>
                         </div>
                       </div>
 
                       <div>
-                        <Label className="mb-2 block">Max results: {maxResults[0]}</Label>
+                        <div className="flex items-center justify-between mb-3">
+                          <Label className="text-gray-900 font-medium">Max results</Label>
+                          <span className="text-sm font-medium text-gray-900">{maxResults[0]}</span>
+                        </div>
                         <Slider
                           value={maxResults}
                           onValueChange={setMaxResults}
@@ -263,10 +266,10 @@ export default function ContentDiscoveryPage() {
 
                     <div className="mt-6 pt-6 border-t">
                       <div className="mb-4">
-                        <h4 className="font-semibold mb-2">Find Links</h4>
+                        <h4 className="font-semibold mb-2 text-gray-900">Find Links</h4>
                         <p className="text-sm text-gray-600">Search for relevant content</p>
                       </div>
-                      <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 gap-2">
+                      <Button className="bg-gray-600 hover:bg-gray-700 gap-2">
                         <Search className="h-4 w-4" />
                         Find Links
                       </Button>
