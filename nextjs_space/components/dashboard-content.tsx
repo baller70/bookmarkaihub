@@ -13,7 +13,12 @@ import { BookmarkKanban } from "@/components/bookmark-kanban"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Grid3x3, List, Clock, FolderTree, Folders, Target, Kanban, ChevronLeft, ChevronRight } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Search, Grid3x3, List, Clock, FolderTree, Folders, Target, Kanban, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
@@ -30,6 +35,16 @@ const viewModes: { id: ViewMode; label: string; icon: any }[] = [
   { id: "KANBAN", label: "KANBAN 2.0", icon: Kanban },
 ]
 
+interface Category {
+  id: string
+  name: string
+  color: string
+  icon: string
+  _count: {
+    bookmarks: number
+  }
+}
+
 export function DashboardContent() {
   const { data: session } = useSession()
   const [viewMode, setViewMode] = useState<ViewMode>("GRID")
@@ -41,6 +56,8 @@ export function DashboardContent() {
   const [itemsPerPage, setItemsPerPage] = useState(25)
   const [bulkSelectMode, setBulkSelectMode] = useState(false)
   const [selectedBookmarks, setSelectedBookmarks] = useState<Set<string>>(new Set())
+  const [categories, setCategories] = useState<Category[]>([])
+  const [breakdownOpen, setBreakdownOpen] = useState(false)
 
   useEffect(() => {
     if (session) {
@@ -48,6 +65,12 @@ export function DashboardContent() {
       fetchAnalytics()
     }
   }, [session, searchQuery])
+
+  useEffect(() => {
+    if (breakdownOpen && categories.length === 0) {
+      fetchCategories()
+    }
+  }, [breakdownOpen])
 
   const fetchBookmarks = async () => {
     try {
@@ -75,6 +98,18 @@ export function DashboardContent() {
       }
     } catch (error) {
       console.error("Error fetching analytics:", error)
+    }
+  }
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch("/api/categories")
+      if (response.ok) {
+        const data = await response.json()
+        setCategories(data)
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error)
     }
   }
 
@@ -260,15 +295,48 @@ export function DashboardContent() {
           <div className="text-xs text-gray-500 mb-1">Total bookmarks</div>
           <div className="text-5xl font-bold text-gray-900">{bookmarks?.length || 0}</div>
         </div>
-        <Select defaultValue="breakdown">
-          <SelectTrigger className="w-[140px] h-9 text-sm text-white">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="breakdown">Breakdown</SelectItem>
-            <SelectItem value="overview">Overview</SelectItem>
-          </SelectContent>
-        </Select>
+        
+        {/* Breakdown Dropdown */}
+        <DropdownMenu open={breakdownOpen} onOpenChange={setBreakdownOpen}>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-9 gap-2 text-sm text-gray-700 hover:bg-gray-100"
+            >
+              <span>Breakdown</span>
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[520px] max-h-[600px] p-0 bg-white">
+            {/* Categories List */}
+            <div className="max-h-[580px] overflow-y-auto p-4 bg-white">
+              {categories.length === 0 ? (
+                <div className="py-8 text-center">
+                  <p className="text-sm text-gray-500">No categories found</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-x-8 gap-y-1">
+                  {categories
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map((category) => (
+                      <div
+                        key={category.id}
+                        className="flex items-center justify-between py-1.5 hover:bg-gray-50"
+                      >
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-gray-900 font-normal">{category.name}:</span>
+                        </div>
+                        <span className="text-sm font-semibold text-gray-900">
+                          {category._count.bookmarks} {category._count.bookmarks === 1 ? 'bookmark' : 'bookmarks'}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Header */}
