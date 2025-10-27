@@ -13,11 +13,6 @@ import { BookmarkKanban } from "@/components/bookmark-kanban"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Search, Grid3x3, List, Clock, FolderTree, Folders, Target, Kanban, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -290,54 +285,54 @@ export function DashboardContent() {
       )}
 
       {/* Top Stats */}
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="text-xs text-gray-500 mb-1">Total bookmarks</div>
-          <div className="text-5xl font-bold text-gray-900">{bookmarks?.length || 0}</div>
+      <div className="space-y-4">
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="text-xs text-gray-500 mb-1">Total bookmarks</div>
+            <div className="text-5xl font-bold text-gray-900">{bookmarks?.length || 0}</div>
+          </div>
+          
+          {/* Breakdown Button */}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setBreakdownOpen(!breakdownOpen)}
+            className="h-9 gap-2 text-sm text-gray-700 hover:bg-gray-100 font-medium"
+          >
+            <span>Breakdown</span>
+            <ChevronDown className={cn("h-4 w-4 transition-transform", breakdownOpen && "rotate-180")} />
+          </Button>
         </div>
-        
-        {/* Breakdown Dropdown */}
-        <DropdownMenu open={breakdownOpen} onOpenChange={setBreakdownOpen}>
-          <DropdownMenuTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-9 gap-2 text-sm text-gray-700 hover:bg-gray-100 font-medium"
-            >
-              <span>Breakdown</span>
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[600px] max-h-[600px] p-0 bg-white border border-gray-200 shadow-lg">
-            {/* Categories List */}
-            <div className="max-h-[580px] overflow-y-auto p-6 bg-white">
-              {categories.length === 0 ? (
-                <div className="py-8 text-center">
-                  <p className="text-sm text-gray-500">No categories found</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-x-12 gap-y-0.5">
-                  {categories
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((category) => (
-                      <div
-                        key={category.id}
-                        className="flex items-center justify-between py-2 px-2 rounded hover:bg-gray-50 transition-colors group"
-                      >
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 group-hover:scale-125 transition-transform" style={{ backgroundColor: category.color }} />
-                          <span className="text-gray-700 font-normal group-hover:text-gray-900">{category.name}:</span>
-                        </div>
-                        <span className="text-sm font-semibold text-gray-900 ml-2">
-                          {category._count.bookmarks} {category._count.bookmarks === 1 ? 'bookmark' : 'bookmarks'}
-                        </span>
+
+        {/* Inline Breakdown Panel */}
+        {breakdownOpen && (
+          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            {categories.length === 0 ? (
+              <div className="py-8 text-center">
+                <p className="text-sm text-gray-500">No categories found</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-x-12 gap-y-0.5">
+                {categories
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map((category) => (
+                    <div
+                      key={category.id}
+                      className="flex items-center justify-between py-2 px-2 rounded hover:bg-gray-50 transition-colors group"
+                    >
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 group-hover:scale-125 transition-transform" style={{ backgroundColor: category.color }} />
+                        <span className="text-gray-700 font-normal group-hover:text-gray-900">{category.name}:</span>
                       </div>
-                    ))}
-                </div>
-              )}
-            </div>
-          </DropdownMenuContent>
-        </DropdownMenu>
+                      <span className="text-sm font-semibold text-gray-900 ml-2">
+                        {category._count.bookmarks} {category._count.bookmarks === 1 ? 'bookmark' : 'bookmarks'}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Header */}
