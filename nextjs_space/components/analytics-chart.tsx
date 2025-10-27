@@ -14,15 +14,7 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { ChevronDown, Search, ArrowUpDown, Hash, TrendingUp, Folder } from "lucide-react"
+import { ChevronDown, Search, TrendingUp, Folder } from "lucide-react"
 
 interface AnalyticsData {
   analytics: Array<{
@@ -265,9 +257,9 @@ export function AnalyticsChart({ analytics, onTimeRangeChange }: AnalyticsChartP
               )}
             </div>
 
-            {/* Breakdown Button */}
-            <Dialog open={breakdownOpen} onOpenChange={setBreakdownOpen}>
-              <DialogTrigger asChild>
+            {/* Breakdown Dropdown */}
+            <DropdownMenu open={breakdownOpen} onOpenChange={setBreakdownOpen}>
+              <DropdownMenuTrigger asChild>
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -277,101 +269,48 @@ export function AnalyticsChart({ analytics, onTimeRangeChange }: AnalyticsChartP
                   <span>Breakdown</span>
                   <ChevronDown className="h-3 w-3" />
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-5xl max-h-[85vh] p-0">
-                <DialogHeader className="px-6 pt-6 pb-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
-                  <DialogTitle className="text-2xl font-bold text-gray-900">
-                    Category Breakdown
-                  </DialogTitle>
-                  <DialogDescription className="text-sm text-gray-600">
-                    View detailed distribution of your bookmarks across all categories
-                  </DialogDescription>
-                </DialogHeader>
-
-                {/* Total Bookmarks Banner */}
-                <div className="px-6 pt-4">
-                  <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg p-6 text-white shadow-lg">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-blue-100 mb-1">Total Bookmarks</p>
-                        <p className="text-5xl font-bold">{totalBookmarks}</p>
-                      </div>
-                      <div className="bg-white/20 backdrop-blur-sm rounded-full p-4">
-                        <Folder className="h-12 w-12" />
-                      </div>
-                    </div>
-                    <div className="mt-4 flex items-center gap-2 text-sm text-blue-100">
-                      <Hash className="h-4 w-4" />
-                      <span>{categories.length} categories</span>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-[420px] max-h-[520px] p-0">
+                {/* Header */}
+                <div className="px-4 py-3 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+                  <div className="flex items-center justify-between mb-1">
+                    <h4 className="font-bold text-gray-900 text-sm">Category Breakdown</h4>
+                    <div className="flex items-center gap-1 text-xs text-gray-600">
+                      <Folder className="h-3 w-3" />
+                      <span className="font-semibold">{totalBookmarks}</span>
+                      <span className="text-gray-500">total</span>
                     </div>
                   </div>
+                  <p className="text-xs text-gray-600">
+                    {categories.length} {categories.length === 1 ? 'category' : 'categories'}
+                  </p>
                 </div>
 
-                {/* Search and Sort Controls */}
-                <div className="px-6 py-4 flex items-center gap-3 bg-gray-50/50">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                {/* Search Bar */}
+                <div className="p-3 border-b bg-gray-50/50">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
                     <Input
                       placeholder="Search categories..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9 h-9 bg-white"
+                      className="pl-8 h-8 text-xs bg-white"
                     />
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-9 gap-2 shrink-0">
-                        <ArrowUpDown className="h-3.5 w-3.5" />
-                        <span className="text-xs">{getSortLabel()}</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuCheckboxItem
-                        checked={sortBy === "count-desc"}
-                        onCheckedChange={() => setSortBy("count-desc")}
-                      >
-                        Count (High to Low)
-                      </DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem
-                        checked={sortBy === "count-asc"}
-                        onCheckedChange={() => setSortBy("count-asc")}
-                      >
-                        Count (Low to High)
-                      </DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem
-                        checked={sortBy === "percent-desc"}
-                        onCheckedChange={() => setSortBy("percent-desc")}
-                      >
-                        Percentage (High to Low)
-                      </DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem
-                        checked={sortBy === "name-asc"}
-                        onCheckedChange={() => setSortBy("name-asc")}
-                      >
-                        Name (A to Z)
-                      </DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem
-                        checked={sortBy === "name-desc"}
-                        onCheckedChange={() => setSortBy("name-desc")}
-                      >
-                        Name (Z to A)
-                      </DropdownMenuCheckboxItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
                 </div>
 
-                {/* Categories Grid */}
-                <ScrollArea className="px-6 pb-6" style={{ maxHeight: "calc(85vh - 320px)" }}>
+                {/* Categories List with Scroll */}
+                <div className="max-h-[350px] overflow-y-auto">
                   {filteredCategories.length === 0 ? (
-                    <div className="py-12 text-center">
-                      <Folder className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                      <p className="text-gray-500 font-medium">No categories found</p>
-                      <p className="text-sm text-gray-400 mt-1">
-                        {searchQuery ? "Try a different search term" : "Create your first category to get started"}
-                      </p>
+                    <div className="py-8 text-center px-4">
+                      <Folder className="h-10 w-10 text-gray-300 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500 font-medium">No categories found</p>
+                      {searchQuery && (
+                        <p className="text-xs text-gray-400 mt-1">Try a different search term</p>
+                      )}
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="divide-y divide-gray-100">
                       {filteredCategories.map((category) => {
                         const count = category._count.bookmarks
                         const percentage = totalBookmarks > 0 ? (count / totalBookmarks) * 100 : 0
@@ -379,59 +318,45 @@ export function AnalyticsChart({ analytics, onTimeRangeChange }: AnalyticsChartP
                         return (
                           <div
                             key={category.id}
-                            className="group relative bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-gray-300 transition-all duration-200"
+                            className="px-4 py-3 hover:bg-gray-50 transition-colors"
                           >
-                            <div className="flex items-start justify-between mb-3">
-                              <div className="flex items-center gap-2 flex-1">
+                            <div className="flex items-center justify-between gap-3 mb-2">
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
                                 <div
-                                  className="w-8 h-8 rounded-md flex items-center justify-center text-white font-medium text-xs shadow-sm"
+                                  className="w-7 h-7 rounded flex items-center justify-center text-white font-medium text-xs flex-shrink-0"
                                   style={{ backgroundColor: category.color }}
                                 >
                                   {category.icon || category.name.charAt(0).toUpperCase()}
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                  <h4 className="font-semibold text-gray-900 text-sm truncate">
-                                    {category.name}
-                                  </h4>
-                                </div>
+                                <span className="font-medium text-gray-900 text-sm truncate">
+                                  {category.name}
+                                </span>
                               </div>
-                              <div className="text-right ml-2 shrink-0">
-                                <div className="text-lg font-bold text-gray-900">{count}</div>
-                                <div className="text-xs text-gray-500">bookmarks</div>
+                              <div className="flex items-center gap-2 flex-shrink-0">
+                                <span className="text-sm font-bold text-gray-900">{count}</span>
+                                <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                                  {percentage.toFixed(1)}%
+                                </span>
                               </div>
                             </div>
-
                             {/* Progress Bar */}
-                            <div className="space-y-1.5">
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="text-gray-600 font-medium">
-                                  {percentage.toFixed(1)}% of total
-                                </span>
-                                <span className="text-gray-400">
-                                  {count}/{totalBookmarks}
-                                </span>
-                              </div>
-                              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                <div
-                                  className="h-full rounded-full transition-all duration-500 ease-out"
-                                  style={{
-                                    width: `${percentage}%`,
-                                    backgroundColor: category.color,
-                                  }}
-                                />
-                              </div>
+                            <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                              <div
+                                className="h-full rounded-full transition-all duration-500"
+                                style={{ 
+                                  backgroundColor: category.color,
+                                  width: `${percentage}%`,
+                                }}
+                              />
                             </div>
-
-                            {/* Hover Effect Indicator */}
-                            <div className="absolute inset-0 border-2 border-transparent group-hover:border-blue-400 rounded-lg pointer-events-none transition-colors duration-200" />
                           </div>
                         )
                       })}
                     </div>
                   )}
-                </ScrollArea>
-              </DialogContent>
-            </Dialog>
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Metrics Display */}
