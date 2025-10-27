@@ -25,7 +25,7 @@ export function AnalyticsContent({ showTitle = true }: AnalyticsContentProps) {
     <div className="space-y-6">
       {showTitle && (
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 capitalize">Analytics Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
           <p className="text-sm text-gray-600 mt-1">
             Comprehensive Insights Into Your Bookmark Usage And Productivity Patterns
           </p>
@@ -38,7 +38,7 @@ export function AnalyticsContent({ showTitle = true }: AnalyticsContentProps) {
           {/* Title and Time Filters */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 capitalize">Comprehensive Analytics</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Comprehensive Analytics</h2>
               <p className="text-sm text-gray-600 mt-1">
                 Deep Insights Into Your Bookmark Usage And Productivity
               </p>
