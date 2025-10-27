@@ -168,9 +168,9 @@ export default function DnaProfilePage() {
             <div className="lg:col-span-1 space-y-6">
               {/* DNA Profile Sections */}
               <Card className="bg-white border shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-foreground">DNA Profile Sections</CardTitle>
-                  <CardDescription className="text-muted-foreground">Build your personalized AI profile</CardDescription>
+                <CardHeader className="pb-4">
+                  <h2 className="text-xl font-bold text-black mb-2">DNA Profile</h2>
+                  <p className="text-sm text-gray-600">Build your personalized AI profile</p>
                 </CardHeader>
                 <CardContent className="space-y-2 pb-6">
                   {sections.map((section) => {
@@ -183,10 +183,10 @@ export default function DnaProfilePage() {
                         key={section.id}
                         onClick={() => setActiveSection(section.id)}
                         className={cn(
-                          "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-foreground",
+                          "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors",
                           isActive 
                             ? "bg-black text-white font-medium" 
-                            : "hover:bg-gray-100"
+                            : "text-gray-700 hover:bg-gray-100"
                         )}
                       >
                         <Icon className="h-5 w-5 flex-shrink-0" />
@@ -200,20 +200,16 @@ export default function DnaProfilePage() {
                 </CardContent>
               </Card>
 
-              {/* Profile Completion */}
+              {/* Progress */}
               <Card className="bg-white border shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-foreground">Profile Completion</CardTitle>
+                <CardHeader className="pb-4">
+                  <h3 className="text-base font-semibold text-black">Progress</h3>
                 </CardHeader>
                 <CardContent className="space-y-4 pb-6">
                   <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Progress</span>
-                      <span className="font-medium text-foreground">{completedSections.length}/{sections.length} sections</span>
-                    </div>
                     <Progress value={progressPercentage} className="h-2 bg-gray-200" />
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-gray-600">
                     Complete all sections for better AI recommendations
                   </p>
                 </CardContent>
