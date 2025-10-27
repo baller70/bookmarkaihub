@@ -92,7 +92,7 @@ export default function AboutYou() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 p-6">
       {/* Basic Information */}
-      <Card>
+      <Card className="bg-white">
         <CardHeader>
           <CardTitle>Basic Information</CardTitle>
           <CardDescription>Tell us about yourself</CardDescription>
@@ -206,7 +206,7 @@ export default function AboutYou() {
       </Card>
 
       {/* Content Preferences */}
-      <Card>
+      <Card className="bg-white">
         <CardHeader>
           <CardTitle>Content Preferences</CardTitle>
           <CardDescription>Customize your content experience</CardDescription>
@@ -296,7 +296,7 @@ export default function AboutYou() {
       </Card>
 
       {/* Links & Social Profiles */}
-      <Card>
+      <Card className="bg-white">
         <CardHeader>
           <CardTitle>Links & Social Profiles</CardTitle>
           <CardDescription>Connect your online presence</CardDescription>
@@ -332,7 +332,7 @@ export default function AboutYou() {
       </Card>
 
       {/* Interests & Skills */}
-      <Card>
+      <Card className="bg-white">
         <CardHeader>
           <CardTitle>Interests & Skills</CardTitle>
           <CardDescription>Share your expertise and passions</CardDescription>
@@ -431,7 +431,7 @@ export default function AboutYou() {
       </Card>
 
       {/* Learning Preferences */}
-      <Card>
+      <Card className="bg-white">
         <CardHeader>
           <CardTitle>Learning Preferences</CardTitle>
           <CardDescription>Optimize your learning experience</CardDescription>
@@ -495,7 +495,7 @@ export default function AboutYou() {
       </Card>
 
       {/* Privacy & Preferences */}
-      <Card>
+      <Card className="bg-white">
         <CardHeader>
           <CardTitle>Privacy & Preferences</CardTitle>
           <CardDescription>Control your privacy settings</CardDescription>

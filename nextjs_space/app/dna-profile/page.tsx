@@ -2,13 +2,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { DashboardLayout } from '@/components/dashboard-layout'
+import { useRouter } from 'next/navigation'
 import { DashboardAuth } from '@/components/dashboard-auth'
 import AboutYou from '@/components/dna-profile/about-you'
 import FavoritesView from '@/components/dna-profile/favorites-view'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { User, Heart, BookOpen, Search, BarChart3, Clock } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { User, Heart, BookOpen, Search, BarChart3, Clock, ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type Section = 'about-you' | 'favorites' | 'playbooks' | 'search' | 'analytics' | 'time-capsule'
@@ -23,6 +24,7 @@ const sections = [
 ]
 
 export default function DnaProfilePage() {
+  const router = useRouter()
   const [activeSection, setActiveSection] = useState<Section>('about-you')
   const [completedSections, setCompletedSections] = useState<Section[]>([])
 
@@ -64,7 +66,7 @@ export default function DnaProfilePage() {
         return <FavoritesView />
       case 'playbooks':
         return (
-          <Card>
+          <Card className="bg-white">
             <CardHeader>
               <CardTitle>Playbooks</CardTitle>
               <CardDescription>Create and manage your workflow playbooks</CardDescription>
@@ -76,7 +78,7 @@ export default function DnaProfilePage() {
         )
       case 'search':
         return (
-          <Card>
+          <Card className="bg-white">
             <CardHeader>
               <CardTitle>Search Preferences</CardTitle>
               <CardDescription>Customize your search experience</CardDescription>
@@ -88,7 +90,7 @@ export default function DnaProfilePage() {
         )
       case 'analytics':
         return (
-          <Card>
+          <Card className="bg-white">
             <CardHeader>
               <CardTitle>Analytics</CardTitle>
               <CardDescription>View your bookmark insights</CardDescription>
@@ -100,7 +102,7 @@ export default function DnaProfilePage() {
         )
       case 'time-capsule':
         return (
-          <Card>
+          <Card className="bg-white">
             <CardHeader>
               <CardTitle>Time Capsule</CardTitle>
               <CardDescription>Preserve bookmarks for future reference</CardDescription>
@@ -117,13 +119,25 @@ export default function DnaProfilePage() {
 
   return (
     <DashboardAuth>
-      <DashboardLayout>
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto py-8 px-4">
+          {/* Back Button */}
+          <div className="mb-6">
+            <Button
+              variant="ghost"
+              onClick={() => router.push('/dashboard')}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left sidebar - DNA Profile Sections */}
             <div className="lg:col-span-1 space-y-6">
               {/* DNA Profile Sections */}
-              <Card>
+              <Card className="bg-white border-border">
                 <CardHeader>
                   <CardTitle>DNA Profile Sections</CardTitle>
                   <CardDescription>Build your personalized AI profile</CardDescription>
@@ -157,7 +171,7 @@ export default function DnaProfilePage() {
               </Card>
 
               {/* Profile Completion */}
-              <Card>
+              <Card className="bg-white border-border">
                 <CardHeader>
                   <CardTitle>Profile Completion</CardTitle>
                 </CardHeader>
@@ -182,7 +196,7 @@ export default function DnaProfilePage() {
             </div>
           </div>
         </div>
-      </DashboardLayout>
+      </div>
     </DashboardAuth>
   )
 }

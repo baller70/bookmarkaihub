@@ -105,25 +105,25 @@ export default function FavoritesView() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-4 gap-4">
-        <Card>
+        <Card className="bg-white">
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">{stats.totalFavorites}</div>
             <div className="text-sm text-muted-foreground">Total Favorites</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-white">
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">{stats.totalVisits}</div>
             <div className="text-sm text-muted-foreground">Total Visits</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-white">
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">{stats.avgVisits}</div>
             <div className="text-sm text-muted-foreground">Avg Visits</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-white">
           <CardContent className="pt-6">
             <div className="text-2xl font-bold truncate">{stats.mostVisited.title}</div>
             <div className="text-sm text-muted-foreground">Most Visited ({stats.mostVisited.visits} visits)</div>
