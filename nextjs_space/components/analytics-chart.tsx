@@ -132,12 +132,18 @@ export function AnalyticsChart({ analytics, onTimeRangeChange }: AnalyticsChartP
           {/* Metrics Dropdown with Checkboxes */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 gap-2 text-xs hover:bg-gray-50">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-8 gap-2 text-xs hover:bg-gray-50"
+                aria-label="Select metrics"
+                type="button"
+              >
                 <span>Metrics ({selectedMetrics.length}/{availableMetrics.length})</span>
                 <ChevronDown className="h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
+            <DropdownMenuContent align="start" className="w-56" sideOffset={5}>
               <div className="px-2 py-1.5 text-xs text-gray-500 font-medium border-b">
                 Select up to 5 metrics
               </div>
@@ -147,9 +153,10 @@ export function AnalyticsChart({ analytics, onTimeRangeChange }: AnalyticsChartP
                   checked={selectedMetrics.includes(metric.id)}
                   onCheckedChange={() => toggleMetric(metric.id)}
                   disabled={
-                    !selectedMetrics.includes(metric.id) && selectedMetrics.length >= 5 ||
-                    selectedMetrics.includes(metric.id) && selectedMetrics.length === 1
+                    (!selectedMetrics.includes(metric.id) && selectedMetrics.length >= 5) ||
+                    (selectedMetrics.includes(metric.id) && selectedMetrics.length === 1)
                   }
+                  className="text-sm"
                 >
                   {metric.label}
                 </DropdownMenuCheckboxItem>
