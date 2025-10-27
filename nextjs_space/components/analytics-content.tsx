@@ -679,7 +679,7 @@ function CategoriesTab() {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <PieChart className="w-5 h-5 text-purple-500" />
-            <h3 className="text-lg font-semibold text-gray-900">Productivity by Category</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Productivity By Category</h3>
           </div>
           <p className="text-sm text-gray-600 mb-4">Time distribution across categories</p>
           
