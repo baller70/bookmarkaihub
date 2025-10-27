@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { DashboardAuth } from '@/components/dashboard-auth'
 import AboutYou from '@/components/dna-profile/about-you'
 import FavoritesView from '@/components/dna-profile/favorites-view'
+import { AnalyticsContent } from '@/components/analytics-content'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
@@ -99,9 +100,7 @@ export default function DnaProfilePage() {
           </Card>
         )
       case 'analytics':
-        // Redirect to main analytics page like the original website
-        router.push('/analytics')
-        return null
+        return <AnalyticsContent showTitle={false} />
       case 'time-capsule':
         return (
           <Card className="bg-white">
