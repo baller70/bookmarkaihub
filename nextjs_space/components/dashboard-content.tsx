@@ -302,32 +302,33 @@ export function DashboardContent() {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="h-9 gap-2 text-sm text-gray-700 hover:bg-gray-100"
+              className="h-9 gap-2 text-sm text-gray-700 hover:bg-gray-100 font-medium"
             >
               <span>Breakdown</span>
               <ChevronDown className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[520px] max-h-[600px] p-0 bg-white">
+          <DropdownMenuContent align="end" className="w-[600px] max-h-[600px] p-0 bg-white border border-gray-200 shadow-lg">
             {/* Categories List */}
-            <div className="max-h-[580px] overflow-y-auto p-4 bg-white">
+            <div className="max-h-[580px] overflow-y-auto p-6 bg-white">
               {categories.length === 0 ? (
                 <div className="py-8 text-center">
                   <p className="text-sm text-gray-500">No categories found</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-x-8 gap-y-1">
+                <div className="grid grid-cols-2 gap-x-12 gap-y-0.5">
                   {categories
                     .sort((a, b) => a.name.localeCompare(b.name))
                     .map((category) => (
                       <div
                         key={category.id}
-                        className="flex items-center justify-between py-1.5 hover:bg-gray-50"
+                        className="flex items-center justify-between py-2 px-2 rounded hover:bg-gray-50 transition-colors group"
                       >
                         <div className="flex items-center gap-2 text-sm">
-                          <span className="text-gray-900 font-normal">{category.name}:</span>
+                          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 group-hover:scale-125 transition-transform" style={{ backgroundColor: category.color }} />
+                          <span className="text-gray-700 font-normal group-hover:text-gray-900">{category.name}:</span>
                         </div>
-                        <span className="text-sm font-semibold text-gray-900">
+                        <span className="text-sm font-semibold text-gray-900 ml-2">
                           {category._count.bookmarks} {category._count.bookmarks === 1 ? 'bookmark' : 'bookmarks'}
                         </span>
                       </div>
