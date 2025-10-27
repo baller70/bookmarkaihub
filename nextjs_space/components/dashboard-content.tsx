@@ -152,38 +152,42 @@ export function DashboardContent() {
       )}
 
       {/* View Mode Toggles */}
-      <div className="flex items-center gap-2 bg-gray-900 rounded-lg p-1.5 w-fit">
-        {viewModes.map((mode) => {
-          const Icon = mode.icon
-          return (
-            <Button
-              key={mode.id}
-              variant="ghost"
-              size="sm"
-              onClick={() => setViewMode(mode.id)}
-              className={cn(
-                "px-3 py-2 h-9 text-xs font-medium rounded-md transition-colors gap-2",
-                viewMode === mode.id
-                  ? "bg-white text-gray-900 shadow-sm hover:bg-white"
-                  : "text-white hover:text-white hover:bg-gray-800"
-              )}
-            >
-              <Icon className="h-4 w-4" />
-              {mode.label}
-            </Button>
-          )
-        })}
+      <div className="flex justify-center">
+        <div className="flex items-center gap-2 bg-gray-900 rounded-xl p-2 w-fit">
+          {viewModes.map((mode) => {
+            const Icon = mode.icon
+            return (
+              <Button
+                key={mode.id}
+                variant="ghost"
+                size="sm"
+                onClick={() => setViewMode(mode.id)}
+                className={cn(
+                  "px-4 py-3 h-12 text-sm font-medium rounded-lg transition-colors gap-2",
+                  viewMode === mode.id
+                    ? "bg-white text-gray-900 shadow-sm hover:bg-white"
+                    : "text-white hover:text-white hover:bg-gray-800"
+                )}
+              >
+                <Icon className="h-5 w-5" />
+                {mode.label}
+              </Button>
+            )
+          })}
+        </div>
       </div>
 
       {/* Search Bar */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-        <Input
-          placeholder="Search bookmarks..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 h-10 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-        />
+      <div className="flex justify-center">
+        <div className="relative w-full max-w-2xl">
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Input
+            placeholder="Search bookmarks..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-12 h-14 rounded-xl bg-gray-900 border-gray-800 text-white placeholder:text-gray-400 focus:border-gray-700 focus:ring-gray-700 text-base"
+          />
+        </div>
       </div>
 
       {/* Pagination Controls */}
