@@ -33,9 +33,9 @@ export async function GET(request: Request) {
     })
 
     // Calculate totals
-    const totalVisits = analytics.reduce((sum, day) => sum + day.totalVisits, 0)
+    const totalVisits = analytics.reduce((sum: number, day: any) => sum + day.totalVisits, 0)
     const avgEngagement = analytics.length > 0 
-      ? Math.round(analytics.reduce((sum, day) => sum + day.engagementScore, 0) / analytics.length)
+      ? Math.round(analytics.reduce((sum: number, day: any) => sum + day.engagementScore, 0) / analytics.length)
       : 0
 
     return NextResponse.json({
@@ -43,8 +43,8 @@ export async function GET(request: Request) {
       totals: {
         totalVisits,
         engagementScore: avgEngagement,
-        timeSpent: analytics.reduce((sum, day) => sum + day.timeSpent, 0),
-        bookmarksAdded: analytics.reduce((sum, day) => sum + day.bookmarksAdded, 0),
+        timeSpent: analytics.reduce((sum: number, day: any) => sum + day.timeSpent, 0),
+        bookmarksAdded: analytics.reduce((sum: number, day: any) => sum + day.bookmarksAdded, 0),
       },
     })
   } catch (error) {

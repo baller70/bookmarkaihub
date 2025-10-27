@@ -75,12 +75,12 @@ export async function GET(request: Request) {
     })
 
     // Calculate total visits across all user's bookmarks
-    const totalVisitsAcrossAll = bookmarks.reduce((sum, bookmark) => {
+    const totalVisitsAcrossAll = bookmarks.reduce((sum: number, bookmark: any) => {
       return sum + (bookmark.totalVisits || 0)
     }, 0)
 
     // Calculate usage percentage for each bookmark
-    const bookmarksWithUsage = bookmarks.map(bookmark => {
+    const bookmarksWithUsage = bookmarks.map((bookmark: any) => {
       const usagePercentage = totalVisitsAcrossAll > 0 
         ? (bookmark.totalVisits / totalVisitsAcrossAll) * 100 
         : 0
