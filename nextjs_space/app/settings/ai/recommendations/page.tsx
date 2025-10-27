@@ -192,29 +192,29 @@ export default function ContentDiscoveryPage() {
                 <TabsContent value="link-finder" className="space-y-6">
                   <Card className="p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <Search className="h-5 w-5" />
-                      <h3 className="text-lg font-bold">AI Link Finder</h3>
+                      <Search className="h-5 w-5 text-gray-900" />
+                      <h3 className="text-lg font-bold text-gray-900">AI Link Finder</h3>
                     </div>
                     <p className="text-sm text-gray-600 mb-6">Discover relevant links using AI-powered search</p>
 
                     <div className="space-y-6">
                       <div>
-                        <Label className="mb-2 block text-gray-900 font-medium">Topic / Keywords</Label>
+                        <Label className="mb-2 block text-gray-900">Topic / Keywords</Label>
                         <Input
                           placeholder="e.g., artificial intelligence, web development"
                           className="mb-2"
                         />
                         <div className="flex items-center gap-2 mt-3">
                           <Sparkles className="h-4 w-4 text-purple-600" />
-                          <Label className="text-sm text-gray-900 cursor-pointer">Use my profile interests</Label>
-                          <Switch defaultChecked className="ml-auto" />
+                          <Label className="text-sm text-gray-900 cursor-pointer flex-1">Use my profile interests</Label>
+                          <Switch defaultChecked />
                         </div>
                       </div>
 
                       <div>
-                        <Label className="mb-2 block text-gray-900 font-medium">Date Range</Label>
+                        <Label className="mb-2 block text-gray-900">Date Range</Label>
                         <Select defaultValue="past-week">
-                          <SelectTrigger>
+                          <SelectTrigger className="text-gray-900">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -228,30 +228,38 @@ export default function ContentDiscoveryPage() {
                       </div>
 
                       <div>
-                        <Label className="mb-3 block text-gray-900 font-medium">Link Types</Label>
+                        <Label className="mb-3 block text-gray-900">Link Types</Label>
                         <div className="flex flex-wrap gap-2">
-                          <Button variant="secondary" size="sm" className="bg-gray-900 text-white hover:bg-gray-800">
-                            📄 Article
+                          <Button 
+                            variant="secondary" 
+                            size="sm" 
+                            className="bg-gray-900 text-white hover:bg-gray-800 gap-2"
+                          >
+                            <FolderKanban className="h-4 w-4" />
+                            Article
                           </Button>
-                          <Button variant="outline" size="sm" className="hover:bg-gray-100">
-                            🎥 Video
+                          <Button variant="outline" size="sm" className="hover:bg-gray-100 gap-2 text-gray-900">
+                            <Upload className="h-4 w-4" />
+                            Video
                           </Button>
-                          <Button variant="outline" size="sm" className="hover:bg-gray-100">
-                            📑 Pdf
+                          <Button variant="outline" size="sm" className="hover:bg-gray-100 gap-2 text-gray-900">
+                            <FolderKanban className="h-4 w-4" />
+                            Pdf
                           </Button>
-                          <Button variant="outline" size="sm" className="hover:bg-gray-100">
-                            📦 Repo
+                          <Button variant="outline" size="sm" className="hover:bg-gray-100 gap-2 text-gray-900">
+                            <Tag className="h-4 w-4" />
+                            Repo
                           </Button>
-                          <Button variant="outline" size="sm" className="hover:bg-gray-100">
-                            📊 Dataset
+                          <Button variant="outline" size="sm" className="hover:bg-gray-100 gap-2 text-gray-900">
+                            <FolderKanban className="h-4 w-4" />
+                            Dataset
                           </Button>
                         </div>
                       </div>
 
                       <div>
                         <div className="flex items-center justify-between mb-3">
-                          <Label className="text-gray-900 font-medium">Max results</Label>
-                          <span className="text-sm font-medium text-gray-900">{maxResults[0]}</span>
+                          <Label className="text-gray-900">Max results: {maxResults[0]}</Label>
                         </div>
                         <Slider
                           value={maxResults}
@@ -269,7 +277,7 @@ export default function ContentDiscoveryPage() {
                         <h4 className="font-semibold mb-2 text-gray-900">Find Links</h4>
                         <p className="text-sm text-gray-600">Search for relevant content</p>
                       </div>
-                      <Button className="bg-gray-600 hover:bg-gray-700 gap-2">
+                      <Button className="bg-gray-500 hover:bg-gray-600 gap-2 text-white">
                         <Search className="h-4 w-4" />
                         Find Links
                       </Button>
