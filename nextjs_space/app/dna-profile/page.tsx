@@ -119,7 +119,7 @@ export default function DnaProfilePage() {
 
   return (
     <DashboardAuth>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-white">
         <div className="container mx-auto py-8 px-4">
           {/* Back Button */}
           <div className="mb-6">
@@ -137,12 +137,12 @@ export default function DnaProfilePage() {
             {/* Left sidebar - DNA Profile Sections */}
             <div className="lg:col-span-1 space-y-6">
               {/* DNA Profile Sections */}
-              <Card className="bg-white border-border">
+              <Card className="bg-white border shadow-sm">
                 <CardHeader>
-                  <CardTitle>DNA Profile Sections</CardTitle>
-                  <CardDescription>Build your personalized AI profile</CardDescription>
+                  <CardTitle className="text-foreground">DNA Profile Sections</CardTitle>
+                  <CardDescription className="text-muted-foreground">Build your personalized AI profile</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="space-y-2 pb-6">
                   {sections.map((section) => {
                     const Icon = section.icon
                     const isActive = activeSection === section.id
@@ -153,10 +153,10 @@ export default function DnaProfilePage() {
                         key={section.id}
                         onClick={() => setActiveSection(section.id)}
                         className={cn(
-                          "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors",
+                          "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-foreground",
                           isActive 
-                            ? "bg-muted font-medium" 
-                            : "hover:bg-muted/50"
+                            ? "bg-black text-white font-medium" 
+                            : "hover:bg-gray-100"
                         )}
                       >
                         <Icon className="h-5 w-5 flex-shrink-0" />
@@ -171,17 +171,17 @@ export default function DnaProfilePage() {
               </Card>
 
               {/* Profile Completion */}
-              <Card className="bg-white border-border">
+              <Card className="bg-white border shadow-sm">
                 <CardHeader>
-                  <CardTitle>Profile Completion</CardTitle>
+                  <CardTitle className="text-foreground">Profile Completion</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 pb-6">
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Progress</span>
-                      <span className="font-medium">{completedSections.length}/{sections.length} sections</span>
+                      <span className="font-medium text-foreground">{completedSections.length}/{sections.length} sections</span>
                     </div>
-                    <Progress value={progressPercentage} className="h-2" />
+                    <Progress value={progressPercentage} className="h-2 bg-gray-200" />
                   </div>
                   <p className="text-sm text-muted-foreground">
                     Complete all sections for better AI recommendations
