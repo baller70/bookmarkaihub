@@ -7,6 +7,7 @@ import { DashboardAuth } from '@/components/dashboard-auth'
 import AboutYou from '@/components/dna-profile/about-you'
 import FavoritesView from '@/components/dna-profile/favorites-view'
 import { AnalyticsContent } from '@/components/analytics-content'
+import { TimeCapsuleContent } from '@/components/time-capsule/time-capsule-content'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
@@ -102,17 +103,7 @@ export default function DnaProfilePage() {
       case 'analytics':
         return <AnalyticsContent showTitle={false} />
       case 'time-capsule':
-        return (
-          <Card className="bg-white">
-            <CardHeader>
-              <CardTitle className="uppercase">Time Capsule</CardTitle>
-              <CardDescription>Preserve bookmarks for future reference</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Time Capsule feature coming soon...</p>
-            </CardContent>
-          </Card>
-        )
+        return <TimeCapsuleContent showTitle={false} />
       default:
         return <AboutYou />
     }
