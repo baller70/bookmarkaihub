@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -82,145 +81,152 @@ export default function AboutYou() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center p-8">Loading...</div>
+    return <div className="flex items-center justify-center p-8 text-gray-900">Loading...</div>
   }
 
   if (!profile) {
-    return <div className="flex items-center justify-center p-8">Failed to load profile</div>
+    return <div className="flex items-center justify-center p-8 text-gray-900">Failed to load profile</div>
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 p-6">
+    <div className="space-y-6">
       {/* Basic Information */}
-      <Card className="bg-white">
-        <CardHeader>
-          <CardTitle>Basic Information</CardTitle>
-          <CardDescription>Tell us about yourself</CardDescription>
+      <Card className="bg-white border border-gray-200 shadow-sm">
+        <CardHeader className="border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            <User className="w-5 h-5 text-gray-700" />
+            <CardTitle className="text-lg font-semibold text-gray-900">Basic Information</CardTitle>
+          </div>
+          <CardDescription className="text-sm text-gray-600">Your basic profile information and avatar</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Avatar */}
-          <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center border-2 border-gray-200">
-              {profile.avatar ? (
-                <img src={profile.avatar} alt="Avatar" className="w-full h-full rounded-full object-cover" />
-              ) : (
-                <User className="w-10 h-10 text-gray-400" />
-              )}
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="avatar-upload">
-                <input
-                  id="avatar-upload"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (file) {
-                      const reader = new FileReader()
-                      reader.onloadend = () => {
-                        handleUpdate('avatar', reader.result as string)
-                        toast.success('Avatar uploaded! Remember to save your profile.')
+        <CardContent className="pt-6">
+          {/* Avatar and Name Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            {/* Avatar Section */}
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-24 h-24 rounded-full bg-gray-50 flex items-center justify-center border-2 border-gray-200 text-3xl font-medium text-gray-600">
+                {profile.avatar ? (
+                  <img src={profile.avatar} alt="Avatar" className="w-full h-full rounded-full object-cover" />
+                ) : (
+                  <span>U</span>
+                )}
+              </div>
+              <div className="flex flex-col gap-2 w-full">
+                <label htmlFor="avatar-upload" className="w-full">
+                  <input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        const reader = new FileReader()
+                        reader.onloadend = () => {
+                          handleUpdate('avatar', reader.result as string)
+                          toast.success('Avatar uploaded! Remember to save your profile.')
+                        }
+                        reader.readAsDataURL(file)
                       }
-                      reader.readAsDataURL(file)
-                    }
-                  }}
-                />
-                <Button variant="outline" size="sm" asChild className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50">
-                  <span className="cursor-pointer">
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload Custom Photo
-                  </span>
+                    }}
+                  />
+                  <Button variant="outline" size="sm" asChild className="w-full bg-white border-gray-300 text-gray-700 hover:bg-gray-50 text-xs">
+                    <span className="cursor-pointer flex items-center justify-center gap-2">
+                      <Upload className="w-3 h-3" />
+                      Upload Custom Photo
+                    </span>
+                  </Button>
+                </label>
+                <Button 
+                  variant="link" 
+                  size="sm" 
+                  onClick={() => handleUpdate('avatar', '')} 
+                  className="text-gray-500 hover:text-gray-700 text-xs h-auto p-0"
+                >
+                  Remove Logo (Reset to Default)
                 </Button>
-              </label>
-              <Button variant="ghost" size="sm" onClick={() => handleUpdate('avatar', '')} className="text-gray-600 hover:text-gray-900 hover:bg-gray-100">
-                Remove Logo
-              </Button>
+              </div>
             </div>
-          </div>
 
-          {/* Full Name */}
-          <div className="space-y-2">
-            <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">Full Name</Label>
-            <Input
-              id="fullName"
-              value={profile.fullName || ''}
-              onChange={(e) => handleUpdate('fullName', e.target.value)}
-              placeholder="John Doe"
-              className="bg-white border-gray-300 text-gray-900"
-            />
-          </div>
-
-          {/* Organization */}
-          <div className="space-y-2">
-            <Label htmlFor="organization" className="text-sm font-medium text-gray-700">Your company or organization</Label>
-            <Input
-              id="organization"
-              value={profile.organization || ''}
-              onChange={(e) => handleUpdate('organization', e.target.value)}
-              placeholder="Your company or organization"
-              className="bg-white border-gray-300 text-gray-900"
-            />
-          </div>
-
-          {/* Industries */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="industry1" className="text-sm font-medium text-gray-700">Select industry</Label>
-              <Select value={profile.favoriteIndustry || ''} onValueChange={(val) => handleUpdate('favoriteIndustry', val)}>
-                <SelectTrigger id="industry1" className="bg-white border-gray-300 text-gray-900">
-                  <SelectValue placeholder="Select industry" />
-                </SelectTrigger>
-                <SelectContent className="bg-white">
-                  {INDUSTRIES.map(ind => (
-                    <SelectItem key={ind} value={ind} className="text-gray-900">{ind}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="industry2" className="text-sm font-medium text-gray-700">Select industry</Label>
-              <Select value={profile.favoriteIndustry2 || ''} onValueChange={(val) => handleUpdate('favoriteIndustry2', val)}>
-                <SelectTrigger id="industry2" className="bg-white border-gray-300 text-gray-900">
-                  <SelectValue placeholder="Select industry" />
-                </SelectTrigger>
-                <SelectContent className="bg-white">
-                  {INDUSTRIES.map(ind => (
-                    <SelectItem key={ind} value={ind} className="text-gray-900">{ind}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* Name and Industries */}
+            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">Full Name</Label>
+                <Input
+                  id="fullName"
+                  value={profile.fullName || ''}
+                  onChange={(e) => handleUpdate('fullName', e.target.value)}
+                  placeholder="Enter your full name"
+                  className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="industry1" className="text-sm font-medium text-gray-700">Favorite Industry</Label>
+                <Select value={profile.favoriteIndustry || ''} onValueChange={(val) => handleUpdate('favoriteIndustry', val)}>
+                  <SelectTrigger id="industry1" className="bg-white border-gray-300 text-gray-900">
+                    <SelectValue placeholder="Select your fave" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    {INDUSTRIES.map(ind => (
+                      <SelectItem key={ind} value={ind} className="text-gray-900">{ind}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="organization" className="text-sm font-medium text-gray-700">Organization</Label>
+                <Input
+                  id="organization"
+                  value={profile.organization || ''}
+                  onChange={(e) => handleUpdate('organization', e.target.value)}
+                  placeholder="Company or organization"
+                  className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="industry2" className="text-sm font-medium text-gray-700">Favorite Industry #2</Label>
+                <Select value={profile.favoriteIndustry2 || ''} onValueChange={(val) => handleUpdate('favoriteIndustry2', val)}>
+                  <SelectTrigger id="industry2" className="bg-white border-gray-300 text-gray-900">
+                    <SelectValue placeholder="Select second fave" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    {INDUSTRIES.map(ind => (
+                      <SelectItem key={ind} value={ind} className="text-gray-900">{ind}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
           {/* Bio */}
           <div className="space-y-2">
-            <Label htmlFor="bio" className="text-sm font-medium text-gray-700">Tell us about yourself...</Label>
+            <Label htmlFor="bio" className="text-sm font-medium text-gray-700">Bio</Label>
             <Textarea
               id="bio"
               value={profile.bio || ''}
               onChange={(e) => handleUpdate('bio', e.target.value)}
-              placeholder="Tell us about yourself..."
-              rows={4}
-              className="bg-white border-gray-300 text-gray-900"
+              placeholder="Tell us about yourself, your interests, and what you're looking to learn..."
+              rows={3}
+              className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 resize-none"
             />
           </div>
         </CardContent>
       </Card>
 
       {/* Content Preferences */}
-      <Card className="bg-white">
-        <CardHeader>
-          <CardTitle>Customize your content experience</CardTitle>
-          <CardDescription>Customize your content experience</CardDescription>
+      <Card className="bg-white border border-gray-200 shadow-sm">
+        <CardHeader className="border-b border-gray-100">
+          <CardTitle className="text-lg font-semibold text-gray-900">Content Preferences</CardTitle>
+          <CardDescription className="text-sm text-gray-600">Help us understand your content and source preferences</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Select preference</Label>
+              <Label className="text-sm font-medium text-gray-700">Link Source Preference</Label>
               <Select value={profile.linkSourcePref || ''} onValueChange={(val) => handleUpdate('linkSourcePref', val)}>
                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
-                  <SelectValue placeholder="Select preference" />
+                  <SelectValue placeholder="Select your preferred sources" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   {LINK_SOURCE_PREFERENCES.map(pref => (
@@ -230,10 +236,10 @@ export default function AboutYou() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Select language</Label>
+              <Label className="text-sm font-medium text-gray-700">Language Preference</Label>
               <Select value={profile.languagePref || ''} onValueChange={(val) => handleUpdate('languagePref', val)}>
                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
-                  <SelectValue placeholder="Select language" />
+                  <SelectValue placeholder="Select your language preference" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   {LANGUAGES.map(lang => (
@@ -243,10 +249,10 @@ export default function AboutYou() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Select format</Label>
+              <Label className="text-sm font-medium text-gray-700">Media Format Priority</Label>
               <Select value={profile.mediaFormatPriority || ''} onValueChange={(val) => handleUpdate('mediaFormatPriority', val)}>
                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
-                  <SelectValue placeholder="Select format" />
+                  <SelectValue placeholder="Select preferred format" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   {MEDIA_FORMATS.map(format => (
@@ -256,10 +262,10 @@ export default function AboutYou() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Select freshness</Label>
+              <Label className="text-sm font-medium text-gray-700">Content Freshness</Label>
               <Select value={profile.contentFreshness || ''} onValueChange={(val) => handleUpdate('contentFreshness', val)}>
                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
-                  <SelectValue placeholder="Select freshness" />
+                  <SelectValue placeholder="Select freshness preference" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   {CONTENT_FRESHNESS.map(fresh => (
@@ -269,10 +275,10 @@ export default function AboutYou() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Select use case</Label>
+              <Label className="text-sm font-medium text-gray-700">Source Credibility</Label>
               <Select value={profile.sourceCredibility || ''} onValueChange={(val) => handleUpdate('sourceCredibility', val)}>
                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
-                  <SelectValue placeholder="Select credibility" />
+                  <SelectValue placeholder="Select credibility preference" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   {SOURCE_CREDIBILITY.map(cred => (
@@ -282,10 +288,10 @@ export default function AboutYou() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Select use case</Label>
+              <Label className="text-sm font-medium text-gray-700">Primary Use Case</Label>
               <Select value={profile.primaryUseCase || ''} onValueChange={(val) => handleUpdate('primaryUseCase', val)}>
                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
-                  <SelectValue placeholder="Select use case" />
+                  <SelectValue placeholder="Select or enter content use case" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   {PRIMARY_USE_CASES.map(useCase => (
@@ -299,51 +305,87 @@ export default function AboutYou() {
       </Card>
 
       {/* Links & Social Profiles */}
-      <Card className="bg-white">
-        <CardHeader>
-          <CardTitle>Connect your online presence</CardTitle>
-          <CardDescription>Connect your online presence</CardDescription>
+      <Card className="bg-white border border-gray-200 shadow-sm">
+        <CardHeader className="border-b border-gray-100">
+          <CardTitle className="text-lg font-semibold text-gray-900">Links & Social Profiles</CardTitle>
+          <CardDescription className="text-sm text-gray-600">Connect your professional profiles and websites</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="website" className="text-sm font-medium text-gray-700">https://your-website.com</Label>
-              <Input id="website" value={profile.website || ''} onChange={(e) => handleUpdate('website', e.target.value)} placeholder="https://your-website.com" className="bg-white border-gray-300 text-gray-900" />
+              <Label htmlFor="website" className="text-sm font-medium text-gray-700">Website</Label>
+              <Input 
+                id="website" 
+                value={profile.website || ''} 
+                onChange={(e) => handleUpdate('website', e.target.value)} 
+                placeholder="https://yourwebsite.com" 
+                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" 
+              />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="linkedin" className="text-sm font-medium text-gray-700">linkedin.com/in/username</Label>
-              <Input id="linkedin" value={profile.linkedin || ''} onChange={(e) => handleUpdate('linkedin', e.target.value)} placeholder="linkedin.com/in/username" className="bg-white border-gray-300 text-gray-900" />
+              <Label htmlFor="linkedin" className="text-sm font-medium text-gray-700">LinkedIn</Label>
+              <Input 
+                id="linkedin" 
+                value={profile.linkedin || ''} 
+                onChange={(e) => handleUpdate('linkedin', e.target.value)} 
+                placeholder="https://linkedin.com/in/yourprofile" 
+                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" 
+              />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="twitter" className="text-sm font-medium text-gray-700">@username</Label>
-              <Input id="twitter" value={profile.twitter || ''} onChange={(e) => handleUpdate('twitter', e.target.value)} placeholder="@username" className="bg-white border-gray-300 text-gray-900" />
+              <Label htmlFor="twitter" className="text-sm font-medium text-gray-700">Twitter/X</Label>
+              <Input 
+                id="twitter" 
+                value={profile.twitter || ''} 
+                onChange={(e) => handleUpdate('twitter', e.target.value)} 
+                placeholder="https://twitter.com/yourusername" 
+                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" 
+              />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tiktok" className="text-sm font-medium text-gray-700">@username</Label>
-              <Input id="tiktok" value={profile.tiktok || ''} onChange={(e) => handleUpdate('tiktok', e.target.value)} placeholder="@username" className="bg-white border-gray-300 text-gray-900" />
+              <Label htmlFor="tiktok" className="text-sm font-medium text-gray-700">TikTok</Label>
+              <Input 
+                id="tiktok" 
+                value={profile.tiktok || ''} 
+                onChange={(e) => handleUpdate('tiktok', e.target.value)} 
+                placeholder="https://tiktok.com/@yourusername" 
+                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" 
+              />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="instagram" className="text-sm font-medium text-gray-700">@username</Label>
-              <Input id="instagram" value={profile.instagram || ''} onChange={(e) => handleUpdate('instagram', e.target.value)} placeholder="@username" className="bg-white border-gray-300 text-gray-900" />
+              <Label htmlFor="instagram" className="text-sm font-medium text-gray-700">Instagram</Label>
+              <Input 
+                id="instagram" 
+                value={profile.instagram || ''} 
+                onChange={(e) => handleUpdate('instagram', e.target.value)} 
+                placeholder="https://instagram.com/yourusername" 
+                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" 
+              />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="facebook" className="text-sm font-medium text-gray-700">facebook.com/username</Label>
-              <Input id="facebook" value={profile.facebook || ''} onChange={(e) => handleUpdate('facebook', e.target.value)} placeholder="facebook.com/username" className="bg-white border-gray-300 text-gray-900" />
+              <Label htmlFor="facebook" className="text-sm font-medium text-gray-700">Facebook</Label>
+              <Input 
+                id="facebook" 
+                value={profile.facebook || ''} 
+                onChange={(e) => handleUpdate('facebook', e.target.value)} 
+                placeholder="https://facebook.com/yourprofile" 
+                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" 
+              />
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Interests & Skills */}
-      <Card className="bg-white">
-        <CardHeader>
-          <CardTitle>Share your expertise and passions</CardTitle>
-          <CardDescription>Share your expertise and passions</CardDescription>
+      <Card className="bg-white border border-gray-200 shadow-sm">
+        <CardHeader className="border-b border-gray-100">
+          <CardTitle className="text-lg font-semibold text-gray-900">Interests & Skills</CardTitle>
+          <CardDescription className="text-sm text-gray-600">Add your areas of interest and professional skills</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="pt-6 space-y-6">
           {/* Sub-Industry & Skills */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-700">Add sub-industry or skill...</Label>
+            <Label className="text-sm font-medium text-gray-700">Sub-Industry & Skills</Label>
             <div className="flex gap-2">
               <Input
                 value={subIndustryInput}
@@ -355,26 +397,38 @@ export default function AboutYou() {
                     setSubIndustryInput('')
                   }
                 }}
-                placeholder="Add sub-industry or skill..."
-                className="bg-white border-gray-300 text-gray-900"
+                placeholder="Add an industry..."
+                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
               />
-              <Button size="icon" variant="outline" onClick={() => { addTag('subIndustrySkills', subIndustryInput); setSubIndustryInput('') }} className="bg-white border-gray-300 hover:bg-gray-50">
+              <Button 
+                size="icon" 
+                variant="outline" 
+                onClick={() => { 
+                  if (subIndustryInput.trim()) {
+                    addTag('subIndustrySkills', subIndustryInput); 
+                    setSubIndustryInput('') 
+                  }
+                }} 
+                className="bg-white border-gray-300 hover:bg-gray-50 flex-shrink-0"
+              >
                 <Plus className="w-4 h-4 text-gray-700" />
               </Button>
             </div>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {(profile.subIndustrySkills || []).map(skill => (
-                <Badge key={skill} variant="secondary" className="gap-1 bg-gray-100 text-gray-900">
-                  {skill}
-                  <X className="w-3 h-3 cursor-pointer" onClick={() => removeTag('subIndustrySkills', skill)} />
-                </Badge>
-              ))}
-            </div>
+            {(profile.subIndustrySkills || []).length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {profile.subIndustrySkills?.map(skill => (
+                  <Badge key={skill} variant="secondary" className="gap-1 bg-gray-100 text-gray-700 hover:bg-gray-200">
+                    {skill}
+                    <X className="w-3 h-3 cursor-pointer hover:text-gray-900" onClick={() => removeTag('subIndustrySkills', skill)} />
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Skills & Expertise */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-700">Add skill or expertise...</Label>
+            <Label className="text-sm font-medium text-gray-700">Skills & Expertise</Label>
             <div className="flex gap-2">
               <Input
                 value={skillsInput}
@@ -386,26 +440,38 @@ export default function AboutYou() {
                     setSkillsInput('')
                   }
                 }}
-                placeholder="Add skill or expertise..."
-                className="bg-white border-gray-300 text-gray-900"
+                placeholder="Add a skill..."
+                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
               />
-              <Button size="icon" variant="outline" onClick={() => { addTag('skillsExpertise', skillsInput); setSkillsInput('') }} className="bg-white border-gray-300 hover:bg-gray-50">
+              <Button 
+                size="icon" 
+                variant="outline" 
+                onClick={() => { 
+                  if (skillsInput.trim()) {
+                    addTag('skillsExpertise', skillsInput); 
+                    setSkillsInput('') 
+                  }
+                }} 
+                className="bg-white border-gray-300 hover:bg-gray-50 flex-shrink-0"
+              >
                 <Plus className="w-4 h-4 text-gray-700" />
               </Button>
             </div>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {(profile.skillsExpertise || []).map(skill => (
-                <Badge key={skill} variant="secondary" className="gap-1 bg-gray-100 text-gray-900">
-                  {skill}
-                  <X className="w-3 h-3 cursor-pointer" onClick={() => removeTag('skillsExpertise', skill)} />
-                </Badge>
-              ))}
-            </div>
+            {(profile.skillsExpertise || []).length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {profile.skillsExpertise?.map(skill => (
+                  <Badge key={skill} variant="secondary" className="gap-1 bg-gray-100 text-gray-700 hover:bg-gray-200">
+                    {skill}
+                    <X className="w-3 h-3 cursor-pointer hover:text-gray-900" onClick={() => removeTag('skillsExpertise', skill)} />
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Personal Interests */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-700">Add interest...</Label>
+            <Label className="text-sm font-medium text-gray-700">Personal Interests</Label>
             <div className="flex gap-2">
               <Input
                 value={interestsInput}
@@ -417,38 +483,50 @@ export default function AboutYou() {
                     setInterestsInput('')
                   }
                 }}
-                placeholder="Add interest..."
-                className="bg-white border-gray-300 text-gray-900"
+                placeholder="Add an interest..."
+                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
               />
-              <Button size="icon" variant="outline" onClick={() => { addTag('personalInterests', interestsInput); setInterestsInput('') }} className="bg-white border-gray-300 hover:bg-gray-50">
+              <Button 
+                size="icon" 
+                variant="outline" 
+                onClick={() => { 
+                  if (interestsInput.trim()) {
+                    addTag('personalInterests', interestsInput); 
+                    setInterestsInput('') 
+                  }
+                }} 
+                className="bg-white border-gray-300 hover:bg-gray-50 flex-shrink-0"
+              >
                 <Plus className="w-4 h-4 text-gray-700" />
               </Button>
             </div>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {(profile.personalInterests || []).map(interest => (
-                <Badge key={interest} variant="secondary" className="gap-1 bg-gray-100 text-gray-900">
-                  {interest}
-                  <X className="w-3 h-3 cursor-pointer" onClick={() => removeTag('personalInterests', interest)} />
-                </Badge>
-              ))}
-            </div>
+            {(profile.personalInterests || []).length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {profile.personalInterests?.map(interest => (
+                  <Badge key={interest} variant="secondary" className="gap-1 bg-gray-100 text-gray-700 hover:bg-gray-200">
+                    {interest}
+                    <X className="w-3 h-3 cursor-pointer hover:text-gray-900" onClick={() => removeTag('personalInterests', interest)} />
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
 
       {/* Learning Preferences */}
-      <Card className="bg-white">
-        <CardHeader>
-          <CardTitle>Optimize your learning experience</CardTitle>
-          <CardDescription>Optimize your learning experience</CardDescription>
+      <Card className="bg-white border border-gray-200 shadow-sm">
+        <CardHeader className="border-b border-gray-100">
+          <CardTitle className="text-lg font-semibold text-gray-900">Learning Preferences</CardTitle>
+          <CardDescription className="text-sm text-gray-600">Tell us how you like to learn and consume content</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Select style</Label>
+              <Label className="text-sm font-medium text-gray-700">Learning Style</Label>
               <Select value={profile.learningStyle || ''} onValueChange={(val) => handleUpdate('learningStyle', val)}>
                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
-                  <SelectValue placeholder="Select style" />
+                  <SelectValue placeholder="Select learning style" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   {LEARNING_STYLES.map(style => (
@@ -458,10 +536,10 @@ export default function AboutYou() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Select depth</Label>
+              <Label className="text-sm font-medium text-gray-700">Content Depth Preference</Label>
               <Select value={profile.contentDepthPref || ''} onValueChange={(val) => handleUpdate('contentDepthPref', val)}>
                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
-                  <SelectValue placeholder="Select depth" />
+                  <SelectValue placeholder="Select content depth" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   {CONTENT_DEPTH.map(depth => (
@@ -471,10 +549,10 @@ export default function AboutYou() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Select commitment</Label>
+              <Label className="text-sm font-medium text-gray-700">Time Commitment</Label>
               <Select value={profile.timeCommitment || ''} onValueChange={(val) => handleUpdate('timeCommitment', val)}>
                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
-                  <SelectValue placeholder="Select commitment" />
+                  <SelectValue placeholder="Select time commitment" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   {TIME_COMMITMENTS.map(time => (
@@ -484,10 +562,10 @@ export default function AboutYou() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Select style</Label>
+              <Label className="text-sm font-medium text-gray-700">Goal-Setting Style</Label>
               <Select value={profile.goalSettingStyle || ''} onValueChange={(val) => handleUpdate('goalSettingStyle', val)}>
                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
-                  <SelectValue placeholder="Select style" />
+                  <SelectValue placeholder="Select goal-setting style" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   {GOAL_SETTING_STYLES.map(style => (
@@ -501,18 +579,18 @@ export default function AboutYou() {
       </Card>
 
       {/* Privacy & Preferences */}
-      <Card className="bg-white">
-        <CardHeader>
-          <CardTitle>Control your privacy settings</CardTitle>
-          <CardDescription>Control your privacy settings</CardDescription>
+      <Card className="bg-white border border-gray-200 shadow-sm">
+        <CardHeader className="border-b border-gray-100">
+          <CardTitle className="text-lg font-semibold text-gray-900">Privacy & Preferences</CardTitle>
+          <CardDescription className="text-sm text-gray-600">Control your privacy settings and notification preferences</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <CardContent className="pt-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Private</Label>
+              <Label className="text-sm font-medium text-gray-700">Profile Visibility</Label>
               <Select value={profile.profileVisibility || 'private'} onValueChange={(val) => handleUpdate('profileVisibility', val)}>
                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
-                  <SelectValue placeholder="Private" />
+                  <SelectValue placeholder="Private (only you)" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   {PROFILE_VISIBILITY.map(vis => (
@@ -522,10 +600,10 @@ export default function AboutYou() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Daily</Label>
+              <Label className="text-sm font-medium text-gray-700">Notification Frequency</Label>
               <Select value={profile.notificationFreq || 'daily'} onValueChange={(val) => handleUpdate('notificationFreq', val)}>
                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
-                  <SelectValue placeholder="Daily" />
+                  <SelectValue placeholder="Daily Digest" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   {NOTIFICATION_FREQUENCY.map(freq => (
@@ -535,13 +613,43 @@ export default function AboutYou() {
               </Select>
             </div>
           </div>
+          
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center justify-between py-2">
+              <div className="space-y-0.5">
+                <Label className="text-sm font-medium text-gray-900">Show Activity</Label>
+                <p className="text-xs text-gray-600">Allow others to see your reading activity and bookmarks</p>
+              </div>
+              <Switch 
+                checked={profile.showActivity || false}
+                onCheckedChange={(checked) => handleUpdate('showActivity', checked)}
+                className="data-[state=checked]:bg-black"
+              />
+            </div>
+            <div className="flex items-center justify-between py-2">
+              <div className="space-y-0.5">
+                <Label className="text-sm font-medium text-gray-900">Allow Recommendations</Label>
+                <p className="text-xs text-gray-600">Receive personalized content recommendations based on your profile</p>
+              </div>
+              <Switch 
+                checked={profile.allowRecommendations !== false}
+                onCheckedChange={(checked) => handleUpdate('allowRecommendations', checked)}
+                className="data-[state=checked]:bg-black"
+              />
+            </div>
+          </div>
         </CardContent>
       </Card>
 
       {/* Save Button */}
-      <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={saving} size="lg" className="bg-black hover:bg-gray-800 text-white">
-          {saving ? 'Saving...' : 'Save Profile'}
+      <div className="flex justify-end pt-2 pb-8">
+        <Button 
+          onClick={handleSave} 
+          disabled={saving} 
+          size="lg" 
+          className="bg-black hover:bg-gray-800 text-white px-8"
+        >
+          {saving ? 'Saving...' : 'Save & Continue'}
         </Button>
       </div>
     </div>
