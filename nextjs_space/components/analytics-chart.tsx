@@ -156,30 +156,6 @@ export function AnalyticsChart({ analytics, onTimeRangeChange }: AnalyticsChartP
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-
-          {/* Active Metrics Pills */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {selectedMetrics.slice(0, 3).map((metricId, index) => {
-              const colors = [
-                '#6366F1', '#8B5CF6', '#EC4899', '#F59E0B', '#10B981'
-              ]
-              const metric = availableMetrics.find(m => m.id === metricId)
-              return (
-                <div
-                  key={metricId}
-                  className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-white"
-                  style={{ backgroundColor: colors[index % colors.length] }}
-                >
-                  {metric?.label}
-                </div>
-              )
-            })}
-            {selectedMetrics.length > 3 && (
-              <div className="text-xs text-gray-500 font-medium">
-                +{selectedMetrics.length - 3} more
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Chart */}
