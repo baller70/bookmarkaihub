@@ -204,34 +204,33 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
         <div className="relative flex h-full">
           {/* Main Content Area */}
           <div className="flex-1 p-6 flex flex-col">
-            {/* Header with logo and title */}
-            <div className="flex items-start space-x-4 mb-6">
-              {/* Logo */}
-              <div className="relative w-16 h-16 flex-shrink-0 bg-white rounded-2xl overflow-hidden shadow-md border-2 border-gray-100">
+            {/* Centered Logo */}
+            <div className="flex justify-center mb-6">
+              <div className="relative w-24 h-24 flex-shrink-0 bg-white rounded-2xl overflow-hidden shadow-md border-2 border-gray-100">
                 {bookmark.favicon ? (
                   <Image
                     src={bookmark.favicon}
                     alt={bookmark.title}
                     fill
-                    className="object-contain p-2"
+                    className="object-contain p-3"
                     unoptimized
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-lg">
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-2xl">
                     {bookmark.title?.charAt(0)?.toUpperCase()}
                   </div>
                 )}
               </div>
-              
-              {/* Title and URL */}
-              <div className="flex-1 min-w-0 pt-1">
-                <h3 className="text-lg font-bold text-gray-900 mb-0.5 truncate tracking-tight font-audiowide">
-                  {bookmark.title}
-                </h3>
-                <p className="text-sm text-blue-600 font-medium truncate font-saira">
-                  {bookmark.url?.replace(/^https?:\/\/(www\.)?/, '')}
-                </p>
-              </div>
+            </div>
+
+            {/* Title and URL */}
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-1 truncate tracking-tight font-audiowide">
+                {bookmark.title}
+              </h3>
+              <p className="text-sm text-blue-600 font-medium truncate font-saira">
+                {bookmark.url?.replace(/^https?:\/\/(www\.)?/, '')}
+              </p>
             </div>
 
             {/* Description */}
