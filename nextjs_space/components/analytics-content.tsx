@@ -25,7 +25,7 @@ export function AnalyticsContent({ showTitle = true }: AnalyticsContentProps) {
     <div className="space-y-6">
       {showTitle && (
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900 uppercase">Analytics Dashboard</h1>
           <p className="text-sm text-gray-600 mt-1">
             Comprehensive Insights Into Your Bookmark Usage And Productivity Patterns
           </p>
@@ -38,7 +38,7 @@ export function AnalyticsContent({ showTitle = true }: AnalyticsContentProps) {
           {/* Title and Time Filters */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Comprehensive Analytics</h2>
+              <h2 className="text-2xl font-bold text-gray-900 uppercase">Comprehensive Analytics</h2>
               <p className="text-sm text-gray-600 mt-1">
                 Deep Insights Into Your Bookmark Usage And Productivity
               </p>
@@ -169,7 +169,7 @@ function OverviewTab() {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <Calendar className="w-5 h-5 text-gray-700" />
-            <h3 className="text-lg font-semibold text-gray-900">Activity Heatmap - Last 30 Days</h3>
+            <h3 className="text-lg font-semibold text-gray-900 uppercase">Activity Heatmap - Last 30 Days</h3>
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs text-gray-600 mb-2">
@@ -221,7 +221,7 @@ function OverviewTab() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp className="w-5 h-5 text-blue-500" />
-              <h3 className="text-lg font-semibold text-gray-900">Performance Summary</h3>
+              <h3 className="text-lg font-semibold text-gray-900 uppercase">Performance Summary</h3>
             </div>
             <div className="space-y-4">
               <div>
@@ -259,7 +259,7 @@ function OverviewTab() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <PieChart className="w-5 h-5 text-purple-500" />
-              <h3 className="text-lg font-semibold text-gray-900">Top Categories</h3>
+              <h3 className="text-lg font-semibold text-gray-900 uppercase">Top Categories</h3>
             </div>
             <div className="space-y-3">
               {[
@@ -286,7 +286,7 @@ function OverviewTab() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <Zap className="w-5 h-5 text-yellow-500" />
-              <h3 className="text-lg font-semibold text-gray-900">Quick Insights</h3>
+              <h3 className="text-lg font-semibold text-gray-900 uppercase">Quick Insights</h3>
             </div>
             <div className="space-y-3">
               <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
@@ -386,7 +386,7 @@ function TimeTrackingTab() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <BarChart3 className="w-5 h-5 text-gray-700" />
-              <h3 className="text-lg font-semibold text-gray-900">Weekly Pattern</h3>
+              <h3 className="text-lg font-semibold text-gray-900 uppercase">Weekly Pattern</h3>
             </div>
             <p className="text-sm text-gray-600 mb-4">Your bookmark usage throughout the week</p>
             <div className="space-y-3">
@@ -416,7 +416,7 @@ function TimeTrackingTab() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <Activity className="w-5 h-5 text-gray-700" />
-              <h3 className="text-lg font-semibold text-gray-900">Peak Hours Analysis</h3>
+              <h3 className="text-lg font-semibold text-gray-900 uppercase">Peak Hours Analysis</h3>
             </div>
             <p className="text-sm text-gray-600 mb-4">When you're most effective with bookmarks</p>
             <div className="space-y-3">
@@ -444,7 +444,7 @@ function TimeTrackingTab() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <Target className="w-5 h-5 text-purple-500" />
-              <h3 className="text-lg font-semibold text-gray-900">Session Breakdown</h3>
+              <h3 className="text-lg font-semibold text-gray-900 uppercase">Session Breakdown</h3>
             </div>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
@@ -475,7 +475,7 @@ function TimeTrackingTab() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <Activity className="w-5 h-5 text-red-500" />
-              <h3 className="text-lg font-semibold text-gray-900">Distraction Analysis</h3>
+              <h3 className="text-lg font-semibold text-gray-900 uppercase">Distraction Analysis</h3>
             </div>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
@@ -506,7 +506,7 @@ function TimeTrackingTab() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <Target className="w-5 h-5 text-green-500" />
-              <h3 className="text-lg font-semibold text-gray-900">Time Goals</h3>
+              <h3 className="text-lg font-semibold text-gray-900 uppercase">Time Goals</h3>
             </div>
             <div className="space-y-4">
               <div>
@@ -564,7 +564,7 @@ function InsightsTab() {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <Star className="w-5 h-5 text-yellow-500" />
-            <h3 className="text-lg font-semibold text-gray-900">Top Performers</h3>
+            <h3 className="text-lg font-semibold text-gray-900 uppercase">Top Performers</h3>
           </div>
           <p className="text-sm text-gray-600 mb-4">Bookmarks with highest engagement</p>
           <div className="space-y-3">
@@ -595,7 +595,7 @@ function InsightsTab() {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="w-5 h-5 text-red-500 rotate-180" />
-            <h3 className="text-lg font-semibold text-gray-900">Underperformers</h3>
+            <h3 className="text-lg font-semibold text-gray-900 uppercase">Underperformers</h3>
           </div>
           <p className="text-sm text-gray-600 mb-4">Bookmarks that need attention</p>
           <div className="space-y-3">
@@ -650,7 +650,7 @@ function CategoriesTab() {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <FolderOpen className="w-5 h-5 text-blue-500" />
-            <h3 className="text-lg font-semibold text-gray-900">Category Efficiency</h3>
+            <h3 className="text-lg font-semibold text-gray-900 uppercase">Category Efficiency</h3>
           </div>
           <p className="text-sm text-gray-600 mb-4">Performance metrics by category</p>
           <div className="space-y-4">
@@ -679,7 +679,7 @@ function CategoriesTab() {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <PieChart className="w-5 h-5 text-purple-500" />
-            <h3 className="text-lg font-semibold text-gray-900">Productivity By Category</h3>
+            <h3 className="text-lg font-semibold text-gray-900 uppercase">Productivity By Category</h3>
           </div>
           <p className="text-sm text-gray-600 mb-4">Time distribution across categories</p>
           
@@ -805,7 +805,7 @@ function ProjectsTab() {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <Users className="w-5 h-5 text-green-500" />
-            <h3 className="text-lg font-semibold text-gray-900">Active Projects</h3>
+            <h3 className="text-lg font-semibold text-gray-900 uppercase">Active Projects</h3>
           </div>
           <p className="text-sm text-gray-600 mb-4">Current project status and progress</p>
           <div className="space-y-4">
@@ -856,7 +856,7 @@ function ProjectsTab() {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <BarChart3 className="w-5 h-5 text-blue-500" />
-            <h3 className="text-lg font-semibold text-gray-900">Resource Allocation</h3>
+            <h3 className="text-lg font-semibold text-gray-900 uppercase">Resource Allocation</h3>
           </div>
           <p className="text-sm text-gray-600 mb-4">Time and resource distribution</p>
           
@@ -1025,7 +1025,7 @@ function RecommendationsTab() {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <Trash2 className="w-5 h-5 text-red-500" />
-            <h3 className="text-lg font-semibold text-gray-900">Cleanup Suggestions</h3>
+            <h3 className="text-lg font-semibold text-gray-900 uppercase">Cleanup Suggestions</h3>
           </div>
           <p className="text-sm text-gray-600 mb-4">Actions to improve your bookmark collection</p>
           <div className="space-y-3">
@@ -1061,7 +1061,7 @@ function RecommendationsTab() {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <Lightbulb className="w-5 h-5 text-yellow-500" />
-            <h3 className="text-lg font-semibold text-gray-900">Optimization Tips</h3>
+            <h3 className="text-lg font-semibold text-gray-900 uppercase">Optimization Tips</h3>
           </div>
           <p className="text-sm text-gray-600 mb-4">Improve your bookmark management</p>
           <div className="space-y-3">
@@ -1090,7 +1090,7 @@ function RecommendationsTab() {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="w-5 h-5 text-green-500" />
-            <h3 className="text-lg font-semibold text-gray-900">Trending Items</h3>
+            <h3 className="text-lg font-semibold text-gray-900 uppercase">Trending Items</h3>
           </div>
           <p className="text-sm text-gray-600 mb-4">Your most accessed bookmarks this week</p>
           <div className="space-y-3">
