@@ -93,7 +93,7 @@ export default function AboutYou() {
       {/* Header Section */}
       <div className="flex items-start justify-between pb-6 border-b border-gray-200">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">About You</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2 uppercase">About You</h1>
           <p className="text-base text-gray-600">Tell us about yourself to get personalized bookmark recommendations</p>
         </div>
         <Button 
@@ -113,7 +113,7 @@ export default function AboutYou() {
         <CardHeader className="border-b border-gray-100">
           <div className="flex items-center gap-2">
             <User className="w-5 h-5 text-gray-700" />
-            <CardTitle className="text-lg font-semibold text-gray-900">Basic Information</CardTitle>
+            <CardTitle className="text-lg font-semibold text-gray-900 uppercase">Basic Information</CardTitle>
           </div>
           <CardDescription className="text-sm text-gray-600">Your basic profile information and avatar</CardDescription>
         </CardHeader>
@@ -235,7 +235,7 @@ export default function AboutYou() {
       {/* Content Preferences */}
       <Card className="bg-white border border-gray-200 shadow-sm">
         <CardHeader className="border-b border-gray-100">
-          <CardTitle className="text-lg font-semibold text-gray-900">Content Preferences</CardTitle>
+          <CardTitle className="text-lg font-semibold text-gray-900 uppercase">Content Preferences</CardTitle>
           <CardDescription className="text-sm text-gray-600">Help us understand your content and source preferences</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
@@ -325,7 +325,7 @@ export default function AboutYou() {
       {/* Links & Social Profiles */}
       <Card className="bg-white border border-gray-200 shadow-sm">
         <CardHeader className="border-b border-gray-100">
-          <CardTitle className="text-lg font-semibold text-gray-900">Links & Social Profiles</CardTitle>
+          <CardTitle className="text-lg font-semibold text-gray-900 uppercase">Links & Social Profiles</CardTitle>
           <CardDescription className="text-sm text-gray-600">Connect your professional profiles and websites</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
@@ -397,7 +397,7 @@ export default function AboutYou() {
       {/* Interests & Skills */}
       <Card className="bg-white border border-gray-200 shadow-sm">
         <CardHeader className="border-b border-gray-100">
-          <CardTitle className="text-lg font-semibold text-gray-900">Interests & Skills</CardTitle>
+          <CardTitle className="text-lg font-semibold text-gray-900 uppercase">Interests & Skills</CardTitle>
           <CardDescription className="text-sm text-gray-600">Add your areas of interest and professional skills</CardDescription>
         </CardHeader>
         <CardContent className="pt-6 space-y-6">
@@ -535,7 +535,7 @@ export default function AboutYou() {
       {/* Learning Preferences */}
       <Card className="bg-white border border-gray-200 shadow-sm">
         <CardHeader className="border-b border-gray-100">
-          <CardTitle className="text-lg font-semibold text-gray-900">Learning Preferences</CardTitle>
+          <CardTitle className="text-lg font-semibold text-gray-900 uppercase">Learning Preferences</CardTitle>
           <CardDescription className="text-sm text-gray-600">Tell us how you like to learn and consume content</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
@@ -599,7 +599,7 @@ export default function AboutYou() {
       {/* Privacy & Preferences */}
       <Card className="bg-white border border-gray-200 shadow-sm">
         <CardHeader className="border-b border-gray-100">
-          <CardTitle className="text-lg font-semibold text-gray-900">Privacy & Preferences</CardTitle>
+          <CardTitle className="text-lg font-semibold text-gray-900 uppercase">Privacy & Preferences</CardTitle>
           <CardDescription className="text-sm text-gray-600">Control your privacy settings and notification preferences</CardDescription>
         </CardHeader>
         <CardContent className="pt-6 space-y-6">

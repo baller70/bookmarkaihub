@@ -90,7 +90,7 @@ export default function FavoritesView() {
     <div className="max-w-7xl mx-auto space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Favorites</h1>
+        <h1 className="text-3xl font-bold uppercase">Favorites</h1>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={fetchFavorites}>
             <RefreshCw className="w-4 h-4 mr-2" />
@@ -293,7 +293,7 @@ export default function FavoritesView() {
       {favorites.length === 0 && (
         <div className="text-center py-12">
           <Heart className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No favorites yet</h3>
+          <h3 className="text-lg font-semibold mb-2 uppercase">No favorites yet</h3>
           <p className="text-muted-foreground">Start favoriting bookmarks to see them here</p>
         </div>
       )}

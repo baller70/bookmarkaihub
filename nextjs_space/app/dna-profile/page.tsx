@@ -78,7 +78,7 @@ export default function DnaProfilePage() {
         return (
           <Card className="bg-white">
             <CardHeader>
-              <CardTitle>Playbooks</CardTitle>
+              <CardTitle className="uppercase">Playbooks</CardTitle>
               <CardDescription>Create and manage your workflow playbooks</CardDescription>
             </CardHeader>
             <CardContent>
@@ -90,7 +90,7 @@ export default function DnaProfilePage() {
         return (
           <Card className="bg-white">
             <CardHeader>
-              <CardTitle>Search Preferences</CardTitle>
+              <CardTitle className="uppercase">Search Preferences</CardTitle>
               <CardDescription>Customize your search experience</CardDescription>
             </CardHeader>
             <CardContent>
@@ -102,7 +102,7 @@ export default function DnaProfilePage() {
         return (
           <Card className="bg-white">
             <CardHeader>
-              <CardTitle>Analytics</CardTitle>
+              <CardTitle className="uppercase">Analytics</CardTitle>
               <CardDescription>View your bookmark insights</CardDescription>
             </CardHeader>
             <CardContent>
@@ -114,7 +114,7 @@ export default function DnaProfilePage() {
         return (
           <Card className="bg-white">
             <CardHeader>
-              <CardTitle>Time Capsule</CardTitle>
+              <CardTitle className="uppercase">Time Capsule</CardTitle>
               <CardDescription>Preserve bookmarks for future reference</CardDescription>
             </CardHeader>
             <CardContent>
@@ -162,7 +162,7 @@ export default function DnaProfilePage() {
               {/* DNA Profile Sections */}
               <Card className="bg-white border shadow-sm">
                 <CardHeader className="pb-4">
-                  <h2 className="text-xl font-bold text-black mb-2">DNA Profile</h2>
+                  <h2 className="text-xl font-bold text-black mb-2 uppercase">DNA Profile</h2>
                   <p className="text-sm text-gray-600">Build your personalized AI profile</p>
                 </CardHeader>
                 <CardContent className="space-y-2 pb-6">
@@ -196,7 +196,7 @@ export default function DnaProfilePage() {
               {/* Progress */}
               <Card className="bg-white border shadow-sm">
                 <CardHeader className="pb-4">
-                  <h3 className="text-base font-semibold text-black">Progress</h3>
+                  <h3 className="text-base font-semibold text-black uppercase">Progress</h3>
                 </CardHeader>
                 <CardContent className="space-y-4 pb-6">
                   <div className="space-y-2">
