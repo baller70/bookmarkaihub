@@ -202,7 +202,7 @@ export default function ContentDiscoveryPage() {
                 </TabsContent>
 
                 <TabsContent value="link-finder" className="space-y-6">
-                  <Card className="p-6">
+                  <Card className="p-6 bg-white">
                     <div className="flex items-center gap-3 mb-4">
                       <Search className="h-5 w-5 text-gray-900" />
                       <h3 className="text-lg font-bold text-gray-900">AI Link Finder</h3>
@@ -214,7 +214,7 @@ export default function ContentDiscoveryPage() {
                         <Label className="mb-2 block text-gray-900">Topic / Keywords</Label>
                         <Input
                           placeholder="e.g., artificial intelligence, web development"
-                          className="mb-2"
+                          className="mb-2 bg-white border-gray-300 text-gray-900"
                           value={topicKeywords}
                           onChange={(e) => setTopicKeywords(e.target.value)}
                         />
@@ -228,7 +228,7 @@ export default function ContentDiscoveryPage() {
                       <div>
                         <Label className="mb-2 block text-gray-900">Date Range</Label>
                         <Select value={dateRange} onValueChange={setDateRange}>
-                          <SelectTrigger className="text-gray-900">
+                          <SelectTrigger className="text-gray-900 bg-white border-gray-300">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
