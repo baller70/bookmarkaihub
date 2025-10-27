@@ -130,7 +130,7 @@ export function DashboardContent() {
           <div className="text-5xl font-bold text-gray-900">{bookmarks?.length || 0}</div>
         </div>
         <Select defaultValue="breakdown">
-          <SelectTrigger className="w-[140px] h-9 text-sm">
+          <SelectTrigger className="w-[140px] h-9 text-sm text-white">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
