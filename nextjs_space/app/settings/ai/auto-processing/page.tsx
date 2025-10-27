@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
-import { Sparkles, ArrowLeft, Settings as SettingsIcon, Tag, FolderKanban, Filter, AlertTriangle, Download, Upload } from "lucide-react"
+import { Sparkles, ArrowLeft, Settings as SettingsIcon, Tag, FolderKanban, Filter, AlertTriangle, Download, Upload, Globe, History } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -38,17 +38,15 @@ export default function AutoProcessingPage() {
             
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl">
-                  <Sparkles className="h-6 w-6 text-white" />
-                </div>
-                <h1 className="text-3xl font-bold">AI LinkPilot</h1>
+                <SettingsIcon className="h-6 w-6" />
+                <h1 className="text-2xl font-bold">AI LinkPilot</h1>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr_280px] gap-6">
             {/* Sidebar Navigation */}
-            <div className="lg:col-span-1">
+            <div>
               <Card className="p-4 space-y-1">
                 <Link href="/settings/ai/auto-processing">
                   <Button variant="ghost" className="w-full justify-start bg-blue-50 text-blue-600">
@@ -84,7 +82,7 @@ export default function AutoProcessingPage() {
             </div>
 
             {/* Main Content */}
-            <div className="lg:col-span-3 space-y-6">
+            <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold mb-2">Auto-Processing</h2>
                 <p className="text-gray-600">autoProcessing.description</p>
@@ -210,7 +208,7 @@ export default function AutoProcessingPage() {
                         <Label>Synonym mapping</Label>
                         <p className="text-xs text-gray-500">Group related tags together</p>
                       </div>
-                      <Switch />
+                      <Switch defaultChecked />
                     </div>
                   </div>
 
@@ -227,8 +225,8 @@ export default function AutoProcessingPage() {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <div>
-                        <Label>Manual review below threshold</Label>
-                        <p className="text-xs text-gray-500">Queue low-confidence tags for manual approval</p>
+                        <Label>View below threshold</Label>
+                        <p className="text-xs text-gray-500">Show low-confidence tags for manual approval</p>
                       </div>
                       <Switch defaultChecked />
                     </div>
@@ -340,7 +338,7 @@ export default function AutoProcessingPage() {
                         <Label>Auto-file into suggested folder</Label>
                         <p className="text-xs text-gray-500">Automatically move links to suggested folders</p>
                       </div>
-                      <Switch />
+                      <Switch defaultChecked />
                     </div>
                   </div>
 
@@ -417,6 +415,49 @@ export default function AutoProcessingPage() {
                     <Upload className="h-4 w-4" />
                     Import JSON
                   </Button>
+                </div>
+              </Card>
+            </div>
+
+            {/* Right Sidebar */}
+            <div className="space-y-6">
+              {/* Language Selector */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Language</span>
+                <Select defaultValue="en">
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en">🇺🇸 English</SelectItem>
+                    <SelectItem value="es">🇪🇸 Spanish</SelectItem>
+                    <SelectItem value="fr">🇫🇷 French</SelectItem>
+                    <SelectItem value="de">🇩🇪 German</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* History Button */}
+              <Button variant="outline" className="w-full justify-start gap-2">
+                <History className="h-4 w-4" />
+                autoProcessing.history
+              </Button>
+
+              {/* Tag Cloud Snapshot */}
+              <Card className="p-4">
+                <h3 className="text-sm font-semibold mb-2">Tag Cloud Snapshot</h3>
+                <p className="text-xs text-gray-500 mb-4">Top tags from the past 7 days</p>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary" className="text-xs">javascript</Badge>
+                  <Badge variant="secondary" className="text-xs">react</Badge>
+                  <Badge variant="secondary" className="text-xs">design</Badge>
+                  <Badge variant="secondary" className="text-xs">productivity</Badge>
+                  <Badge variant="secondary" className="text-xs">ai</Badge>
+                  <Badge variant="secondary" className="text-xs">tutorial</Badge>
+                  <Badge variant="secondary" className="text-xs">tools</Badge>
+                  <Badge variant="secondary" className="text-xs">web-dev</Badge>
+                  <Badge variant="secondary" className="text-xs">css</Badge>
+                  <Badge variant="secondary" className="text-xs">api</Badge>
                 </div>
               </Card>
             </div>
