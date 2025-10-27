@@ -27,6 +27,7 @@ export function AddBookmarkModal({ open, onOpenChange, onSuccess }: AddBookmarkM
   const [fetchingMetadata, setFetchingMetadata] = useState(false)
   const [categories, setCategories] = useState<any[]>([])
   const [tags, setTags] = useState<any[]>([])
+  const [autoAppliedTags, setAutoAppliedTags] = useState<string[]>([])
   const [formData, setFormData] = useState({
     title: "",
     url: "",
@@ -91,9 +92,10 @@ export function AddBookmarkModal({ open, onOpenChange, onSuccess }: AddBookmarkM
           favicon: prev.favicon || metadata.favicon || "",
         }))
         
-        // Show suggested tags if available
+        // Auto-apply suggested tags
         if (metadata.suggestedTags && metadata.suggestedTags.length > 0) {
-          toast.success(`Metadata fetched! Suggested tags: ${metadata.suggestedTags.join(', ')}`)
+          await autoApplyTags(metadata.suggestedTags)
+          toast.success(`Metadata fetched! Auto-applied tags: ${metadata.suggestedTags.join(', ')}`)
         } else {
           toast.success("Metadata fetched successfully")
         }
@@ -104,6 +106,51 @@ export function AddBookmarkModal({ open, onOpenChange, onSuccess }: AddBookmarkM
       console.error("Error fetching metadata:", error)
     } finally {
       setFetchingMetadata(false)
+    }
+  }
+
+  const autoApplyTags = async (suggestedTags: string[]) => {
+    const newTagIds: string[] = []
+    const appliedTagNames: string[] = []
+
+    for (const tagName of suggestedTags) {
+      // Check if tag already exists
+      let existingTag = tags.find(t => t.name.toLowerCase() === tagName.toLowerCase())
+      
+      if (!existingTag) {
+        // Create the tag
+        try {
+          const response = await fetch('/api/tags', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: tagName }),
+          })
+          
+          if (response.ok) {
+            const newTag = await response.json()
+            existingTag = newTag
+            // Add to local tags list
+            setTags(prev => [...prev, newTag])
+          }
+        } catch (error) {
+          console.error('Error creating tag:', error)
+          continue
+        }
+      }
+      
+      if (existingTag && !formData.tagIds.includes(existingTag.id)) {
+        newTagIds.push(existingTag.id)
+        appliedTagNames.push(existingTag.name)
+      }
+    }
+
+    // Update form data with new tag IDs
+    if (newTagIds.length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        tagIds: [...prev.tagIds, ...newTagIds],
+      }))
+      setAutoAppliedTags(appliedTagNames)
     }
   }
 
@@ -160,6 +207,7 @@ export function AddBookmarkModal({ open, onOpenChange, onSuccess }: AddBookmarkM
           categoryIds: [],
           tagIds: [],
         })
+        setAutoAppliedTags([])
         onSuccess()
         onOpenChange(false)
       } else {
@@ -228,6 +276,26 @@ export function AddBookmarkModal({ open, onOpenChange, onSuccess }: AddBookmarkM
               rows={3}
             />
           </div>
+
+          {autoAppliedTags.length > 0 && (
+            <div className="rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 p-3">
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-medium text-blue-700 dark:text-blue-300">
+                  Auto-applied tags:
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  {autoAppliedTags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
