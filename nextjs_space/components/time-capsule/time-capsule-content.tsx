@@ -154,7 +154,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
           key={day}
           onClick={() => setSelectedDate(date)}
           className={`text-center py-2 text-sm cursor-pointer rounded hover:bg-muted ${
-            isToday ? 'bg-black text-white hover:bg-black/90' : ''
+            isToday ? 'bg-white text-black border hover:bg-gray-50' : ''
           }`}
         >
           {day}
@@ -210,42 +210,42 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
       <div className="space-y-6">
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="text-lg font-semibold mb-1 truncate">{selectedCapsule.title}</h3>
-            <Badge className="bg-black text-white hover:bg-black/90">
+            <h3 className="text-lg font-semibold mb-1 truncate text-black">{selectedCapsule.title}</h3>
+            <Badge className="bg-white text-black border hover:bg-gray-50">
               {selectedCapsule.type}
             </Badge>
           </div>
         </div>
 
         <div>
-          <h4 className="text-sm font-semibold mb-2">Description</h4>
+          <h4 className="text-sm font-semibold mb-2 text-black">Description</h4>
           <p className="text-sm text-muted-foreground">{selectedCapsule.description}</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <div className="text-sm font-semibold mb-1">Created</div>
+            <div className="text-sm font-semibold mb-1 text-black">Created</div>
             <div className="text-sm text-muted-foreground">{selectedCapsule.date}</div>
           </div>
           <div>
-            <div className="text-sm font-semibold mb-1">Size</div>
+            <div className="text-sm font-semibold mb-1 text-black">Size</div>
             <div className="text-sm text-muted-foreground">{selectedCapsule.size}</div>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <div className="text-sm font-semibold mb-1">Bookmarks</div>
+            <div className="text-sm font-semibold mb-1 text-black">Bookmarks</div>
             <div className="text-sm text-muted-foreground">{selectedCapsule.bookmarks}</div>
           </div>
           <div>
-            <div className="text-sm font-semibold mb-1">Folders</div>
+            <div className="text-sm font-semibold mb-1 text-black">Folders</div>
             <div className="text-sm text-muted-foreground">{selectedCapsule.folders}</div>
           </div>
         </div>
 
         <div>
-          <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+          <h4 className="text-sm font-semibold mb-2 flex items-center gap-2 text-black">
             <Sparkles className="w-4 h-4" />
             AI Summary
           </h4>
@@ -253,7 +253,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
         </div>
 
         <div className="space-y-2 pt-4 border-t">
-          <Button className="w-full bg-black text-white hover:bg-black/90">
+          <Button className="w-full bg-white text-black border hover:bg-gray-50">
             <RotateCcw className="w-4 h-4 mr-2" />
             Restore
           </Button>
@@ -276,7 +276,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
     <div className="space-y-6">
       {showTitle && (
         <div>
-          <h1 className="text-3xl font-bold mb-2">Time Capsule</h1>
+          <h1 className="text-3xl font-bold mb-2 uppercase">Time Capsule</h1>
           <p className="text-muted-foreground">
             Explore your digital journey and see how your interests evolved over time
           </p>
@@ -286,7 +286,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
       <div className="space-y-6">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-2xl font-bold mb-1">Time Capsule</h2>
+            <h2 className="text-2xl font-bold mb-1 uppercase">Time Capsule</h2>
             <p className="text-sm text-muted-foreground">
               Versioned snapshots of your bookmark collection
             </p>
@@ -302,7 +302,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
             </Button>
             <Button 
               size="sm" 
-              className="bg-black text-white hover:bg-black/90"
+              className="bg-white text-black border hover:bg-gray-50"
               onClick={() => setShowCreateModal(true)}
             >
               <Camera className="w-4 h-4 mr-2" />
@@ -318,7 +318,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
               <Button
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                 size="sm"
-                className={viewMode === 'list' ? 'bg-black text-white hover:bg-black/90' : ''}
+                className={viewMode === 'list' ? 'bg-white text-black border-0 hover:bg-gray-50' : ''}
                 onClick={() => setViewMode('list')}
               >
                 <List className="w-4 h-4 mr-2" />
@@ -327,7 +327,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
               <Button
                 variant={viewMode === 'calendar' ? 'default' : 'ghost'}
                 size="sm"
-                className={viewMode === 'calendar' ? 'bg-black text-white hover:bg-black/90' : ''}
+                className={viewMode === 'calendar' ? 'bg-white text-black border-0 hover:bg-gray-50' : ''}
                 onClick={() => setViewMode('calendar')}
               >
                 <CalendarIcon className="w-4 h-4 mr-2" />
@@ -347,7 +347,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
                 {sampleCapsules.map((capsule) => (
                   <Card
                     key={capsule.id}
-                    className={`p-6 cursor-pointer transition-all hover:shadow-md ${
+                    className={`p-6 cursor-pointer transition-all hover:shadow-md bg-white ${
                       selectedCapsule?.id === capsule.id ? 'ring-2 ring-primary' : ''
                     }`}
                     onClick={() => setSelectedCapsule(capsule)}
@@ -360,7 +360,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
                           }`}
                         />
                         <div className="flex-1">
-                          <h3 className="font-semibold text-lg mb-1">{capsule.title}</h3>
+                          <h3 className="font-semibold text-lg mb-1 text-black">{capsule.title}</h3>
                           <p className="text-sm text-muted-foreground mb-3">
                             {capsule.description}
                           </p>
@@ -381,7 +381,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-2">
-                        <Badge className="bg-black text-white hover:bg-black/90">
+                        <Badge className="bg-white text-black border hover:bg-gray-50">
                           {capsule.type}
                         </Badge>
                         <span className="text-sm text-muted-foreground">{capsule.date}</span>
@@ -409,7 +409,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
                 ))}
               </div>
             ) : (
-              <Card className="p-6">
+              <Card className="p-6 bg-white">
                 {renderCalendar()}
               </Card>
             )}
@@ -417,7 +417,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
 
           {selectedCapsule && (
             <div className="col-span-4">
-              <Card className="p-6 sticky top-6">
+              <Card className="p-6 sticky top-6 bg-white">
                 {renderCapsuleDetail()}
               </Card>
             </div>
@@ -425,7 +425,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
 
           {viewMode === 'calendar' && selectedDate && (
             <div className="col-span-4">
-              <Card className="p-6">
+              <Card className="p-6 bg-white">
                 <h3 className="font-semibold mb-4">
                   Capsules on {selectedDate.toLocaleDateString('en-US', { 
                     month: 'long', 
