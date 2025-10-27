@@ -13,31 +13,55 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { Camera } from 'lucide-react'
+import { Camera, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface CreateSnapshotModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onSuccess?: () => void
 }
 
-export function CreateSnapshotModal({ open, onOpenChange }: CreateSnapshotModalProps) {
+export function CreateSnapshotModal({ open, onOpenChange, onSuccess }: CreateSnapshotModalProps) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [includeSettings, setIncludeSettings] = useState(true)
   const [includeAnalytics, setIncludeAnalytics] = useState(true)
+  const [isCreating, setIsCreating] = useState(false)
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!name.trim()) {
       toast.error('Please enter a name for the snapshot')
       return
     }
     
-    // Handle create logic here
-    toast.success('Time capsule created successfully!')
-    onOpenChange(false)
-    setName('')
-    setDescription('')
+    setIsCreating(true)
+    
+    try {
+      const response = await fetch('/api/time-capsule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: name,
+          description: description || null
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create time capsule')
+      }
+
+      toast.success('Time capsule created successfully!')
+      onOpenChange(false)
+      setName('')
+      setDescription('')
+      onSuccess?.()
+    } catch (error) {
+      console.error('Error creating time capsule:', error)
+      toast.error('Failed to create time capsule')
+    } finally {
+      setIsCreating(false)
+    }
   }
 
   return (
@@ -94,11 +118,12 @@ export function CreateSnapshotModal({ open, onOpenChange }: CreateSnapshotModalP
           </div>
         </div>
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isCreating}>
             Cancel
           </Button>
-          <Button onClick={handleCreate} className="bg-black text-white hover:bg-black/90">
-            Create Capsule
+          <Button onClick={handleCreate} disabled={isCreating} className="bg-black text-white hover:bg-black/90">
+            {isCreating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            {isCreating ? 'Creating...' : 'Create Capsule'}
           </Button>
         </div>
       </DialogContent>

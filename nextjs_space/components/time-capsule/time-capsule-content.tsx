@@ -2,6 +2,7 @@
 'use client'
 
 import { useState } from 'react'
+import useSWR from 'swr'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -19,82 +20,36 @@ import {
   Sparkles,
   RotateCcw,
   Download,
-  Share2
+  Share2,
+  Loader2
 } from 'lucide-react'
 import { ScheduleModal } from './schedule-modal'
 import { CompareModal } from './compare-modal'
 import { CreateSnapshotModal } from './create-snapshot-modal'
+import { toast } from 'sonner'
 
 interface Capsule {
   id: string
   title: string
-  description: string
-  status: 'active' | 'inactive'
-  type: 'manual' | 'scheduled'
-  bookmarks: number
-  folders: number
-  favorites: number
-  size: string
+  description: string | null
   date: string
-  stats: {
-    folders: number
-    links: number
-    tags: number
-  }
-  aiSummary: string
+  totalBookmarks: number
+  totalFolders: number
+  totalSize: number
+  snapshot: any
+  aiSummary: string | null
+  createdAt: string
+  updatedAt: string
 }
 
-// Sample data
-const sampleCapsules: Capsule[] = [
-  {
-    id: '1',
-    title: 'Q4 2024 Development Resources',
-    description: 'Snapshot of all development-related bookmarks at the end of Q4',
-    status: 'active',
-    type: 'manual',
-    bookmarks: 1247,
-    folders: 12,
-    favorites: 89,
-    size: '15.6 MB',
-    date: 'Jan 20, 2024',
-    stats: { folders: 23, links: 12, tags: 5 },
-    aiSummary: 'This snapshot captures a significant expansion in React and TypeScript resources, with notable additions in AI/ML tooling and design systems. The collection shows a 18% growth in development bookmarks with improved organization.'
-  },
-  {
-    id: '2',
-    title: 'Weekly Auto-Backup',
-    description: 'Automated weekly snapshot',
-    status: 'active',
-    type: 'scheduled',
-    bookmarks: 1183,
-    folders: 11,
-    favorites: 82,
-    size: '14.2 MB',
-    date: 'Jan 15, 2024',
-    stats: { folders: 21, links: 11, tags: 4 },
-    aiSummary: 'Automated weekly backup showing consistent bookmark collection growth.'
-  },
-  {
-    id: '3',
-    title: 'Pre-Migration Backup',
-    description: 'Backup before major system migration',
-    status: 'inactive',
-    type: 'manual',
-    bookmarks: 10238,
-    folders: 10,
-    favorites: 76,
-    size: '12.8 MB',
-    date: 'Jan 1, 2024',
-    stats: { folders: 19, links: 10, tags: 3 },
-    aiSummary: 'Complete backup before system migration, preserving all bookmarks and folders.'
-  }
-]
+const fetcher = (url: string) => fetch(url).then(res => res.json())
 
 interface TimeCapsuleContentProps {
   showTitle?: boolean
 }
 
 export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps) {
+  const { data: capsules, error, isLoading, mutate } = useSWR<Capsule[]>('/api/time-capsule', fetcher)
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
   const [selectedCapsule, setSelectedCapsule] = useState<Capsule | null>(null)
   const [showScheduleModal, setShowScheduleModal] = useState(false)
@@ -103,10 +58,12 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
 
-  const totalSize = sampleCapsules.reduce((acc, capsule) => {
-    const size = parseFloat(capsule.size)
-    return acc + size
-  }, 0)
+  const totalSize = capsules?.reduce((acc, capsule) => acc + (capsule.totalSize / 1024), 0) || 0
+
+  const handleSnapshotCreated = async () => {
+    await mutate()
+    toast.success('Time capsule created successfully!')
+  }
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear()
@@ -195,6 +152,19 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
     )
   }
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    })
+  }
+
+  const formatSize = (sizeInKB: number) => {
+    if (sizeInKB < 1024) return `${sizeInKB.toFixed(1)} KB`
+    return `${(sizeInKB / 1024).toFixed(1)} MB`
+  }
+
   const renderCapsuleDetail = () => {
     if (!selectedCapsule) {
       return (
@@ -206,41 +176,47 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
       )
     }
 
+    const snapshotData = selectedCapsule.snapshot as any
+    const totalBookmarks = snapshotData?.bookmarks?.length || 0
+    const totalCategories = snapshotData?.categories?.length || 0
+    const totalTags = snapshotData?.tags?.length || 0
+    const totalFavorites = snapshotData?.bookmarks?.filter((b: any) => b.isFavorite)?.length || 0
+
     return (
       <div className="space-y-6">
         <div className="flex items-start justify-between">
           <div>
             <h3 className="text-lg font-semibold mb-1 truncate text-black uppercase">{selectedCapsule.title}</h3>
             <Badge className="bg-white text-black border hover:bg-gray-50">
-              {selectedCapsule.type}
+              manual
             </Badge>
           </div>
         </div>
 
         <div>
           <h4 className="text-sm font-semibold mb-2 text-black uppercase">Description</h4>
-          <p className="text-sm text-muted-foreground">{selectedCapsule.description}</p>
+          <p className="text-sm text-muted-foreground">{selectedCapsule.description || 'No description provided'}</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <div className="text-sm font-semibold mb-1 text-black">Created</div>
-            <div className="text-sm text-muted-foreground">{selectedCapsule.date}</div>
+            <div className="text-sm text-muted-foreground">{formatDate(selectedCapsule.createdAt)}</div>
           </div>
           <div>
             <div className="text-sm font-semibold mb-1 text-black">Size</div>
-            <div className="text-sm text-muted-foreground">{selectedCapsule.size}</div>
+            <div className="text-sm text-muted-foreground">{formatSize(selectedCapsule.totalSize)}</div>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <div className="text-sm font-semibold mb-1 text-black">Bookmarks</div>
-            <div className="text-sm text-muted-foreground">{selectedCapsule.bookmarks}</div>
+            <div className="text-sm text-muted-foreground">{totalBookmarks}</div>
           </div>
           <div>
             <div className="text-sm font-semibold mb-1 text-black">Folders</div>
-            <div className="text-sm text-muted-foreground">{selectedCapsule.folders}</div>
+            <div className="text-sm text-muted-foreground">{totalCategories}</div>
           </div>
         </div>
 
@@ -249,7 +225,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
             <Sparkles className="w-4 h-4" />
             AI Summary
           </h4>
-          <p className="text-sm text-muted-foreground">{selectedCapsule.aiSummary}</p>
+          <p className="text-sm text-muted-foreground">{selectedCapsule.aiSummary || 'No AI summary available'}</p>
         </div>
 
         <div className="space-y-2 pt-4 border-t">
@@ -271,6 +247,27 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
       </div>
     )
   }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <p className="text-red-500 mb-4">Failed to load time capsules</p>
+        <Button variant="outline" onClick={() => mutate()}>
+          Try Again
+        </Button>
+      </div>
+    )
+  }
+
+  const capsulesData = capsules || []
 
   return (
     <div className="space-y-6">
@@ -296,7 +293,12 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
               <Clock className="w-4 h-4 mr-2" />
               Schedule
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setShowCompareModal(true)}>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowCompareModal(true)}
+              disabled={capsulesData.length < 2}
+            >
               <GitCompare className="w-4 h-4 mr-2" />
               Compare
             </Button>
@@ -336,116 +338,137 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
             </div>
           </div>
           <span className="text-sm text-muted-foreground">
-            {sampleCapsules.length} capsules • {totalSize.toFixed(1)} MB total
+            {capsulesData.length} capsules • {totalSize.toFixed(1)} MB total
           </span>
         </div>
 
-        <div className="grid grid-cols-12 gap-6">
-          <div className={selectedCapsule ? 'col-span-8' : 'col-span-12'}>
-            {viewMode === 'list' ? (
-              <div className="space-y-4">
-                {sampleCapsules.map((capsule) => (
-                  <Card
-                    key={capsule.id}
-                    className={`p-6 cursor-pointer transition-all hover:shadow-md bg-white ${
-                      selectedCapsule?.id === capsule.id ? 'ring-2 ring-primary' : ''
-                    }`}
-                    onClick={() => setSelectedCapsule(capsule)}
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-start gap-3 flex-1">
-                        <div
-                          className={`w-2 h-2 rounded-full mt-2 ${
-                            capsule.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
-                          }`}
-                        />
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-lg mb-1 text-black uppercase">{capsule.title}</h3>
-                          <p className="text-sm text-muted-foreground mb-3">
-                            {capsule.description}
-                          </p>
-                          <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <FileText className="w-4 h-4" />
-                              <span>{capsule.bookmarks}</span>
+        {capsulesData.length === 0 ? (
+          <Card className="p-12 text-center bg-white">
+            <Clock className="w-16 h-16 text-muted-foreground/40 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2 uppercase">No Time Capsules Yet</h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              Create your first snapshot to start tracking your bookmark journey
+            </p>
+            <Button 
+              className="bg-white text-black border hover:bg-gray-50"
+              onClick={() => setShowCreateModal(true)}
+            >
+              <Camera className="w-4 h-4 mr-2" />
+              Create Your First Snapshot
+            </Button>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-12 gap-6">
+            <div className={selectedCapsule ? 'col-span-8' : 'col-span-12'}>
+              {viewMode === 'list' ? (
+                <div className="space-y-4">
+                  {capsulesData.map((capsule) => {
+                    const snapshotData = capsule.snapshot as any
+                    const totalBookmarks = snapshotData?.bookmarks?.length || 0
+                    const totalCategories = snapshotData?.categories?.length || 0
+                    const totalTags = snapshotData?.tags?.length || 0
+                    const totalFavorites = snapshotData?.bookmarks?.filter((b: any) => b.isFavorite)?.length || 0
+
+                    return (
+                      <Card
+                        key={capsule.id}
+                        className={`p-6 cursor-pointer transition-all hover:shadow-md bg-white ${
+                          selectedCapsule?.id === capsule.id ? 'ring-2 ring-primary' : ''
+                        }`}
+                        onClick={() => setSelectedCapsule(capsule)}
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-start gap-3 flex-1">
+                            <div className="w-2 h-2 rounded-full mt-2 bg-green-500" />
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-lg mb-1 text-black uppercase">{capsule.title}</h3>
+                              <p className="text-sm text-muted-foreground mb-3">
+                                {capsule.description || 'No description'}
+                              </p>
+                              <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                                <div className="flex items-center gap-1">
+                                  <FileText className="w-4 h-4" />
+                                  <span>{totalBookmarks}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Folder className="w-4 h-4" />
+                                  <span>{totalCategories}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Heart className="w-4 h-4" />
+                                  <span>{totalFavorites}</span>
+                                </div>
+                              </div>
                             </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-2">
+                            <Badge className="bg-white text-black border hover:bg-gray-50">
+                              manual
+                            </Badge>
+                            <span className="text-sm text-muted-foreground">{formatDate(capsule.createdAt)}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between pt-4 border-t">
+                          <div className="text-sm text-muted-foreground">{formatSize(capsule.totalSize)}</div>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
                             <div className="flex items-center gap-1">
                               <Folder className="w-4 h-4" />
-                              <span>{capsule.folders}</span>
+                              <span>{totalCategories}</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <Heart className="w-4 h-4" />
-                              <span>{capsule.favorites}</span>
+                              <FileText className="w-4 h-4" />
+                              <span>{totalBookmarks}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="font-bold">★</span>
+                              <span>{totalTags}</span>
                             </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <Badge className="bg-white text-black border hover:bg-gray-50">
-                          {capsule.type}
-                        </Badge>
-                        <span className="text-sm text-muted-foreground">{capsule.date}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between pt-4 border-t">
-                      <div className="text-sm text-muted-foreground">{capsule.size}</div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Folder className="w-4 h-4" />
-                          <span>{capsule.stats.folders}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <FileText className="w-4 h-4" />
-                          <span>{capsule.stats.links}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span className="font-bold">★</span>
-                          <span>{capsule.stats.tags}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
+                      </Card>
+                    )
+                  })}
+                </div>
+              ) : (
+                <Card className="p-6 bg-white">
+                  {renderCalendar()}
+                </Card>
+              )}
+            </div>
+
+            {selectedCapsule && (
+              <div className="col-span-4">
+                <Card className="p-6 sticky top-6 bg-white">
+                  {renderCapsuleDetail()}
+                </Card>
               </div>
-            ) : (
-              <Card className="p-6 bg-white">
-                {renderCalendar()}
-              </Card>
+            )}
+
+            {viewMode === 'calendar' && selectedDate && (
+              <div className="col-span-4">
+                <Card className="p-6 bg-white">
+                  <h3 className="font-semibold mb-4 uppercase">
+                    Capsules on {selectedDate.toLocaleDateString('en-US', { 
+                      month: 'long', 
+                      day: 'numeric', 
+                      year: 'numeric' 
+                    })}
+                  </h3>
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <Clock className="w-12 h-12 text-muted-foreground/40 mb-3" />
+                    <p className="text-sm text-muted-foreground">No capsules created on this date</p>
+                  </div>
+                </Card>
+              </div>
             )}
           </div>
-
-          {selectedCapsule && (
-            <div className="col-span-4">
-              <Card className="p-6 sticky top-6 bg-white">
-                {renderCapsuleDetail()}
-              </Card>
-            </div>
-          )}
-
-          {viewMode === 'calendar' && selectedDate && (
-            <div className="col-span-4">
-              <Card className="p-6 bg-white">
-                <h3 className="font-semibold mb-4 uppercase">
-                  Capsules on {selectedDate.toLocaleDateString('en-US', { 
-                    month: 'long', 
-                    day: 'numeric', 
-                    year: 'numeric' 
-                  })}
-                </h3>
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <Clock className="w-12 h-12 text-muted-foreground/40 mb-3" />
-                  <p className="text-sm text-muted-foreground">No capsules created on this date</p>
-                </div>
-              </Card>
-            </div>
-          )}
-        </div>
+        )}
       </div>
 
       <ScheduleModal open={showScheduleModal} onOpenChange={setShowScheduleModal} />
-      <CompareModal open={showCompareModal} onOpenChange={setShowCompareModal} capsules={sampleCapsules} />
-      <CreateSnapshotModal open={showCreateModal} onOpenChange={setShowCreateModal} />
+      <CompareModal open={showCompareModal} onOpenChange={setShowCompareModal} capsules={capsulesData} />
+      <CreateSnapshotModal open={showCreateModal} onOpenChange={setShowCreateModal} onSuccess={handleSnapshotCreated} />
     </div>
   )
 }
