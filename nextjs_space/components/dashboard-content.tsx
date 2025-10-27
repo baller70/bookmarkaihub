@@ -185,7 +185,7 @@ export function DashboardContent() {
             placeholder="Search bookmarks..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 h-14 rounded-xl bg-gray-900 border-gray-800 text-white placeholder:text-gray-400 focus:border-gray-700 focus:ring-gray-700 text-base"
+            className="pl-12 h-14 rounded-xl bg-white border-gray-300 text-black placeholder:text-gray-400 focus:border-gray-400 focus:ring-gray-400 text-base"
           />
         </div>
       </div>
@@ -198,7 +198,7 @@ export function DashboardContent() {
             setItemsPerPage(parseInt(value))
             setCurrentPage(1)
           }}>
-            <SelectTrigger className="w-[80px] h-9">
+            <SelectTrigger className="w-[80px] h-9 bg-white border-gray-300">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -211,7 +211,7 @@ export function DashboardContent() {
         </div>
         
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-black">
             Page {currentPage} of {totalPages || 1}
           </span>
           <div className="flex items-center gap-2">
@@ -220,7 +220,7 @@ export function DashboardContent() {
               size="sm"
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="h-9"
+              className="h-9 text-black"
             >
               <ChevronLeft className="h-4 w-4" />
               Previous
@@ -230,7 +230,7 @@ export function DashboardContent() {
               size="sm"
               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
-              className="h-9"
+              className="h-9 text-black"
             >
               Next
               <ChevronRight className="h-4 w-4" />
