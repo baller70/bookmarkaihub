@@ -99,17 +99,9 @@ export default function DnaProfilePage() {
           </Card>
         )
       case 'analytics':
-        return (
-          <Card className="bg-white">
-            <CardHeader>
-              <CardTitle className="uppercase">Analytics</CardTitle>
-              <CardDescription>View your bookmark insights</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Analytics feature coming soon...</p>
-            </CardContent>
-          </Card>
-        )
+        // Redirect to main analytics page like the original website
+        router.push('/analytics')
+        return null
       case 'time-capsule':
         return (
           <Card className="bg-white">
