@@ -54,6 +54,10 @@ model User {
   tags          Tag[]
   analytics     Analytics[]
   goals         Goal[]
+  dnaProfile    DNAProfile?
+  playbooks     Playbook[]
+  searchHistory SearchHistory[]
+  timeCapsules  TimeCapsule[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -97,6 +101,7 @@ model Bookmark {
   tasks        Task[]
   notes        Note[]
   history      BookmarkHistory[]
+  playbookItems PlaybookItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -267,4 +272,128 @@ enum GoalStatus {
   COMPLETED
   PAUSED
   CANCELLED
+}
+
+// DNA Profile System
+model DNAProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Basic Information
+  avatar         String?  @db.Text
+  fullName       String?
+  organization   String?
+  bio            String?  @db.Text
+  
+  // Industry & Preferences
+  favoriteIndustry    String?
+  favoriteIndustry2   String?
+  linkSourcePref      String?
+  languagePref        String?
+  mediaFormatPriority String?
+  contentFreshness    String?
+  sourceCredibility   String?
+  primaryUseCase      String?
+  
+  // Links & Social
+  website    String?
+  linkedin   String?
+  twitter    String?
+  tiktok     String?
+  instagram  String?
+  facebook   String?
+  
+  // Interests & Skills (JSON arrays)
+  subIndustrySkills Json? // string[]
+  skillsExpertise   Json? // string[]
+  personalInterests Json? // string[]
+  
+  // Learning Preferences
+  learningStyle        String?
+  contentDepthPref     String?
+  timeCommitment       String?
+  goalSettingStyle     String?
+  
+  // Privacy & Preferences
+  profileVisibility    String? @default("private")
+  notificationFreq     String? @default("daily")
+  showActivity         Boolean @default(true)
+  allowRecommendations Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Playbook {
+  id          String         @id @default(cuid())
+  title       String
+  description String?        @db.Text
+  category    String?
+  isActive    Boolean        @default(false)
+  duration    Int            @default(0) // total duration in seconds
+  
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       PlaybookItem[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PlaybookItem {
+  id          String   @id @default(cuid())
+  order       Int
+  duration    Int      @default(300) // duration in seconds (default 5 min)
+  
+  bookmarkId  String
+  bookmark    Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  
+  playbookId  String
+  playbook    Playbook @relation(fields: [playbookId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([playbookId, bookmarkId])
+}
+
+model SearchHistory {
+  id       String   @id @default(cuid())
+  query    String
+  filters  Json?    // Store filter options as JSON
+  results  Int      @default(0)
+  
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+}
+
+model TimeCapsule {
+  id          String   @id @default(cuid())
+  title       String
+  description String?  @db.Text
+  date        DateTime @db.Date
+  
+  // Snapshot stats
+  totalBookmarks Int @default(0)
+  totalFolders   Int @default(0)
+  totalSize      Int @default(0) // in KB
+  
+  // Snapshot data (JSON)
+  snapshot    Json     // Complete snapshot of bookmarks, categories, etc.
+  aiSummary   String?  @db.Text
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ViewMode {
+  GRID
+  LIST
+  COMPACT
+  TABLE
 }

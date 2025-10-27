@@ -3,13 +3,13 @@
 
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { DashboardAuth } from '@/components/dashboard-auth'
-import AboutYou from '@/components/dna-profile/about-you'
+import FavoritesView from '@/components/dna-profile/favorites-view'
 
-export default function DnaProfilePage() {
+export default function FavoritesPage() {
   return (
     <DashboardAuth>
       <DashboardLayout>
-        <AboutYou />
+        <FavoritesView />
       </DashboardLayout>
     </DashboardAuth>
   )
