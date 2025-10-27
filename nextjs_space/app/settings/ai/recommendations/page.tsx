@@ -22,10 +22,10 @@ export default function ContentDiscoveryPage() {
   const [suggestionsPerRefresh, setSuggestionsPerRefresh] = useState([5])
   const [serendipityLevel, setSerendipityLevel] = useState([50])
   const [maxResults, setMaxResults] = useState([20])
-  const [selectedLinkTypes, setSelectedLinkTypes] = useState<string[]>(['article'])
+  const [selectedLinkTypes, setSelectedLinkTypes] = useState<string[]>(['article', 'video'])
   const [dateRange, setDateRange] = useState('past-week')
   const [topicKeywords, setTopicKeywords] = useState('')
-  const [useProfileInterests, setUseProfileInterests] = useState(false)
+  const [useProfileInterests, setUseProfileInterests] = useState(true)
 
   const toggleLinkType = (type: string) => {
     setSelectedLinkTypes(prev =>
