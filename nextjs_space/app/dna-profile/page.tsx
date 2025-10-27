@@ -131,29 +131,25 @@ export default function DnaProfilePage() {
     <DashboardAuth>
       <div className="min-h-screen bg-white">
         <div className="container mx-auto py-8 px-4">
-          {/* Back Button */}
-          <div className="mb-6">
-            <Button
-              variant="ghost"
-              onClick={() => router.push('/dashboard')}
-              className="gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Dashboard
-            </Button>
-          </div>
-
-          {/* Header Bar */}
-          <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
+          {/* Top Navigation Bar */}
+          <div className="mb-6 flex items-center justify-between border-b pb-4">
+            <div className="flex items-center gap-6">
+              <Button
+                variant="ghost"
+                onClick={() => router.push('/dashboard')}
+                className="gap-2 text-sm text-gray-600 hover:text-gray-900 px-0"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Dashboard
+              </Button>
+              <div className="flex items-center gap-3">
                 <Sparkles className="h-5 w-5" />
-                <h1 className="text-xl font-semibold">DNA Profile</h1>
+                <span className="text-base font-semibold">DNA Profile</span>
+                <span className="text-gray-400">-</span>
+                <span className="text-base text-gray-700">{getCurrentSectionLabel()}</span>
               </div>
-              <div className="h-6 w-px bg-gray-300" />
-              <span className="text-lg font-medium">{getCurrentSectionLabel()}</span>
             </div>
-            <Badge variant="secondary" className="bg-gray-100 text-gray-700 hover:bg-gray-100">
+            <Badge variant="secondary" className="bg-gray-100 text-gray-700 hover:bg-gray-100 text-xs">
               AI-Powered
             </Badge>
           </div>
