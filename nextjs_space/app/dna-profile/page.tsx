@@ -12,17 +12,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { User, Heart, BookOpen, Search, BarChart3, Clock, ArrowLeft, Sparkles } from 'lucide-react'
+import { User, Heart, BarChart3, Clock, ArrowLeft, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
-type Section = 'about-you' | 'favorites' | 'playbooks' | 'search' | 'analytics' | 'time-capsule'
+type Section = 'about-you' | 'favorites' | 'analytics' | 'time-capsule'
 
 const sections = [
   { id: 'about-you' as Section, label: 'About You', icon: User },
   { id: 'favorites' as Section, label: 'Favorites', icon: Heart },
-  { id: 'playbooks' as Section, label: 'Playbooks', icon: BookOpen },
-  { id: 'search' as Section, label: 'Search', icon: Search },
   { id: 'analytics' as Section, label: 'Analytics', icon: BarChart3 },
   { id: 'time-capsule' as Section, label: 'Time Capsule', icon: Clock },
 ]
@@ -76,30 +74,6 @@ export default function DnaProfilePage() {
         return <AboutYou />
       case 'favorites':
         return <FavoritesView />
-      case 'playbooks':
-        return (
-          <Card className="bg-white">
-            <CardHeader>
-              <CardTitle className="uppercase">Playbooks</CardTitle>
-              <CardDescription>Create and manage your workflow playbooks</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Playbooks feature coming soon...</p>
-            </CardContent>
-          </Card>
-        )
-      case 'search':
-        return (
-          <Card className="bg-white">
-            <CardHeader>
-              <CardTitle className="uppercase">Search Preferences</CardTitle>
-              <CardDescription>Customize your search experience</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Search preferences coming soon...</p>
-            </CardContent>
-          </Card>
-        )
       case 'analytics':
         return <AnalyticsContent showTitle={false} />
       case 'time-capsule':
