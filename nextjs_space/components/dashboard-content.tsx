@@ -39,6 +39,8 @@ export function DashboardContent() {
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(25)
+  const [bulkSelectMode, setBulkSelectMode] = useState(false)
+  const [selectedBookmarks, setSelectedBookmarks] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (session) {
@@ -87,6 +89,70 @@ export function DashboardContent() {
     toast.success("All bookmarks synced successfully!")
   }
 
+  const handleBulkSelectToggle = () => {
+    setBulkSelectMode(!bulkSelectMode)
+    setSelectedBookmarks(new Set())
+  }
+
+  const handleSelectBookmark = (bookmarkId: string) => {
+    setSelectedBookmarks(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(bookmarkId)) {
+        newSet.delete(bookmarkId)
+      } else {
+        newSet.add(bookmarkId)
+      }
+      return newSet
+    })
+  }
+
+  const handleSelectAll = () => {
+    if (selectedBookmarks.size === bookmarks.length) {
+      setSelectedBookmarks(new Set())
+    } else {
+      setSelectedBookmarks(new Set(bookmarks.map((b: any) => b.id)))
+    }
+  }
+
+  const handleDeleteSelected = async () => {
+    if (!confirm(`Are you sure you want to delete ${selectedBookmarks.size} bookmarks?`)) return
+    
+    try {
+      const deletePromises = Array.from(selectedBookmarks).map(id =>
+        fetch(`/api/bookmarks/${id}`, { method: "DELETE" })
+      )
+      
+      await Promise.all(deletePromises)
+      toast.success(`${selectedBookmarks.size} bookmarks deleted successfully`)
+      setSelectedBookmarks(new Set())
+      setBulkSelectMode(false)
+      fetchBookmarks()
+    } catch (error) {
+      console.error("Error deleting bookmarks:", error)
+      toast.error("Failed to delete bookmarks")
+    }
+  }
+
+  const handleMoveSelected = async (categoryId: string) => {
+    try {
+      const updatePromises = Array.from(selectedBookmarks).map(id =>
+        fetch(`/api/bookmarks/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ categoryId }),
+        })
+      )
+      
+      await Promise.all(updatePromises)
+      toast.success(`${selectedBookmarks.size} bookmarks moved successfully`)
+      setSelectedBookmarks(new Set())
+      fetchBookmarks()
+    } catch (error) {
+      console.error("Error moving bookmarks:", error)
+      toast.error("Failed to move bookmarks")
+    }
+  }
+
   // Pagination calculations
   const totalPages = Math.ceil((bookmarks?.length || 0) / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
@@ -107,7 +173,14 @@ export function DashboardContent() {
     switch (viewMode) {
       case "GRID":
       case "COMPACT":
-        return <BookmarkGrid bookmarks={currentBookmarks} compact={viewMode === "COMPACT"} onUpdate={fetchBookmarks} />
+        return <BookmarkGrid 
+          bookmarks={currentBookmarks} 
+          compact={viewMode === "COMPACT"} 
+          onUpdate={fetchBookmarks}
+          bulkSelectMode={bulkSelectMode}
+          selectedBookmarks={selectedBookmarks}
+          onSelectBookmark={handleSelectBookmark}
+        />
       case "LIST":
         return <BookmarkList bookmarks={currentBookmarks} onUpdate={fetchBookmarks} />
       case "TIMELINE":
@@ -117,12 +190,70 @@ export function DashboardContent() {
       case "KANBAN":
         return <BookmarkKanban bookmarks={currentBookmarks} onUpdate={fetchBookmarks} />
       default:
-        return <BookmarkGrid bookmarks={currentBookmarks} onUpdate={fetchBookmarks} />
+        return <BookmarkGrid 
+          bookmarks={currentBookmarks} 
+          onUpdate={fetchBookmarks}
+          bulkSelectMode={bulkSelectMode}
+          selectedBookmarks={selectedBookmarks}
+          onSelectBookmark={handleSelectBookmark}
+        />
     }
   }
 
   return (
     <div className="space-y-6">
+      {/* Sticky Bulk Action Bar */}
+      {bulkSelectMode && selectedBookmarks.size > 0 && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-blue-50 border-b border-blue-200 shadow-sm">
+          <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSelectAll}
+                className="h-9 px-4 bg-white hover:bg-gray-50"
+              >
+                {selectedBookmarks.size === bookmarks.length ? "Deselect All" : "Select All"}
+              </Button>
+              <span className="text-sm font-medium text-blue-900">
+                ✓ {selectedBookmarks.size} of {bookmarks.length} bookmarks selected
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <Select onValueChange={handleMoveSelected}>
+                <SelectTrigger className="w-[150px] h-9 text-sm bg-white">
+                  <SelectValue placeholder="📁 Move to..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="work">Work</SelectItem>
+                  <SelectItem value="personal">Personal</SelectItem>
+                  <SelectItem value="entertainment">Entertainment</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDeleteSelected}
+                className="h-9 px-4 bg-red-600 hover:bg-red-700 text-white gap-2"
+              >
+                🗑️ DELETE SELECTED
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSelectAll}
+                className="h-9 px-4 bg-white hover:bg-gray-50"
+              >
+                Select All ({bookmarks.length})
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top Stats */}
       <div className="flex items-start justify-between">
         <div>
@@ -144,6 +275,9 @@ export function DashboardContent() {
       <DashboardHeader
         onBookmarkCreated={handleBookmarkCreated}
         onSyncAll={handleSyncAll}
+        bulkSelectMode={bulkSelectMode}
+        onBulkSelectToggle={handleBulkSelectToggle}
+        selectedCount={selectedBookmarks.size}
       />
 
       {/* Analytics Chart */}

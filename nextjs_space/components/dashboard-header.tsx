@@ -5,19 +5,25 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AddBookmarkModal } from "@/components/add-bookmark-modal"
-import { Check, Plus, RefreshCw, Grid3x3, List as ListIcon, LayoutGrid } from "lucide-react"
+import { Check, Plus, RefreshCw, Grid3x3, List as ListIcon, LayoutGrid, FolderOpen } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface DashboardHeaderProps {
   onBookmarkCreated: () => void
   onSyncAll?: () => void
+  bulkSelectMode?: boolean
+  onBulkSelectToggle?: () => void
+  selectedCount?: number
 }
 
 export function DashboardHeader({
   onBookmarkCreated,
   onSyncAll,
+  bulkSelectMode = false,
+  onBulkSelectToggle,
+  selectedCount = 0,
 }: DashboardHeaderProps) {
   const [showAddModal, setShowAddModal] = useState(false)
-  const [bulkSelectMode, setBulkSelectMode] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
 
   const handleSyncAll = async () => {
@@ -43,16 +49,31 @@ export function DashboardHeader({
 
       {/* Right: Action Buttons */}
       <div className="flex items-center gap-3">
-        {/* Bulk Select Button */}
-        <Button
-          variant={bulkSelectMode ? "default" : "outline"}
-          size="sm"
-          onClick={() => setBulkSelectMode(!bulkSelectMode)}
-          className="h-9 px-4 gap-2 text-white"
-        >
-          <Check className="h-4 w-4" />
-          <span className="text-xs font-medium">BULK SELECT</span>
-        </Button>
+        {/* Bulk Select Button with Badge */}
+        <div className="relative">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onBulkSelectToggle}
+            className={cn(
+              "h-9 px-4 gap-2 border-2 transition-all",
+              bulkSelectMode 
+                ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600" 
+                : "bg-white hover:bg-gray-50 text-black border-gray-900"
+            )}
+          >
+            <Check className="h-4 w-4" />
+            <FolderOpen className="h-4 w-4 text-yellow-500" />
+            <span className="text-xs font-bold">BULK SELECT</span>
+          </Button>
+          {bulkSelectMode && selectedCount > 0 && (
+            <div className="absolute -bottom-5 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+              <span className="text-xs font-bold text-orange-600 bg-orange-100 px-2 py-0.5 rounded">
+                {selectedCount} SELECTED
+              </span>
+            </div>
+          )}
+        </div>
 
         {/* All Categories Dropdown */}
         <Select defaultValue="all">

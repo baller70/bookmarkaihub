@@ -18,7 +18,8 @@ import {
   Folder,
   Target,
   Clock,
-  GripVertical
+  GripVertical,
+  Check
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
@@ -29,6 +30,9 @@ interface BookmarkCardProps {
   bookmark: any
   compact?: boolean
   onUpdate: () => void
+  bulkSelectMode?: boolean
+  isSelected?: boolean
+  onSelect?: (id: string) => void
 }
 
 const priorityColors = {
@@ -38,7 +42,14 @@ const priorityColors = {
   URGENT: "bg-red-100 text-red-800",
 }
 
-export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCardProps) {
+export function BookmarkCard({ 
+  bookmark, 
+  compact = false, 
+  onUpdate,
+  bulkSelectMode = false,
+  isSelected = false,
+  onSelect
+}: BookmarkCardProps) {
   const [showDetail, setShowDetail] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isFavorite, setIsFavorite] = useState(bookmark.isFavorite || false)
@@ -188,6 +199,28 @@ export function BookmarkCard({ bookmark, compact = false, onUpdate }: BookmarkCa
                 unoptimized
               />
             </div>
+          </div>
+        )}
+
+        {/* Bulk Select Checkbox */}
+        {bulkSelectMode && (
+          <div 
+            className="absolute top-3 left-3 z-20"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => onSelect?.(bookmark.id)}
+              className={cn(
+                "w-6 h-6 rounded border-2 flex items-center justify-center transition-all",
+                isSelected 
+                  ? "bg-blue-600 border-blue-600" 
+                  : "bg-white border-gray-300 hover:border-blue-500"
+              )}
+            >
+              {isSelected && (
+                <Check className="h-4 w-4 text-white" />
+              )}
+            </button>
           </div>
         )}
 

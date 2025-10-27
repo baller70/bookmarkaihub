@@ -24,9 +24,19 @@ interface BookmarkGridProps {
   bookmarks: any[]
   compact?: boolean
   onUpdate: () => void
+  bulkSelectMode?: boolean
+  selectedBookmarks?: Set<string>
+  onSelectBookmark?: (id: string) => void
 }
 
-export function BookmarkGrid({ bookmarks, compact = false, onUpdate }: BookmarkGridProps) {
+export function BookmarkGrid({ 
+  bookmarks, 
+  compact = false, 
+  onUpdate,
+  bulkSelectMode = false,
+  selectedBookmarks = new Set(),
+  onSelectBookmark
+}: BookmarkGridProps) {
   const [items, setItems] = useState(bookmarks)
   
   // Update items when bookmarks prop changes
@@ -91,6 +101,9 @@ export function BookmarkGrid({ bookmarks, compact = false, onUpdate }: BookmarkG
               bookmark={bookmark} 
               compact={compact}
               onUpdate={onUpdate}
+              bulkSelectMode={bulkSelectMode}
+              isSelected={selectedBookmarks.has(bookmark.id)}
+              onSelect={onSelectBookmark}
             />
           ))}
         </div>
