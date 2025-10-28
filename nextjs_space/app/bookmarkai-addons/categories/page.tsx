@@ -512,12 +512,12 @@ export default function ManageCategoriesPage() {
                   </DropdownMenu>
                   <div className="flex items-start gap-4">
                     <div className="bg-blue-100 p-3 rounded-lg">
-                      <Folder className="w-8 h-8 text-blue-600" />
+                      <Folder className="w-6 h-6 text-blue-600" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg mb-1 uppercase">{folder.name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        <Layers className="w-4 h-4 inline mr-1" />
+                      <h3 className="font-semibold text-base mb-1 uppercase">{folder.name}</h3>
+                      <p className="text-xs text-muted-foreground">
+                        <Layers className="w-3 h-3 inline mr-1" />
                         {folder.categoryCount} {folder.categoryCount === 1 ? 'category' : 'categories'}
                       </p>
                     </div>
@@ -567,8 +567,8 @@ export default function ManageCategoriesPage() {
                         style={{ backgroundColor: category.color }}
                       />
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold mb-1 truncate">{category.name}</h3>
-                        <p className="text-sm text-muted-foreground">
+                        <h3 className="font-medium text-sm mb-1 truncate">{category.name}</h3>
+                        <p className="text-xs text-muted-foreground">
                           {category.bookmarkCount} bookmarks
                         </p>
                       </div>
@@ -577,26 +577,31 @@ export default function ManageCategoriesPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => openEditModal(category)}
-                          className="h-8 w-8 p-0"
+                          className="h-7 w-7 p-0"
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Edit2 className="w-3 h-3" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteCategory(category.id)}
-                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3 h-3" />
                         </Button>
                       </div>
+                    </div>
+                    <div className="text-xs text-muted-foreground mb-2">
+                      Folder: {category.folderId 
+                        ? folders.find(f => f.id === category.folderId)?.name || 'Unknown' 
+                        : 'Unassigned'}
                     </div>
                     <Select
                       value={category.folderId || 'unassigned'}
                       onValueChange={(value) => handleAssignToFolder(category.id, value)}
                     >
-                      <SelectTrigger className="w-full bg-white">
-                        <SelectValue />
+                      <SelectTrigger className="w-full bg-white h-8 text-xs">
+                        <SelectValue placeholder="Select folder..." />
                       </SelectTrigger>
                       <SelectContent className="bg-white">
                         <SelectItem value="unassigned">Unassigned</SelectItem>
