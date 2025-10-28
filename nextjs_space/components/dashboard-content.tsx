@@ -10,6 +10,7 @@ import { BookmarkList } from "@/components/bookmark-list"
 import { BookmarkTimeline } from "@/components/bookmark-timeline"
 import { BookmarkFolders } from "@/components/bookmark-folders"
 import { BookmarkKanban } from "@/components/bookmark-kanban"
+import { BookmarkCompact } from "@/components/bookmark-compact"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -202,14 +203,17 @@ export function DashboardContent() {
 
     switch (viewMode) {
       case "GRID":
-      case "COMPACT":
         return <BookmarkGrid 
           bookmarks={currentBookmarks} 
-          compact={viewMode === "COMPACT"} 
           onUpdate={fetchBookmarks}
           bulkSelectMode={bulkSelectMode}
           selectedBookmarks={selectedBookmarks}
           onSelectBookmark={handleSelectBookmark}
+        />
+      case "COMPACT":
+        return <BookmarkCompact 
+          bookmarks={currentBookmarks} 
+          onUpdate={fetchBookmarks}
         />
       case "LIST":
         return <BookmarkList bookmarks={currentBookmarks} onUpdate={fetchBookmarks} />
