@@ -1,8 +1,9 @@
 
 "use client"
 
-import { useState } from "react"
-import { Star, ExternalLink, MoreVertical, Trash2, Edit, Clock } from "lucide-react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { Folder, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -10,280 +11,239 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
-import { BookmarkDetailModal } from "@/components/bookmark-detail-modal"
-import { toast } from "sonner"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
-import Image from "next/image"
 
-interface Bookmark {
+interface Category {
   id: string
-  title: string
-  url: string
-  description?: string
-  faviconUrl?: string
-  imageUrl?: string
-  isFavorite: boolean
-  priority?: string
-  category?: {
-    id: string
-    name: string
-    color: string
+  name: string
+  color: string
+  icon: string
+  _count: {
+    bookmarks: number
   }
-  tags?: Array<{
-    id: string
-    name: string
-  }>
-  createdAt: string
-  lastVisited?: string
+  createdBy?: {
+    name?: string | null
+    email?: string | null
+    image?: string | null
+  }
 }
 
 interface BookmarkCompactProps {
-  bookmarks: Bookmark[]
+  bookmarks: any[]
   onUpdate: () => void
 }
 
+// Folder icon colors mapping (matches original site)
+const folderColors: Record<string, string> = {
+  "accounting": "#f59e0b",
+  "ai automation": "#14b8a6",
+  "ai chatbot": "#ef4444",
+  "ai technology": "#3b82f6",
+  "ai vibe coding": "#10b981",
+  "basketball": "#3b82f6",
+  "bills": "#3b82f6",
+  "blanks": "#3b82f6",
+  "blog & newsletter": "#6b7280",
+  "business": "#3b82f6",
+  "content curation": "#3b82f6",
+  "design": "#3b82f6",
+  "development": "#3b82f6",
+  "download": "#3b82f6",
+  "e-commerce": "#3b82f6",
+  "email": "#3b82f6",
+  "food shopping": "#3b82f6",
+  "freelance": "#a855f7",
+  "general": "#3b82f6",
+  "general information": "#3b82f6",
+  "houston essentials": "#10b981",
+  "lifestyle": "#3b82f6",
+  "llms": "#f59e0b",
+  "marketing": "#3b82f6",
+  "payment gateway": "#3b82f6",
+  "phone": "#3b82f6",
+  "print on demand": "#3b82f6",
+  "shipping": "#3b82f6",
+  "social media": "#84cc16",
+  "sports": "#ec4899",
+  "tbf podcast": "#a855f7",
+  "technology": "#3b82f6",
+  "video & design": "#3b82f6",
+  "web hosting": "#3b82f6",
+  "website": "#3b82f6",
+}
+
+const getFolderColor = (categoryName: string): string => {
+  const normalizedName = categoryName.toLowerCase()
+  return folderColors[normalizedName] || "#3b82f6"
+}
+
 export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
-  const [selectedBookmark, setSelectedBookmark] = useState<Bookmark | null>(null)
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const router = useRouter()
+  const [categories, setCategories] = useState<Category[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const handleBookmarkClick = (bookmark: Bookmark) => {
-    setSelectedBookmark(bookmark)
-    setIsDetailModalOpen(true)
-  }
+  useEffect(() => {
+    fetchCategories()
+  }, [])
 
-  const handleToggleFavorite = async (bookmark: Bookmark, e: React.MouseEvent) => {
-    e.stopPropagation()
+  const fetchCategories = async () => {
     try {
-      const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isFavorite: !bookmark.isFavorite }),
-      })
-
+      const response = await fetch("/api/categories")
       if (response.ok) {
-        toast.success(bookmark.isFavorite ? "Removed from favorites" : "Added to favorites")
-        onUpdate()
-      } else {
-        toast.error("Failed to update favorite status")
+        const data = await response.json()
+        setCategories(data)
       }
     } catch (error) {
-      toast.error("Failed to update favorite status")
+      console.error("Error fetching categories:", error)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleDelete = async (bookmarkId: string, e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (!confirm("Are you sure you want to delete this bookmark?")) return
-
-    try {
-      const response = await fetch(`/api/bookmarks/${bookmarkId}`, {
-        method: "DELETE",
-      })
-
-      if (response.ok) {
-        toast.success("Bookmark deleted")
-        onUpdate()
-      } else {
-        toast.error("Failed to delete bookmark")
-      }
-    } catch (error) {
-      toast.error("Failed to delete bookmark")
-    }
+  const handleCategoryClick = (categoryId: string) => {
+    router.push(`/categories/${categoryId}`)
   }
 
-  const getDomain = (url: string) => {
-    try {
-      return new URL(url).hostname.replace("www.", "")
-    } catch {
-      return url
-    }
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {[...Array(15)].map((_, i) => (
+          <div key={i} className="h-40 bg-gray-100 animate-pulse rounded-lg" />
+        ))}
+      </div>
+    )
   }
 
-  const getTimeAgo = (date: string) => {
-    const now = new Date()
-    const then = new Date(date)
-    const diffInHours = Math.floor((now.getTime() - then.getTime()) / (1000 * 60 * 60))
-    
-    if (diffInHours < 1) return "Just now"
-    if (diffInHours < 24) return `${diffInHours}h ago`
-    const diffInDays = Math.floor(diffInHours / 24)
-    if (diffInDays < 30) return `${diffInDays}d ago`
-    const diffInMonths = Math.floor(diffInDays / 30)
-    if (diffInMonths < 12) return `${diffInMonths}mo ago`
-    return `${Math.floor(diffInMonths / 12)}y ago`
-  }
-
-  if (!bookmarks || bookmarks.length === 0) {
+  if (!categories?.length) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-          <ExternalLink className="w-8 h-8 text-gray-400" />
+          <Folder className="w-8 h-8 text-gray-400" />
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">NO BOOKMARKS FOUND</h3>
-        <p className="text-gray-500">Add your first bookmark to get started</p>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No folders found</h3>
+        <p className="text-gray-500">Create categories to organize your bookmarks</p>
       </div>
     )
   }
 
   return (
-    <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-        {bookmarks.map((bookmark) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      {categories.map((category) => {
+        const folderColor = getFolderColor(category.name)
+        const bookmarkCount = category._count?.bookmarks || 0
+
+        return (
           <div
-            key={bookmark.id}
-            className="group relative bg-white border border-gray-200 rounded-lg p-3 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-gray-300"
-            onClick={() => handleBookmarkClick(bookmark)}
+            key={category.id}
+            className="relative bg-white border border-gray-200 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-gray-300 group"
+            onClick={() => handleCategoryClick(category.id)}
           >
-            {/* Header Row */}
-            <div className="flex items-start gap-2 mb-2">
-              {/* Favicon */}
-              <div className="flex-shrink-0 w-8 h-8 bg-gray-100 rounded flex items-center justify-center overflow-hidden">
-                {bookmark.faviconUrl ? (
-                  <Image
-                    src={bookmark.faviconUrl}
-                    alt=""
-                    width={20}
-                    height={20}
-                    className="object-contain"
-                  />
-                ) : (
-                  <ExternalLink className="w-4 h-4 text-gray-400" />
-                )}
-              </div>
+            {/* Three-dot menu */}
+            <div className="absolute top-3 right-3 z-10">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <MoreVertical className="h-4 w-4 text-gray-500" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation()
+                    router.push(`/categories/${category.id}`)
+                  }}>
+                    Open Folder
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation()
+                    // Add edit functionality
+                  }}>
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      // Add delete functionality
+                    }}
+                    className="text-red-600"
+                  >
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
 
-              {/* Title and Actions */}
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-tight mb-0.5">
-                  {bookmark.title}
-                </h3>
-                <p className="text-xs text-gray-500 truncate">
-                  {getDomain(bookmark.url)}
-                </p>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    "h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity",
-                    bookmark.isFavorite && "opacity-100"
-                  )}
-                  onClick={(e) => handleToggleFavorite(bookmark, e)}
+            {/* Folder Icon */}
+            <div className="flex justify-start mb-3">
+              <div className="relative">
+                <svg
+                  className="w-12 h-12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  <Star
-                    className={cn(
-                      "h-3.5 w-3.5",
-                      bookmark.isFavorite
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "text-gray-400"
-                    )}
+                  <path
+                    d="M3 7C3 5.89543 3.89543 5 5 5H9.58579C9.851 5 10.1054 5.10536 10.2929 5.29289L12.7071 7.70711C12.8946 7.89464 13.149 8 13.4142 8H19C20.1046 8 21 8.89543 21 10V17C21 18.1046 20.1046 19 19 19H5C3.89543 19 3 18.1046 3 17V7Z"
+                    stroke={folderColor}
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
                   />
-                </Button>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <MoreVertical className="h-3.5 w-3.5 text-gray-500" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        window.open(bookmark.url, "_blank")
-                      }}
-                    >
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      Open Link
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleBookmarkClick(bookmark)
-                      }}
-                    >
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={(e) => handleDelete(bookmark.id, e)}
-                      className="text-red-600"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                </svg>
               </div>
             </div>
 
-            {/* Description */}
-            {bookmark.description && (
-              <p className="text-xs text-gray-600 line-clamp-2 mb-2 leading-relaxed">
-                {bookmark.description}
-              </p>
-            )}
+            {/* Category Name */}
+            <div className="mb-8">
+              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide line-clamp-2">
+                {category.name}
+              </h3>
+            </div>
 
-            {/* Footer */}
-            <div className="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-gray-100">
-              {/* Category & Tags */}
-              <div className="flex items-center gap-1 flex-wrap min-w-0">
-                {bookmark.category && (
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] px-1.5 py-0 h-5 font-medium"
-                    style={{
-                      borderColor: bookmark.category.color,
-                      color: bookmark.category.color,
-                    }}
-                  >
-                    {bookmark.category.name}
-                  </Badge>
-                )}
-                {bookmark.priority && (
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "text-[10px] px-1.5 py-0 h-5 font-medium",
-                      bookmark.priority === "HIGH" && "border-red-500 text-red-500",
-                      bookmark.priority === "MEDIUM" && "border-yellow-500 text-yellow-500",
-                      bookmark.priority === "LOW" && "border-green-500 text-green-500"
-                    )}
-                  >
-                    {bookmark.priority}
-                  </Badge>
-                )}
+            {/* Bottom Section */}
+            <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+              {/* Bookmark Count */}
+              <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                <svg
+                  className="w-3 h-3"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M19 21L12 16L5 21V5C5 3.89543 5.89543 3 7 3H17C18.1046 3 19 3.89543 19 5V21Z"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className="font-medium">
+                  {bookmarkCount} BOOKMARK{bookmarkCount !== 1 ? 'S' : ''}
+                </span>
               </div>
 
-              {/* Time */}
-              <div className="flex items-center gap-1 text-[10px] text-gray-400 flex-shrink-0">
-                <Clock className="w-3 h-3" />
-                <span>{getTimeAgo(bookmark.createdAt)}</span>
-              </div>
+              {/* User Avatar */}
+              <Avatar className="h-8 w-8 border-2 border-white shadow-sm">
+                <AvatarImage 
+                  src={category.createdBy?.image || undefined} 
+                  alt={category.createdBy?.name || "User"} 
+                />
+                <AvatarFallback className="bg-gray-400 text-white text-xs">
+                  {category.createdBy?.name?.[0]?.toUpperCase() || 
+                   category.createdBy?.email?.[0]?.toUpperCase() || 
+                   'U'}
+                </AvatarFallback>
+              </Avatar>
             </div>
           </div>
-        ))}
-      </div>
-
-      {/* Detail Modal */}
-      {selectedBookmark && (
-        <BookmarkDetailModal
-          bookmark={selectedBookmark}
-          open={isDetailModalOpen}
-          onOpenChange={(open) => {
-            setIsDetailModalOpen(open)
-            if (!open) setSelectedBookmark(null)
-          }}
-          onUpdate={onUpdate}
-        />
-      )}
-    </>
+        )
+      })}
+    </div>
   )
 }
