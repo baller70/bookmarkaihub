@@ -195,47 +195,54 @@ export default function TagsPage() {
               {filteredTags.map((tag) => (
                 <Card
                   key={tag.id}
-                  className="p-6 bg-white border-gray-200 hover:shadow-lg transition-shadow cursor-pointer group"
+                  className="p-3 bg-white border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-200 rounded-xl"
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <Badge
-                      className="text-sm px-3 py-1.5 font-medium"
-                      style={{
-                        backgroundColor: `${tag.color}20`,
-                        color: tag.color,
-                        border: `1.5px solid ${tag.color}`,
-                      }}
-                    >
-                      <Tag className="h-3.5 w-3.5 mr-1.5" />
-                      {tag.name}
-                    </Badge>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
-                        <Edit className="h-3.5 w-3.5" />
+                  {/* Top Row: Icon, Name, and Actions */}
+                  <div className="flex items-start gap-2 mb-2">
+                    <div
+                      className="w-3 h-3 rounded-full flex-shrink-0 mt-0.5"
+                      style={{ backgroundColor: tag.color || '#8b5cf6' }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm text-gray-900 truncate leading-tight">
+                        {tag.name}
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-0.5 flex-shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 hover:bg-gray-100 rounded"
+                      >
+                        <Edit className="h-3.5 w-3.5 text-gray-600" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+                        className="h-7 w-7 p-0 hover:bg-red-50 rounded"
                         onClick={() => handleDeleteTag(tag.id)}
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3.5 w-3.5 text-red-600" />
                       </Button>
                     </div>
                   </div>
-                  <div className="text-sm text-gray-600">
-                    <p className="mb-3 font-medium">{tag._count?.bookmarks || 0} bookmarks</p>
+
+                  {/* Bookmark Count */}
+                  <div className="mb-2">
+                    <span className="text-xs text-gray-600 font-medium">
+                      {tag._count?.bookmarks || 0} bookmark{(tag._count?.bookmarks || 0) !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="h-2 rounded-full bg-gray-100">
                     <div
-                      className="h-2 rounded-full bg-gray-100"
-                    >
-                      <div
-                        className="h-full rounded-full transition-all"
-                        style={{
-                          backgroundColor: tag.color,
-                          width: `${Math.min((tag._count?.bookmarks || 0) * 10, 100)}%`,
-                        }}
-                      />
-                    </div>
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        backgroundColor: tag.color || '#8b5cf6',
+                        width: `${Math.min((tag._count?.bookmarks || 0) * 10, 100)}%`,
+                      }}
+                    />
                   </div>
                 </Card>
               ))}
