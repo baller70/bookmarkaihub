@@ -226,15 +226,15 @@ export default function CategoriesPage() {
           {/* Header */}
           <div className="flex items-start justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold mb-1">Manage Categories</h1>
-              <p className="text-sm text-gray-600">Organize your bookmarks with custom categories</p>
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">Manage Categories</h1>
+              <p className="text-sm text-gray-700">Organize your bookmarks with custom categories</p>
             </div>
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={fetchData}
-                className="bg-white"
+                className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh
@@ -242,7 +242,7 @@ export default function CategoriesPage() {
               <Button
                 size="sm"
                 onClick={() => setIsAddCategoryModalOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Category
@@ -251,7 +251,7 @@ export default function CategoriesPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsAddFolderModalOpen(true)}
-                className="bg-white"
+                className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50"
               >
                 <Folder className="h-4 w-4 mr-2" />
                 Add Folder
@@ -303,8 +303,8 @@ export default function CategoriesPage() {
 
           {/* Unassigned Section */}
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-bold">Unassigned</h2>
-            <span className="text-sm text-gray-600">{unassignedCategories.length} categories</span>
+            <h2 className="text-xl font-bold text-gray-900">Unassigned</h2>
+            <span className="text-sm text-gray-700 font-medium">{unassignedCategories.length} categories</span>
           </div>
 
           {/* Categories Grid */}
@@ -319,13 +319,13 @@ export default function CategoriesPage() {
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3 flex-1">
                       <div
-                        className="w-3 h-3 rounded-full flex-shrink-0"
+                        className="w-4 h-4 rounded-full flex-shrink-0"
                         style={{ backgroundColor: category.color || '#3b82f6' }}
                       />
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm truncate">{category.name}</h3>
+                        <h3 className="font-semibold text-base text-gray-900 truncate">{category.name}</h3>
                       </div>
-                      <span className="text-sm text-gray-600 whitespace-nowrap">
+                      <span className="text-sm text-gray-700 font-medium whitespace-nowrap">
                         {bookmarkCount} bookmarks
                       </span>
                     </div>
@@ -333,15 +333,15 @@ export default function CategoriesPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0"
+                        className="h-8 w-8 p-0 hover:bg-gray-100"
                         onClick={() => handleEditCategory(category)}
                       >
-                        <Pencil className="h-4 w-4 text-gray-600" />
+                        <Pencil className="h-4 w-4 text-gray-700" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0"
+                        className="h-8 w-8 p-0 hover:bg-red-50"
                         onClick={() => handleDeleteCategory(category.id)}
                       >
                         <Trash2 className="h-4 w-4 text-red-600" />
@@ -353,7 +353,7 @@ export default function CategoriesPage() {
                     value={category.folderId || 'unassigned'}
                     onValueChange={(value) => handleUpdateCategoryFolder(category.id, value)}
                   >
-                    <SelectTrigger className="w-full bg-white text-sm">
+                    <SelectTrigger className="w-full bg-white text-sm border-gray-300 text-gray-900">
                       <SelectValue placeholder="Unassigned" />
                     </SelectTrigger>
                     <SelectContent>
