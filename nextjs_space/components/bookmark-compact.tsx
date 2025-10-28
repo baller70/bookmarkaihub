@@ -136,7 +136,7 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
         return (
           <div
             key={category.id}
-            className="relative bg-white border border-gray-200 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-gray-300 group"
+            className="relative bg-white border border-gray-200 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-gray-300 group min-h-[180px] flex flex-col"
             onClick={() => handleCategoryClick(category.id)}
           >
             {/* Three-dot menu */}
@@ -146,9 +146,9 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="h-6 w-6 p-0 opacity-100 transition-opacity"
                   >
-                    <MoreVertical className="h-4 w-4 text-gray-500" />
+                    <MoreVertical className="h-4 w-4 text-gray-400" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
@@ -177,38 +177,50 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
               </DropdownMenu>
             </div>
 
-            {/* Folder Icon */}
-            <div className="flex justify-start mb-3">
-              <div className="relative">
-                <svg
-                  className="w-12 h-12"
-                  viewBox="0 0 24 24"
+            {/* Folder Icon - Centered at top */}
+            <div className="flex justify-center mb-4">
+              <svg
+                className="w-16 h-16"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M3 7C3 5.89543 3.89543 5 5 5H9.58579C9.851 5 10.1054 5.10536 10.2929 5.29289L12.7071 7.70711C12.8946 7.89464 13.149 8 13.4142 8H19C20.1046 8 21 8.89543 21 10V17C21 18.1046 20.1046 19 19 19H5C3.89543 19 3 18.1046 3 17V7Z"
+                  stroke={folderColor}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M3 7C3 5.89543 3.89543 5 5 5H9.58579C9.851 5 10.1054 5.10536 10.2929 5.29289L12.7071 7.70711C12.8946 7.89464 13.149 8 13.4142 8H19C20.1046 8 21 8.89543 21 10V17C21 18.1046 20.1046 19 19 19H5C3.89543 19 3 18.1046 3 17V7Z"
-                    stroke={folderColor}
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    fill="none"
-                  />
-                </svg>
-              </div>
+                />
+              </svg>
             </div>
 
-            {/* Category Name */}
-            <div className="mb-8">
+            {/* Category Name - Centered */}
+            <div className="text-center mb-12">
               <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide line-clamp-2">
                 {category.name}
               </h3>
             </div>
 
             {/* Bottom Section */}
-            <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
-              {/* Bookmark Count */}
-              <div className="flex items-center gap-1.5 text-xs text-gray-600">
+            <div className="absolute bottom-4 left-0 right-0 px-4">
+              <div className="flex items-center justify-center mb-2">
+                {/* User Avatar - Centered */}
+                <Avatar className="h-10 w-10 border-2 border-white shadow-sm bg-gray-600">
+                  <AvatarImage 
+                    src={category.createdBy?.image || undefined} 
+                    alt={category.createdBy?.name || "User"} 
+                  />
+                  <AvatarFallback className="bg-gray-600 text-white text-sm">
+                    {category.createdBy?.name?.[0]?.toUpperCase() || 
+                     category.createdBy?.email?.[0]?.toUpperCase() || 
+                     'U'}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+              {/* Bookmark Count - Centered */}
+              <div className="flex items-center justify-center gap-1.5 text-xs text-gray-600">
                 <svg
                   className="w-3 h-3"
                   viewBox="0 0 24 24"
@@ -227,19 +239,6 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
                   {bookmarkCount} BOOKMARK{bookmarkCount !== 1 ? 'S' : ''}
                 </span>
               </div>
-
-              {/* User Avatar */}
-              <Avatar className="h-8 w-8 border-2 border-white shadow-sm">
-                <AvatarImage 
-                  src={category.createdBy?.image || undefined} 
-                  alt={category.createdBy?.name || "User"} 
-                />
-                <AvatarFallback className="bg-gray-400 text-white text-xs">
-                  {category.createdBy?.name?.[0]?.toUpperCase() || 
-                   category.createdBy?.email?.[0]?.toUpperCase() || 
-                   'U'}
-                </AvatarFallback>
-              </Avatar>
             </div>
           </div>
         )

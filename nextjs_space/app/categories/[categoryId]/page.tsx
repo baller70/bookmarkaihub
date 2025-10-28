@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { BookmarkGrid } from "@/components/bookmark-grid"
 import { BookmarkList } from "@/components/bookmark-list"
 import { BookmarkKanban } from "@/components/bookmark-kanban"
+import { BookmarkCompactCards } from "@/components/bookmark-compact-cards"
 import {
   ArrowLeft,
   Search,
@@ -24,7 +25,8 @@ import {
   SortAsc,
   Calendar,
   Star,
-  ExternalLink
+  ExternalLink,
+  Layers
 } from "lucide-react"
 import {
   Select,
@@ -58,7 +60,7 @@ interface Category {
   }
 }
 
-type ViewMode = "grid" | "list" | "kanban"
+type ViewMode = "grid" | "compact" | "list" | "kanban"
 type SortBy = "recent" | "oldest" | "title" | "favorites"
 
 export default function CategoryDetailPage() {
@@ -255,6 +257,13 @@ export default function CategoryDetailPage() {
                   <Grid3x3 className="h-4 w-4" />
                 </Button>
                 <Button
+                  variant={viewMode === "compact" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("compact")}
+                >
+                  <Layers className="h-4 w-4" />
+                </Button>
+                <Button
                   variant={viewMode === "list" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("list")}
@@ -276,6 +285,7 @@ export default function CategoryDetailPage() {
           {sortedBookmarks.length > 0 ? (
             <>
               {viewMode === "grid" && <BookmarkGrid bookmarks={sortedBookmarks} onUpdate={handleUpdate} />}
+              {viewMode === "compact" && <BookmarkCompactCards bookmarks={sortedBookmarks} onUpdate={handleUpdate} />}
               {viewMode === "list" && <BookmarkList bookmarks={sortedBookmarks} onUpdate={handleUpdate} />}
               {viewMode === "kanban" && <BookmarkKanban bookmarks={sortedBookmarks} onUpdate={handleUpdate} />}
             </>
