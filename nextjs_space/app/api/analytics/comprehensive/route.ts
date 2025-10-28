@@ -54,21 +54,21 @@ export async function GET(request: Request) {
 
     // Calculate overview statistics
     const totalBookmarks = bookmarks.length
-    const totalVisits = bookmarks.reduce((sum, b) => sum + b.totalVisits, 0)
-    const totalTimeSpent = bookmarks.reduce((sum, b) => sum + b.timeSpent, 0)
+    const totalVisits = bookmarks.reduce((sum: number, b: typeof bookmarks[0]) => sum + b.totalVisits, 0)
+    const totalTimeSpent = bookmarks.reduce((sum: number, b: typeof bookmarks[0]) => sum + b.timeSpent, 0)
     const avgEngagement = bookmarks.length > 0
-      ? bookmarks.reduce((sum, b) => sum + b.engagementScore, 0) / bookmarks.length
+      ? bookmarks.reduce((sum: number, b: typeof bookmarks[0]) => sum + b.engagementScore, 0) / bookmarks.length
       : 0
 
     // Calculate bookmarks added in the time period
     const bookmarksInPeriod = bookmarks.filter(
-      (b) => new Date(b.createdAt) >= startDate
+      (b: typeof bookmarks[0]) => new Date(b.createdAt) >= startDate
     ).length
 
     // Calculate category statistics
     const categoryStats: Record<string, any> = {}
-    bookmarks.forEach((bookmark) => {
-      bookmark.categories.forEach((bc) => {
+    bookmarks.forEach((bookmark: typeof bookmarks[0]) => {
+      bookmark.categories.forEach((bc: typeof bookmark.categories[0]) => {
         const catName = bc.category.name
         if (!categoryStats[catName]) {
           categoryStats[catName] = {
@@ -99,9 +99,9 @@ export async function GET(request: Request) {
 
     // Calculate top performing bookmarks
     const topPerformers = bookmarks
-      .sort((a, b) => b.engagementScore - a.engagementScore)
+      .sort((a: typeof bookmarks[0], b: typeof bookmarks[0]) => b.engagementScore - a.engagementScore)
       .slice(0, 5)
-      .map((b) => ({
+      .map((b: typeof bookmarks[0]) => ({
         title: b.title,
         visits: b.totalVisits,
         engagement: b.engagementScore,
@@ -110,10 +110,10 @@ export async function GET(request: Request) {
 
     // Calculate underperformers (low visit count)
     const underperformers = bookmarks
-      .filter((b) => b.totalVisits < 10)
-      .sort((a, b) => a.totalVisits - b.totalVisits)
+      .filter((b: typeof bookmarks[0]) => b.totalVisits < 10)
+      .sort((a: typeof bookmarks[0], b: typeof bookmarks[0]) => a.totalVisits - b.totalVisits)
       .slice(0, 5)
-      .map((b) => ({
+      .map((b: typeof bookmarks[0]) => ({
         title: b.title,
         visits: b.totalVisits,
         engagement: b.engagementScore,
@@ -127,7 +127,7 @@ export async function GET(request: Request) {
       const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()]
       
       const dayAnalytics = analytics.find(
-        (a) => new Date(a.date).toDateString() === date.toDateString()
+        (a: typeof analytics[0]) => new Date(a.date).toDateString() === date.toDateString()
       )
       
       return {
@@ -138,8 +138,8 @@ export async function GET(request: Request) {
     })
 
     // Calculate percentages
-    const totalWeeklyHours = weeklyPattern.reduce((sum, d) => sum + d.hours, 0)
-    weeklyPattern.forEach((day) => {
+    const totalWeeklyHours = weeklyPattern.reduce((sum: number, d: typeof weeklyPattern[0]) => sum + d.hours, 0)
+    weeklyPattern.forEach((day: typeof weeklyPattern[0]) => {
       day.percentage = totalWeeklyHours > 0 ? Math.round((day.hours / totalWeeklyHours) * 100) : 0
     })
 
@@ -149,7 +149,7 @@ export async function GET(request: Request) {
       date.setDate(date.getDate() - (29 - i))
       
       const dayAnalytics = analytics.find(
-        (a) => new Date(a.date).toDateString() === date.toDateString()
+        (a: typeof analytics[0]) => new Date(a.date).toDateString() === date.toDateString()
       )
       
       return {

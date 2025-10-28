@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
 
     // Create snapshot data
     const snapshot = {
-      bookmarks: bookmarks.map(b => ({
+      bookmarks: bookmarks.map((b: typeof bookmarks[0]) => ({
         id: b.id,
         title: b.title,
         url: b.url,
@@ -73,18 +73,18 @@ export async function POST(request: NextRequest) {
         favicon: b.favicon,
         priority: b.priority,
         isFavorite: b.isFavorite,
-        categories: b.categories.map(c => c.category.name),
-        tags: b.tags.map(t => t.tag.name),
+        categories: b.categories.map((c: typeof b.categories[0]) => c.category.name),
+        tags: b.tags.map((t: typeof b.tags[0]) => t.tag.name),
         createdAt: b.createdAt
       })),
-      categories: categories.map(c => ({
+      categories: categories.map((c: typeof categories[0]) => ({
         id: c.id,
         name: c.name,
         description: c.description,
         color: c.color,
         icon: c.icon
       })),
-      tags: tags.map(t => ({
+      tags: tags.map((t: typeof tags[0]) => ({
         id: t.id,
         name: t.name,
         color: t.color

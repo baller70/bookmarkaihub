@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     // Filter bookmarks that need organization (no categories or no tags)
     const bookmarks = allBookmarks.filter(
-      (b) => b.categories.length === 0 || b.tags.length === 0
+      (b: typeof allBookmarks[0]) => b.categories.length === 0 || b.tags.length === 0
     )
 
     if (bookmarks.length === 0) {
