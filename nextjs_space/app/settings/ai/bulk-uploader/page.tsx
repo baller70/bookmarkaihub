@@ -110,7 +110,7 @@ export default function BulkUploaderPage() {
                 {/* Import Links Section */}
                 <div className="lg:col-span-2 space-y-6">
                   <Card className="p-6">
-                    <h3 className="text-lg font-bold mb-4">Import Links</h3>
+                    <h3 className="text-lg font-bold mb-4">IMPORT LINKS</h3>
 
                     <Tabs defaultValue="drag-drop" className="w-full">
                       <TabsList className="grid w-full grid-cols-3">
@@ -183,7 +183,7 @@ export default function BulkUploaderPage() {
 
                   {/* Preview & Edit Section */}
                   <Card className="p-6">
-                    <h3 className="text-lg font-bold mb-4">Preview & Edit</h3>
+                    <h3 className="text-lg font-bold mb-4">PREVIEW & EDIT</h3>
                     <div className="text-center py-12 text-gray-500">
                       <div className="flex justify-center mb-4">
                         <Upload className="h-12 w-12 text-gray-300" />
@@ -215,7 +215,7 @@ export default function BulkUploaderPage() {
                   <Card className="p-6">
                     <div className="flex items-center gap-2 mb-4">
                       <SettingsIcon className="h-5 w-5" />
-                      <h3 className="text-lg font-bold">Batch Settings</h3>
+                      <h3 className="text-lg font-bold">BATCH SETTINGS</h3>
                     </div>
 
                     <div className="space-y-4">
@@ -254,7 +254,7 @@ export default function BulkUploaderPage() {
                   </Card>
 
                   <Card className="p-6 mt-6">
-                    <h3 className="text-lg font-bold mb-4">Overrides</h3>
+                    <h3 className="text-lg font-bold mb-4">OVERRIDES</h3>
 
                     <div className="space-y-4">
                       <div>

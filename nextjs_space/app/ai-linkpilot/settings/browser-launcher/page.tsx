@@ -32,7 +32,7 @@ export default function BrowserLauncherPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Ready to capture tabs</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">READY TO CAPTURE TABS</h3>
                   <p className="text-sm text-gray-600">
                     Use the browser extension or keyboard shortcut to capture your current tabs and convert them into bookmarks.
                   </p>

@@ -236,7 +236,7 @@ export default function PlaybooksPage() {
             <div className="grid grid-cols-12 gap-6">
               {/* Sidebar */}
               <div className="col-span-3 space-y-2">
-                <h3 className="font-semibold mb-4">My Playbooks</h3>
+                <h3 className="font-semibold mb-4">MY PLAYBOOKS</h3>
                 {playbooks.map(playbook => (
                   <Card
                     key={playbook.id}
@@ -341,7 +341,7 @@ export default function PlaybooksPage() {
                     {/* Playlist */}
                     <Card>
                       <CardContent className="p-6">
-                        <h3 className="font-semibold mb-4">Playlist</h3>
+                        <h3 className="font-semibold mb-4">PLAYLIST</h3>
                         <div className="space-y-2">
                           {activePlaybook.items.map((item, index) => (
                             <div

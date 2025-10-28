@@ -96,7 +96,7 @@ export default function BrowserLauncherPage() {
                       </div>
                     </div>
 
-                    <h3 className="text-2xl font-bold mb-3">Ready to capture tabs</h3>
+                    <h3 className="text-2xl font-bold mb-3">READY TO CAPTURE TABS</h3>
                     <p className="text-gray-600 mb-6">
                       Use the browser extension or keyboard shortcut to capture your current tabs and convert them into bookmarks.
                     </p>
@@ -130,7 +130,7 @@ export default function BrowserLauncherPage() {
                   <Card className="p-6">
                     <div className="flex items-center gap-2 mb-4">
                       <SettingsIcon className="h-5 w-5" />
-                      <h3 className="text-lg font-bold">Settings</h3>
+                      <h3 className="text-lg font-bold">SETTINGS</h3>
                     </div>
 
                     <div className="space-y-4">

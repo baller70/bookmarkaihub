@@ -150,7 +150,7 @@ export default function AILinkPilotPage() {
 
                   {/* Tag Cloud Snapshot Card */}
                   <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-                    <h3 className="font-semibold text-gray-900 mb-2">Tag Cloud Snapshot</h3>
+                    <h3 className="font-semibold text-gray-900 mb-2">TAG CLOUD SNAPSHOT</h3>
                     <p className="text-sm text-gray-600">Top tags from the past 7 days</p>
                   </Card>
 
@@ -163,7 +163,7 @@ export default function AILinkPilotPage() {
                       <div className="flex items-center gap-3">
                         <Settings className="h-5 w-5 text-gray-700" />
                         <div className="text-left">
-                          <h3 className="font-semibold text-gray-900">Intake Scope</h3>
+                          <h3 className="font-semibold text-gray-900">INTAKE SCOPE</h3>
                           <p className="text-sm text-gray-500">Control which types of link additions trigger auto-processing</p>
                         </div>
                       </div>
@@ -218,7 +218,7 @@ export default function AILinkPilotPage() {
                       <div className="flex items-center gap-3">
                         <Wand2 className="h-5 w-5 text-gray-700" />
                         <div className="text-left">
-                          <h3 className="font-semibold text-gray-900">Auto-Tagging & Metadata</h3>
+                          <h3 className="font-semibold text-gray-900">AUTO-TAGGING & METADATA</h3>
                           <p className="text-sm text-gray-500">Configure automatic tag generation and content analysis</p>
                         </div>
                       </div>
@@ -322,7 +322,7 @@ export default function AILinkPilotPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                         </svg>
                         <div className="text-left">
-                          <h3 className="font-semibold text-gray-900">Filtering & Categorization</h3>
+                          <h3 className="font-semibold text-gray-900">FILTERING & CATEGORIZATION</h3>
                           <p className="text-sm text-gray-500">Configure content filtering, duplicate handling, and smart categorization</p>
                         </div>
                       </div>
@@ -459,7 +459,7 @@ export default function AILinkPilotPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
                         <div className="text-left">
-                          <h3 className="font-semibold text-gray-900">Rule Builder</h3>
+                          <h3 className="font-semibold text-gray-900">RULE BUILDER</h3>
                           <p className="text-sm text-gray-500">Create custom rules for automatic link processing</p>
                         </div>
                       </div>
@@ -484,7 +484,7 @@ export default function AILinkPilotPage() {
 
                   {/* Import/Export Settings */}
                   <Card className="p-6 bg-white border-gray-200">
-                    <h3 className="font-semibold text-gray-900 mb-2">Import / Export Settings</h3>
+                    <h3 className="font-semibold text-gray-900 mb-2">IMPORT / EXPORT SETTINGS</h3>
                     <p className="text-sm text-gray-500 mb-4">Backup or restore your auto-processing configuration</p>
                     <div className="flex gap-3">
                       <Button variant="outline" className="flex-1">
@@ -522,7 +522,7 @@ export default function AILinkPilotPage() {
                   <Card className="p-6 bg-white border-gray-200">
                     <div className="flex items-center gap-2 mb-4">
                       <Wand2 className="h-5 w-5 text-gray-700" />
-                      <h3 className="font-semibold text-gray-900">Personalized Recommendations</h3>
+                      <h3 className="font-semibold text-gray-900">PERSONALIZED RECOMMENDATIONS</h3>
                     </div>
                     <p className="text-sm text-gray-500 mb-6">AI-powered suggestions based on your interests and reading habits</p>
 
@@ -574,7 +574,7 @@ export default function AILinkPilotPage() {
 
                   {/* Generate Recommendations Button */}
                   <Card className="p-6 bg-white border-gray-200">
-                    <h3 className="font-semibold text-gray-900 mb-2">Generate Recommendations</h3>
+                    <h3 className="font-semibold text-gray-900 mb-2">GENERATE RECOMMENDATIONS</h3>
                     <p className="text-sm text-gray-500 mb-4">Get AI-powered content suggestions</p>
                     <Button className="bg-black text-white hover:bg-gray-800">
                       <Wand2 className="h-4 w-4 mr-2" />
@@ -616,7 +616,7 @@ export default function AILinkPilotPage() {
                   <div className="grid grid-cols-3 gap-6">
                     {/* Import Links Section */}
                     <Card className="col-span-2 p-6 bg-white border-gray-200">
-                      <h3 className="font-semibold text-gray-900 mb-4">Import Links</h3>
+                      <h3 className="font-semibold text-gray-900 mb-4">IMPORT LINKS</h3>
                       
                       {/* Upload Method Tabs */}
                       <div className="flex gap-4 mb-6">
@@ -683,7 +683,7 @@ export default function AILinkPilotPage() {
                         <svg className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                         </svg>
-                        <h3 className="font-semibold text-gray-900">Batch Settings</h3>
+                        <h3 className="font-semibold text-gray-900">BATCH SETTINGS</h3>
                       </div>
 
                       <div className="space-y-4">
@@ -790,7 +790,7 @@ export default function AILinkPilotPage() {
                       <svg className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                       </svg>
-                      <h3 className="font-semibold text-gray-900">Validation Summary</h3>
+                      <h3 className="font-semibold text-gray-900">VALIDATION SUMMARY</h3>
                     </div>
 
                     <div className="grid grid-cols-3 gap-6">
@@ -861,7 +861,7 @@ export default function AILinkPilotPage() {
                         <svg className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                         </svg>
-                        <h3 className="font-semibold text-gray-900">Scope & Input</h3>
+                        <h3 className="font-semibold text-gray-900">SCOPE & INPUT</h3>
                       </div>
 
                       <div className="space-y-4">
@@ -900,7 +900,7 @@ export default function AILinkPilotPage() {
                         <svg className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        <h3 className="font-semibold text-gray-900">Schedule & Options</h3>
+                        <h3 className="font-semibold text-gray-900">SCHEDULE & OPTIONS</h3>
                       </div>
 
                       <div className="space-y-4">
@@ -942,7 +942,7 @@ export default function AILinkPilotPage() {
 
                     {/* Status Distribution */}
                     <Card className="p-6 bg-white border-gray-200">
-                      <h3 className="font-semibold text-gray-900 mb-4">Status Distribution</h3>
+                      <h3 className="font-semibold text-gray-900 mb-4">STATUS DISTRIBUTION</h3>
                       <div className="flex items-center justify-center h-40">
                         <p className="text-sm text-gray-500">No data available</p>
                       </div>
@@ -968,7 +968,7 @@ export default function AILinkPilotPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                           </svg>
                         </div>
-                        <h3 className="text-xl font-semibold text-gray-900 mb-3">Ready to capture tabs</h3>
+                        <h3 className="text-xl font-semibold text-gray-900 mb-3">READY TO CAPTURE TABS</h3>
                         <p className="text-sm text-gray-500 mb-6">
                           Use the browser extension or keyboard shortcut to capture your<br />
                           current tabs and convert them into bookmarks.
@@ -996,7 +996,7 @@ export default function AILinkPilotPage() {
                     <Card className="p-6 bg-white border-gray-200">
                       <div className="flex items-center gap-2 mb-4">
                         <Settings className="h-5 w-5 text-gray-700" />
-                        <h3 className="font-semibold text-gray-900">Settings</h3>
+                        <h3 className="font-semibold text-gray-900">SETTINGS</h3>
                       </div>
 
                       <div className="space-y-4">

@@ -88,7 +88,7 @@ export default function LinkValidatorPage() {
               <Card className="p-6">
                 <div className="flex items-center gap-3 mb-6">
                   <AlertTriangle className="h-5 w-5" />
-                  <h3 className="text-lg font-bold">Validation Summary</h3>
+                  <h3 className="text-lg font-bold">VALIDATION SUMMARY</h3>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -147,7 +147,7 @@ export default function LinkValidatorPage() {
                 <Card className="p-6">
                   <div className="flex items-center gap-3 mb-4">
                     <SettingsIcon className="h-5 w-5" />
-                    <h3 className="text-lg font-bold">Scope & Input</h3>
+                    <h3 className="text-lg font-bold">SCOPE & INPUT</h3>
                   </div>
 
                   <div className="space-y-4">
@@ -198,7 +198,7 @@ export default function LinkValidatorPage() {
                 <Card className="p-6">
                   <div className="flex items-center gap-3 mb-4">
                     <Clock className="h-5 w-5" />
-                    <h3 className="text-lg font-bold">Schedule & Options</h3>
+                    <h3 className="text-lg font-bold">SCHEDULE & OPTIONS</h3>
                   </div>
 
                   <div className="space-y-4">
@@ -241,7 +241,7 @@ export default function LinkValidatorPage() {
                 <div className="space-y-6">
                   {/* Status Distribution */}
                   <Card className="p-6">
-                    <h3 className="text-lg font-bold mb-4">Status Distribution</h3>
+                    <h3 className="text-lg font-bold mb-4">STATUS DISTRIBUTION</h3>
                     <div className="text-center py-6 text-gray-500">
                       <p className="text-sm">No data available</p>
                     </div>
@@ -249,7 +249,7 @@ export default function LinkValidatorPage() {
 
                   {/* Broken Links Trend */}
                   <Card className="p-6">
-                    <h3 className="text-lg font-bold mb-4">Broken Links Trend</h3>
+                    <h3 className="text-lg font-bold mb-4">BROKEN LINKS TREND</h3>
                     <div className="text-center py-6 text-gray-500">
                       <p className="text-sm">No trend data yet</p>
                     </div>
@@ -259,7 +259,7 @@ export default function LinkValidatorPage() {
                   <Card className="p-6">
                     <div className="flex items-center gap-2 mb-4">
                       <Clock className="h-5 w-5" />
-                      <h3 className="text-lg font-bold">Recent Scans</h3>
+                      <h3 className="text-lg font-bold">RECENT SCANS</h3>
                     </div>
                     <div className="text-center py-6 text-gray-500">
                       <p className="text-sm">No scan history yet</p>

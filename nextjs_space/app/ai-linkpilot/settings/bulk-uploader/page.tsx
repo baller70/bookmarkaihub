@@ -150,7 +150,7 @@ export default function BulkUploaderPage() {
           <Card className="bg-white">
             <CardContent className="py-12 text-center">
               <Upload className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-              <h3 className="font-semibold text-gray-700 mb-1">No uploads yet</h3>
+              <h3 className="font-semibold text-gray-700 mb-1">NO UPLOADS YET</h3>
               <p className="text-sm text-gray-500">
                 Start by importing some links above to see your upload summary here
               </p>

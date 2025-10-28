@@ -118,7 +118,7 @@ export default function ContentDiscoveryPage() {
                   <Card className="p-6">
                     <div className="flex items-center gap-3 mb-4">
                       <Sparkles className="h-5 w-5" />
-                      <h3 className="text-lg font-bold">Personalized Recommendations</h3>
+                      <h3 className="text-lg font-bold">PERSONALIZED RECOMMENDATIONS</h3>
                     </div>
                     <p className="text-sm text-gray-600 mb-6">AI-powered suggestions based on your interests and reading habits</p>
 
@@ -205,7 +205,7 @@ export default function ContentDiscoveryPage() {
                   <Card className="p-6 bg-white">
                     <div className="flex items-center gap-3 mb-4">
                       <Search className="h-5 w-5 text-gray-900" />
-                      <h3 className="text-lg font-bold text-gray-900">AI Link Finder</h3>
+                      <h3 className="text-lg font-bold text-gray-900">AI LINK FINDER</h3>
                     </div>
                     <p className="text-sm text-gray-600 mb-6">Discover relevant links using AI-powered search</p>
 

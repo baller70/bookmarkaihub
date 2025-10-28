@@ -219,7 +219,7 @@ export default function SettingsPage() {
                   <div className="space-y-8">
                     {/* Theme Selection */}
                     <div>
-                      <h3 className="font-semibold mb-4">Theme Selection</h3>
+                      <h3 className="font-semibold mb-4">THEME SELECTION</h3>
                       <div className="space-y-4">
                         <div>
                           <Label className="text-sm font-normal text-gray-700">Theme</Label>
@@ -272,7 +272,7 @@ export default function SettingsPage() {
 
                     {/* Accent & Highlight Colors */}
                     <div>
-                      <h3 className="font-semibold mb-4">Accent & Highlight Colors</h3>
+                      <h3 className="font-semibold mb-4">ACCENT & HIGHLIGHT COLORS</h3>
                       <div className="space-y-3">
                         <Label className="text-sm font-normal text-gray-700">Color Palette</Label>
                         <div className="flex gap-3 flex-wrap">
@@ -323,7 +323,7 @@ export default function SettingsPage() {
 
                     {/* Font & Text Size */}
                     <div>
-                      <h3 className="font-semibold mb-4">Font & Text Size</h3>
+                      <h3 className="font-semibold mb-4">FONT & TEXT SIZE</h3>
                       <div className="space-y-4">
                         <div>
                           <div className="flex items-center justify-between mb-2">
@@ -372,7 +372,7 @@ export default function SettingsPage() {
                   <div className="space-y-8">
                     {/* Notification Channels */}
                     <div>
-                      <h3 className="font-semibold mb-4">Notification Channels</h3>
+                      <h3 className="font-semibold mb-4">NOTIFICATION CHANNELS</h3>
                       <div className="space-y-4">
                         <div className="flex items-center justify-between p-4 border rounded-lg">
                           <div className="flex items-center gap-3">
@@ -431,7 +431,7 @@ export default function SettingsPage() {
 
                     {/* Event Types */}
                     <div>
-                      <h3 className="font-semibold mb-4">Event Types</h3>
+                      <h3 className="font-semibold mb-4">EVENT TYPES</h3>
                       <div className="space-y-4">
                         {[
                           { 
@@ -480,7 +480,7 @@ export default function SettingsPage() {
 
                     {/* Quiet Hours */}
                     <div>
-                      <h3 className="font-semibold mb-4">Quiet Hours</h3>
+                      <h3 className="font-semibold mb-4">QUIET HOURS</h3>
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="font-medium text-sm">Enable Quiet Hours</p>
@@ -497,7 +497,7 @@ export default function SettingsPage() {
 
                     {/* Digest Scheduling */}
                     <div>
-                      <h3 className="font-semibold mb-4">Digest Scheduling</h3>
+                      <h3 className="font-semibold mb-4">DIGEST SCHEDULING</h3>
                       <div className="grid grid-cols-3 gap-4">
                         <div>
                           <Label className="text-sm font-normal text-gray-700 mb-2 block">Frequency</Label>
@@ -551,7 +551,7 @@ export default function SettingsPage() {
                   <div className="space-y-8">
                     {/* Password Management */}
                     <div>
-                      <h3 className="font-semibold mb-4">Password Management</h3>
+                      <h3 className="font-semibold mb-4">PASSWORD MANAGEMENT</h3>
                       <Button variant="outline">
                         <Lock className="h-4 w-4 mr-2" />
                         Change Password
@@ -562,7 +562,7 @@ export default function SettingsPage() {
 
                     {/* Two-Factor Authentication */}
                     <div>
-                      <h3 className="font-semibold mb-4">Two-Factor Authentication</h3>
+                      <h3 className="font-semibold mb-4">TWO-FACTOR AUTHENTICATION</h3>
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="font-medium text-sm">Enable 2FA</p>
@@ -579,7 +579,7 @@ export default function SettingsPage() {
 
                     {/* Session & Device Management */}
                     <div>
-                      <h3 className="font-semibold mb-4">Session & Device Management</h3>
+                      <h3 className="font-semibold mb-4">SESSION & DEVICE MANAGEMENT</h3>
                       <div className="space-y-3">
                         <div className="flex items-center justify-between p-4 border rounded-lg">
                           <div>
@@ -609,7 +609,7 @@ export default function SettingsPage() {
 
                     {/* Privacy Policy & Data Export */}
                     <div>
-                      <h3 className="font-semibold mb-4">Privacy Policy & Data Export</h3>
+                      <h3 className="font-semibold mb-4">PRIVACY POLICY & DATA EXPORT</h3>
                       <div className="flex gap-3">
                         <Button variant="outline">
                           <Download className="h-4 w-4 mr-2" />
@@ -637,7 +637,7 @@ export default function SettingsPage() {
                   <div className="space-y-8">
                     {/* Manual Export */}
                     <div>
-                      <h3 className="font-semibold mb-4">Manual Export</h3>
+                      <h3 className="font-semibold mb-4">MANUAL EXPORT</h3>
                       <div className="flex gap-3 mb-4">
                         <Button variant="outline">
                           <FileJson className="h-4 w-4 mr-2" />
@@ -673,7 +673,7 @@ export default function SettingsPage() {
 
                     {/* Scheduled Backups */}
                     <div>
-                      <h3 className="font-semibold mb-4">Scheduled Backups</h3>
+                      <h3 className="font-semibold mb-4">SCHEDULED BACKUPS</h3>
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="font-medium text-sm">Enable automatic backups</p>
@@ -690,7 +690,7 @@ export default function SettingsPage() {
 
                     {/* Cloud Sync Destinations */}
                     <div>
-                      <h3 className="font-semibold mb-4">Cloud Sync Destinations</h3>
+                      <h3 className="font-semibold mb-4">CLOUD SYNC DESTINATIONS</h3>
                       <div>
                         <Label className="text-sm font-normal text-gray-700 mb-2 block">Cloud Provider</Label>
                         <Select value={settings.cloudProvider} onValueChange={(value) => setSettings({ ...settings, cloudProvider: value })}>
@@ -711,7 +711,7 @@ export default function SettingsPage() {
 
                     {/* Import & Restore */}
                     <div>
-                      <h3 className="font-semibold mb-4">Import & Restore</h3>
+                      <h3 className="font-semibold mb-4">IMPORT & RESTORE</h3>
                       <div className="flex gap-3">
                         <Button>
                           <Upload className="h-4 w-4 mr-2" />
@@ -739,7 +739,7 @@ export default function SettingsPage() {
                   <div className="space-y-8">
                     {/* Current Plan */}
                     <div>
-                      <h3 className="font-semibold mb-4">Current Plan</h3>
+                      <h3 className="font-semibold mb-4">CURRENT PLAN</h3>
                       <div className="flex items-center justify-between p-4 border rounded-lg bg-blue-50/50">
                         <div>
                           <p className="font-semibold text-blue-900">Free Plan</p>
@@ -756,7 +756,7 @@ export default function SettingsPage() {
 
                     {/* Usage Statistics */}
                     <div>
-                      <h3 className="font-semibold mb-4">Usage Statistics</h3>
+                      <h3 className="font-semibold mb-4">USAGE STATISTICS</h3>
                       <div className="grid grid-cols-3 gap-4">
                         <div>
                           <div className="flex items-center justify-between mb-2">
@@ -786,7 +786,7 @@ export default function SettingsPage() {
 
                     {/* Available Plans */}
                     <div>
-                      <h3 className="font-semibold mb-4">Available Plans</h3>
+                      <h3 className="font-semibold mb-4">AVAILABLE PLANS</h3>
                       <div className="grid grid-cols-3 gap-4">
                         {/* Free Plan */}
                         <Card className="p-5 relative">
@@ -879,7 +879,7 @@ export default function SettingsPage() {
 
                     {/* Billing Settings */}
                     <div>
-                      <h3 className="font-semibold mb-4">Billing Settings</h3>
+                      <h3 className="font-semibold mb-4">BILLING SETTINGS</h3>
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <div>

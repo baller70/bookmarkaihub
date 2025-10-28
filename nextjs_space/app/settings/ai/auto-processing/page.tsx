@@ -92,7 +92,7 @@ export default function AutoProcessingPage() {
               <Card className="p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <SettingsIcon className="h-5 w-5" />
-                  <h3 className="text-lg font-bold">Intake Scope</h3>
+                  <h3 className="text-lg font-bold">INTAKE SCOPE</h3>
                 </div>
                 <p className="text-sm text-gray-600 mb-6">Control which types of link additions trigger auto-processing</p>
 
@@ -135,7 +135,7 @@ export default function AutoProcessingPage() {
               <Card className="p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <Tag className="h-5 w-5" />
-                  <h3 className="text-lg font-bold">Auto-Tagging & Metadata</h3>
+                  <h3 className="text-lg font-bold">AUTO-TAGGING & METADATA</h3>
                 </div>
                 <p className="text-sm text-gray-600 mb-6">Configure automatic tag generation and content analysis</p>
 
@@ -238,7 +238,7 @@ export default function AutoProcessingPage() {
               <Card className="p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <Filter className="h-5 w-5" />
-                  <h3 className="text-lg font-bold">Filtering & Categorization</h3>
+                  <h3 className="text-lg font-bold">FILTERING & CATEGORIZATION</h3>
                 </div>
                 <p className="text-sm text-gray-600 mb-6">Configure content filtering, duplicate handling, and smart categorization</p>
 
@@ -389,7 +389,7 @@ export default function AutoProcessingPage() {
               <Card className="p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <AlertTriangle className="h-5 w-5" />
-                  <h3 className="text-lg font-bold">Rule Builder</h3>
+                  <h3 className="text-lg font-bold">RULE BUILDER</h3>
                 </div>
                 <p className="text-sm text-gray-600 mb-6">Create custom rules for automatic link processing</p>
 
@@ -403,7 +403,7 @@ export default function AutoProcessingPage() {
 
               {/* Import / Export Settings */}
               <Card className="p-6">
-                <h3 className="text-lg font-bold mb-2">Import / Export Settings</h3>
+                <h3 className="text-lg font-bold mb-2">IMPORT / EXPORT SETTINGS</h3>
                 <p className="text-sm text-gray-600 mb-6">Backup or restore your auto-processing configuration</p>
 
                 <div className="flex gap-4">
@@ -445,7 +445,7 @@ export default function AutoProcessingPage() {
 
               {/* Tag Cloud Snapshot */}
               <Card className="p-4">
-                <h3 className="text-sm font-semibold mb-2">Tag Cloud Snapshot</h3>
+                <h3 className="text-sm font-semibold mb-2">TAG CLOUD SNAPSHOT</h3>
                 <p className="text-xs text-gray-500 mb-4">Top tags from the past 7 days</p>
                 <div className="flex flex-wrap gap-2">
                   <Badge variant="secondary" className="text-xs">javascript</Badge>
