@@ -265,20 +265,20 @@ export default function CategoriesPage() {
               {folders.map((folder) => (
                 <Card
                   key={folder.id}
-                  className="p-6 bg-white hover:shadow-md transition-all cursor-pointer border border-gray-200"
+                  className="p-6 bg-white hover:shadow-lg transition-all cursor-pointer border border-gray-200 hover:border-blue-300"
                   onClick={() => handleFolderClick(folder.id)}
                 >
                   <div className="flex items-start gap-4">
-                    <div className="p-3 bg-blue-600 rounded-lg">
-                      <Folder className="h-6 w-6 text-white" />
+                    <div className="p-4 bg-blue-600 rounded-xl flex-shrink-0">
+                      <Folder className="h-7 w-7 text-white" />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-base uppercase tracking-wide mb-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-lg text-gray-900 uppercase tracking-wide mb-3 break-words">
                         {folder.name}
                       </h3>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <FileText className="h-4 w-4" />
-                        <span>{folder._count?.categories || 0} category</span>
+                        <FileText className="h-4 w-4 flex-shrink-0" />
+                        <span className="font-medium">{folder._count?.categories || 0} category</span>
                       </div>
                     </div>
                   </div>
