@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Folder, MoreVertical } from "lucide-react"
+import { Folder, Bookmark } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -136,109 +136,102 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
         return (
           <div
             key={category.id}
-            className="relative bg-white border border-gray-200 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-gray-300 group min-h-[180px] flex flex-col"
+            className="relative bg-white border border-gray-200 rounded-xl p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-gray-300 group min-h-[240px] flex flex-col"
             onClick={() => handleCategoryClick(category.id)}
           >
-            {/* Three-dot menu */}
-            <div className="absolute top-3 right-3 z-10">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 opacity-100 transition-opacity"
-                  >
-                    <MoreVertical className="h-4 w-4 text-gray-400" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={(e) => {
-                    e.stopPropagation()
-                    router.push(`/categories/${category.id}`)
-                  }}>
-                    Open Folder
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={(e) => {
-                    e.stopPropagation()
-                    // Add edit functionality
-                  }}>
-                    Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      // Add delete functionality
-                    }}
-                    className="text-red-600"
-                  >
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            {/* Folder Icon - Centered at top */}
-            <div className="flex justify-center mb-4">
-              <svg
-                className="w-16 h-16"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+            {/* Top Section */}
+            <div className="flex items-start justify-between mb-6">
+              {/* Folder Icon with colored background */}
+              <div 
+                className="w-20 h-20 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: `${folderColor}15` }}
               >
-                <path
-                  d="M3 7C3 5.89543 3.89543 5 5 5H9.58579C9.851 5 10.1054 5.10536 10.2929 5.29289L12.7071 7.70711C12.8946 7.89464 13.149 8 13.4142 8H19C20.1046 8 21 8.89543 21 10V17C21 18.1046 20.1046 19 19 19H5C3.89543 19 3 18.1046 3 17V7Z"
-                  stroke={folderColor}
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill="none"
+                <Folder 
+                  className="w-12 h-12" 
+                  style={{ color: folderColor }}
+                  strokeWidth={2.5}
                 />
-              </svg>
+              </div>
+
+              {/* Grid dots menu */}
+              <div className="z-10">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 hover:bg-gray-100"
+                    >
+                      <svg
+                        className="w-5 h-5 text-gray-400"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <circle cx="5" cy="5" r="1.5" />
+                        <circle cx="12" cy="5" r="1.5" />
+                        <circle cx="5" cy="12" r="1.5" />
+                        <circle cx="12" cy="12" r="1.5" />
+                        <circle cx="5" cy="19" r="1.5" />
+                        <circle cx="12" cy="19" r="1.5" />
+                      </svg>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={(e) => {
+                      e.stopPropagation()
+                      router.push(`/categories/${category.id}`)
+                    }}>
+                      Open Folder
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={(e) => {
+                      e.stopPropagation()
+                      // Add edit functionality
+                    }}>
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        // Add delete functionality
+                      }}
+                      className="text-red-600"
+                    >
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
 
-            {/* Category Name - Centered */}
-            <div className="text-center mb-12">
-              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide line-clamp-2">
+            {/* Category Name */}
+            <div className="mb-auto">
+              <h3 className="text-lg font-bold text-gray-900 uppercase tracking-wide line-clamp-2">
                 {category.name}
               </h3>
             </div>
 
             {/* Bottom Section */}
-            <div className="absolute bottom-4 left-0 right-0 px-4">
-              <div className="flex items-center justify-center mb-2">
-                {/* User Avatar - Centered */}
-                <Avatar className="h-10 w-10 border-2 border-white shadow-sm bg-gray-600">
-                  <AvatarImage 
-                    src={category.createdBy?.image || undefined} 
-                    alt={category.createdBy?.name || "User"} 
-                  />
-                  <AvatarFallback className="bg-gray-600 text-white text-sm">
-                    {category.createdBy?.name?.[0]?.toUpperCase() || 
-                     category.createdBy?.email?.[0]?.toUpperCase() || 
-                     'U'}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-              {/* Bookmark Count - Centered */}
-              <div className="flex items-center justify-center gap-1.5 text-xs text-gray-600">
-                <svg
-                  className="w-3 h-3"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M19 21L12 16L5 21V5C5 3.89543 5.89543 3 7 3H17C18.1046 3 19 3.89543 19 5V21Z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span className="font-medium">
+            <div className="flex items-center justify-between mt-6 pt-4">
+              {/* Bookmark Count - Left */}
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Bookmark className="w-4 h-4" />
+                <span className="font-medium uppercase tracking-wide">
                   {bookmarkCount} BOOKMARK{bookmarkCount !== 1 ? 'S' : ''}
                 </span>
               </div>
+
+              {/* User Avatar - Right */}
+              <Avatar className="h-12 w-12 border-2 border-gray-200 shadow-sm bg-gray-600">
+                <AvatarImage 
+                  src={category.createdBy?.image || undefined} 
+                  alt={category.createdBy?.name || "User"} 
+                />
+                <AvatarFallback className="bg-gray-600 text-white text-sm">
+                  {category.createdBy?.name?.[0]?.toUpperCase() || 
+                   category.createdBy?.email?.[0]?.toUpperCase() || 
+                   'U'}
+                </AvatarFallback>
+              </Avatar>
             </div>
           </div>
         )
