@@ -29,7 +29,17 @@ export async function GET() {
       },
     })
 
-    return NextResponse.json(categories)
+    const formattedCategories = categories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      description: category.description,
+      color: category.color,
+      icon: category.icon,
+      bookmarkCount: category._count.bookmarks,
+      folderId: category.folderId,
+    }))
+
+    return NextResponse.json({ categories: formattedCategories })
   } catch (error) {
     console.error("Error fetching categories:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

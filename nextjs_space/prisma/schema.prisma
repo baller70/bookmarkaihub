@@ -51,6 +51,7 @@ model User {
   sessions      Session[]
   bookmarks     Bookmark[]
   categories    Category[]
+  categoryFolders CategoryFolder[]
   tags          Tag[]
   analytics     Analytics[]
   goals         Goal[]
@@ -120,6 +121,23 @@ model Category {
   userId      String
   user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   bookmarks   BookmarkCategory[]
+  
+  folderId    String?
+  folder      CategoryFolder?     @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, name])
+}
+
+model CategoryFolder {
+  id          String     @id @default(cuid())
+  name        String
+  
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categories  Category[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
