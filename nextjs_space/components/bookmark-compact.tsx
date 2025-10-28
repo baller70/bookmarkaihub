@@ -107,9 +107,9 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {[...Array(15)].map((_, i) => (
-          <div key={i} className="h-40 bg-gray-100 animate-pulse rounded-lg" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {[...Array(12)].map((_, i) => (
+          <div key={i} className="h-56 bg-gray-100 animate-pulse rounded-lg" />
         ))}
       </div>
     )
@@ -128,7 +128,7 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {categories.map((category) => {
         const folderColor = getFolderColor(category.name)
         const bookmarkCount = category._count?.bookmarks || 0
@@ -136,18 +136,18 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
         return (
           <div
             key={category.id}
-            className="relative bg-white border border-gray-200 rounded-xl p-5 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-gray-300 group aspect-square flex flex-col"
+            className="relative bg-white border border-gray-200 rounded-xl p-7 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-gray-300 group aspect-square flex flex-col"
             onClick={() => handleCategoryClick(category.id)}
           >
             {/* Top Section */}
-            <div className="flex items-start justify-between mb-4">
+            <div className="flex items-start justify-between mb-5">
               {/* Folder Icon with colored background */}
               <div 
-                className="w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0"
+                className="w-20 h-20 rounded-lg flex items-center justify-center flex-shrink-0"
                 style={{ backgroundColor: `${folderColor}15` }}
               >
                 <Folder 
-                  className="w-10 h-10" 
+                  className="w-12 h-12" 
                   style={{ color: folderColor }}
                   strokeWidth={2.5}
                 />
@@ -160,10 +160,10 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 w-7 p-0 hover:bg-gray-100"
+                      className="h-8 w-8 p-0 hover:bg-gray-100"
                     >
                       <svg
-                        className="w-4 h-4 text-gray-400"
+                        className="w-5 h-5 text-gray-400"
                         viewBox="0 0 24 24"
                         fill="currentColor"
                       >
@@ -205,28 +205,28 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
 
             {/* Category Name */}
             <div className="mb-auto">
-              <h3 className="text-base font-bold text-gray-900 uppercase tracking-wide line-clamp-2 leading-tight">
+              <h3 className="text-lg font-bold text-gray-900 uppercase tracking-wide line-clamp-2 leading-tight">
                 {category.name}
               </h3>
             </div>
 
             {/* Bottom Section */}
-            <div className="flex items-center justify-between mt-auto pt-3">
+            <div className="flex items-center justify-between mt-auto pt-4">
               {/* Bookmark Count - Left */}
               <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                <Bookmark className="w-3.5 h-3.5" />
+                <Bookmark className="w-4 h-4" />
                 <span className="font-medium uppercase tracking-wide whitespace-nowrap">
                   {bookmarkCount} BOOKMARK{bookmarkCount !== 1 ? 'S' : ''}
                 </span>
               </div>
 
               {/* User Avatar - Right */}
-              <Avatar className="h-10 w-10 border-2 border-gray-200 shadow-sm bg-gray-600 flex-shrink-0">
+              <Avatar className="h-11 w-11 border-2 border-gray-200 shadow-sm bg-gray-600 flex-shrink-0">
                 <AvatarImage 
                   src={category.createdBy?.image || undefined} 
                   alt={category.createdBy?.name || "User"} 
                 />
-                <AvatarFallback className="bg-gray-600 text-white text-xs">
+                <AvatarFallback className="bg-gray-600 text-white text-sm">
                   {category.createdBy?.name?.[0]?.toUpperCase() || 
                    category.createdBy?.email?.[0]?.toUpperCase() || 
                    'U'}
