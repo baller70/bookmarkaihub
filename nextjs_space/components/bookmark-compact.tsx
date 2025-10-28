@@ -102,7 +102,7 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
   }
 
   const handleCategoryClick = (categoryId: string) => {
-    router.push(`/categories/${categoryId}`)
+    router.push(`/bookmarkai-addons/categories/${categoryId}/compact`)
   }
 
   if (loading) {
@@ -179,7 +179,7 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuItem onClick={(e) => {
                       e.stopPropagation()
-                      router.push(`/categories/${category.id}`)
+                      router.push(`/bookmarkai-addons/categories/${category.id}/compact`)
                     }}>
                       Open Folder
                     </DropdownMenuItem>
