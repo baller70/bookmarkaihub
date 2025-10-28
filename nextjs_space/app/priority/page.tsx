@@ -96,6 +96,8 @@ export default function PriorityPage() {
     <DashboardAuth>
       <DashboardLayout>
         <div className="p-4 md:p-8 max-w-7xl mx-auto">
+          {/* Bordered Container */}
+          <div className="border border-gray-300 rounded-lg p-6 bg-white">
           {/* Header */}
           <div className="flex items-start justify-between mb-6">
             <div>
@@ -168,6 +170,7 @@ export default function PriorityPage() {
               </p>
             </div>
           )}
+          </div>
         </div>
       </DashboardLayout>
     </DashboardAuth>

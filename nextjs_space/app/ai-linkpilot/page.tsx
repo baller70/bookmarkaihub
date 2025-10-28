@@ -92,9 +92,12 @@ export default function AILinkPilotPage() {
           </div>
 
           {/* Main Content */}
-          <div className="flex max-w-7xl mx-auto">
+          <div className="max-w-7xl mx-auto px-6 py-8">
+            {/* Bordered Container */}
+            <div className="border border-gray-300 rounded-lg bg-white overflow-hidden">
+              <div className="flex">
             {/* Sidebar */}
-            <div className="w-64 bg-white border-r border-gray-200 min-h-[calc(100vh-73px)] p-4">
+            <div className="w-64 bg-white border-r border-gray-200 p-4">
               <nav className="space-y-1">
                 {sidebarItems.map((item) => {
                   const Icon = item.icon
@@ -1035,6 +1038,8 @@ export default function AILinkPilotPage() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
             </div>
           </div>
         </div>

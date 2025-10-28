@@ -127,6 +127,8 @@ export default function SettingsPage() {
 
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-6 py-8">
+          {/* Bordered Container */}
+          <div className="border border-gray-300 rounded-lg p-6 bg-white">
           <div className="grid grid-cols-12 gap-6">
             {/* Sidebar */}
             <div className="col-span-3">
@@ -899,6 +901,7 @@ export default function SettingsPage() {
                 </Card>
               )}
             </div>
+          </div>
           </div>
         </div>
       </div>
