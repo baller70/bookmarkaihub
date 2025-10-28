@@ -314,46 +314,52 @@ export default function CategoriesPage() {
               return (
                 <Card
                   key={category.id}
-                  className="p-4 bg-white border border-gray-200 hover:shadow-md transition-all"
+                  className="p-3 bg-white border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-200 rounded-xl"
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div
-                        className="w-4 h-4 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: category.color || '#3b82f6' }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-base text-gray-900 truncate">{category.name}</h3>
-                      </div>
-                      <span className="text-sm text-gray-700 font-medium whitespace-nowrap">
-                        {bookmarkCount} bookmarks
-                      </span>
+                  {/* Top Row: Color, Name, and Actions */}
+                  <div className="flex items-start gap-2 mb-2">
+                    <div
+                      className="w-3 h-3 rounded-full flex-shrink-0 mt-0.5"
+                      style={{ backgroundColor: category.color || '#3b82f6' }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm text-gray-900 truncate leading-tight">
+                        {category.name}
+                      </h3>
                     </div>
-                    <div className="flex items-center gap-1 ml-2">
+                    <div className="flex items-center gap-0.5 flex-shrink-0">
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 hover:bg-gray-100"
+                        className="h-7 w-7 p-0 hover:bg-gray-100 rounded"
                         onClick={() => handleEditCategory(category)}
                       >
-                        <Pencil className="h-4 w-4 text-gray-700" />
+                        <Pencil className="h-3.5 w-3.5 text-gray-600" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 hover:bg-red-50"
+                        className="h-7 w-7 p-0 hover:bg-red-50 rounded"
                         onClick={() => handleDeleteCategory(category.id)}
                       >
-                        <Trash2 className="h-4 w-4 text-red-600" />
+                        <Trash2 className="h-3.5 w-3.5 text-red-600" />
                       </Button>
                     </div>
                   </div>
 
+                  {/* Bookmark Count */}
+                  <div className="mb-2">
+                    <span className="text-xs text-gray-600 font-medium">
+                      {bookmarkCount} bookmark{bookmarkCount !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+
+                  {/* Folder Assignment Dropdown */}
                   <Select
                     value={category.folderId || 'unassigned'}
                     onValueChange={(value) => handleUpdateCategoryFolder(category.id, value)}
                   >
-                    <SelectTrigger className="w-full bg-white text-sm border-gray-300 text-gray-900">
+                    <SelectTrigger className="w-full h-8 bg-gray-50 hover:bg-gray-100 border-gray-200 text-xs text-gray-900 rounded-md">
                       <SelectValue placeholder="Unassigned" />
                     </SelectTrigger>
                     <SelectContent>

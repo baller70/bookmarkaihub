@@ -126,6 +126,56 @@ async function main() {
 
   console.log('✅ Created categories')
 
+  // Create category folders
+  const folders = await Promise.all([
+    prisma.categoryFolder.create({
+      data: {
+        name: 'Work',
+        userId: adminUser.id,
+      },
+    }),
+    prisma.categoryFolder.create({
+      data: {
+        name: 'Personal',
+        userId: adminUser.id,
+      },
+    }),
+    prisma.categoryFolder.create({
+      data: {
+        name: 'Learning',
+        userId: adminUser.id,
+      },
+    }),
+    prisma.categoryFolder.create({
+      data: {
+        name: 'Projects',
+        userId: adminUser.id,
+      },
+    }),
+  ])
+
+  console.log('✅ Created category folders')
+
+  // Assign some categories to folders
+  await prisma.category.update({
+    where: { id: categories[0].id }, // AI TECHNOLOGY
+    data: { folderId: folders[2].id }, // Learning
+  })
+  await prisma.category.update({
+    where: { id: categories[1].id }, // AI AUTOMATION
+    data: { folderId: folders[0].id }, // Work
+  })
+  await prisma.category.update({
+    where: { id: categories[3].id }, // PRODUCTIVITY TOOLS
+    data: { folderId: folders[0].id }, // Work
+  })
+  await prisma.category.update({
+    where: { id: categories[4].id }, // DESIGN
+    data: { folderId: folders[3].id }, // Projects
+  })
+
+  console.log('✅ Assigned categories to folders')
+
   // Create tags with proper colors
   const tags = await Promise.all([
     // Priority tags
