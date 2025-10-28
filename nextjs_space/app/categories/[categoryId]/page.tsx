@@ -40,12 +40,20 @@ interface Bookmark {
   id: string
   title: string
   url: string
-  description?: string
+  description?: string | null
+  favicon?: string | null
   faviconUrl?: string
   previewImage?: string
-  tags?: Array<{ id: string; name: string; color: string }>
+  tags?: Array<{ id: string; name: string; color: string }> | null
+  category?: {
+    id: string
+    name: string
+    color: string
+  } | null
   categories?: Array<{ id: string; name: string; color: string }>
-  isFavorite?: boolean
+  isFavorite: boolean
+  priority?: string | null
+  visitCount: number
   createdAt: string
   updatedAt: string
 }
