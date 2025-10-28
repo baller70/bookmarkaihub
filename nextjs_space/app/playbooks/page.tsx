@@ -224,7 +224,7 @@ export default function PlaybooksPage() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Play className="w-12 h-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No playbooks yet</h3>
+                <h3 className="text-lg font-semibold mb-2">NO PLAYBOOKS YET</h3>
                 <p className="text-muted-foreground mb-4">Create your first playbook to get started</p>
                 <Button onClick={() => setShowCreateModal(true)}>
                   <Plus className="w-4 h-4 mr-2" />

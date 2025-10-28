@@ -164,7 +164,7 @@ export default function PriorityPage() {
           {bookmarks.length === 0 && (
             <div className="text-center py-12 bg-white rounded-lg border mt-6">
               <AlertTriangle className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No bookmarks found</h3>
+              <h3 className="text-lg font-semibold mb-2">NO BOOKMARKS FOUND</h3>
               <p className="text-gray-600 mb-4">
                 Create your first bookmark to get started
               </p>

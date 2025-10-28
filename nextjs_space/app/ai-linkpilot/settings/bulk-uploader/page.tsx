@@ -81,7 +81,7 @@ export default function BulkUploaderPage() {
                         <Upload className="h-8 w-8 text-blue-600" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-blue-600 mb-1">Drop your files here</h3>
+                        <h3 className="text-lg font-semibold text-blue-600 mb-1">DROP YOUR FILES HERE</h3>
                         <p className="text-sm text-gray-600">Drag and drop CSV files or paste URLs directly</p>
                       </div>
                       <div className="flex items-center gap-4 text-xs text-gray-500">

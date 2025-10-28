@@ -492,7 +492,7 @@ export default function FavoritesView() {
           <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
             <Heart className="w-8 h-8 text-gray-400" />
           </div>
-          <h3 className="text-lg font-semibold mb-2">No favorites yet</h3>
+          <h3 className="text-lg font-semibold mb-2">NO FAVORITES YET</h3>
           <p className="text-muted-foreground">
             Start favoriting bookmarks to see them here
           </p>

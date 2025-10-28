@@ -122,7 +122,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold uppercase">Calendar View</h3>
+          <h3 className="font-semibold uppercase">CALENDAR VIEW</h3>
         </div>
         
         <div className="border rounded-lg p-4">
@@ -170,7 +170,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
       return (
         <div className="flex flex-col items-center justify-center h-full text-center py-12">
           <Clock className="w-16 h-16 text-muted-foreground/40 mb-4" />
-          <h3 className="text-lg font-semibold mb-2 uppercase">Select a Capsule</h3>
+          <h3 className="text-lg font-semibold mb-2 uppercase">SELECT A CAPSULE</h3>
           <p className="text-sm text-muted-foreground">Choose a time capsule to view details</p>
         </div>
       )
@@ -194,7 +194,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
         </div>
 
         <div>
-          <h4 className="text-sm font-semibold mb-2 text-black uppercase">Description</h4>
+          <h4 className="text-sm font-semibold mb-2 text-black uppercase">DESCRIPTION</h4>
           <p className="text-sm text-muted-foreground">{selectedCapsule.description || 'No description provided'}</p>
         </div>
 
@@ -223,7 +223,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
         <div>
           <h4 className="text-sm font-semibold mb-2 flex items-center gap-2 text-black uppercase">
             <Sparkles className="w-4 h-4" />
-            AI Summary
+            AI SUMMARY
           </h4>
           <p className="text-sm text-muted-foreground">{selectedCapsule.aiSummary || 'No AI summary available'}</p>
         </div>

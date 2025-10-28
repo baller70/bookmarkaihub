@@ -248,7 +248,7 @@ function OverviewTab({ data }: { data: AnalyticsData | null }) {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <Calendar className="w-5 h-5 text-gray-700" />
-            <h3 className="text-lg font-semibold text-gray-900 uppercase">Activity Heatmap - Last 30 Days</h3>
+            <h3 className="text-lg font-semibold text-gray-900 uppercase">ACTIVITY HEATMAP - LAST 30 DAYS</h3>
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs text-gray-600 mb-2">
@@ -298,7 +298,7 @@ function OverviewTab({ data }: { data: AnalyticsData | null }) {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp className="w-5 h-5 text-blue-500" />
-              <h3 className="text-lg font-semibold text-gray-900 uppercase">Performance Summary</h3>
+              <h3 className="text-lg font-semibold text-gray-900 uppercase">PERFORMANCE SUMMARY</h3>
             </div>
             <div className="space-y-4">
               <div>
@@ -336,7 +336,7 @@ function OverviewTab({ data }: { data: AnalyticsData | null }) {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <PieChart className="w-5 h-5 text-purple-500" />
-              <h3 className="text-lg font-semibold text-gray-900 uppercase">Top Categories</h3>
+              <h3 className="text-lg font-semibold text-gray-900 uppercase">TOP CATEGORIES</h3>
             </div>
             <div className="space-y-3">
               {data.topCategories.length > 0 ? (
@@ -363,7 +363,7 @@ function OverviewTab({ data }: { data: AnalyticsData | null }) {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <Zap className="w-5 h-5 text-yellow-500" />
-              <h3 className="text-lg font-semibold text-gray-900 uppercase">Quick Insights</h3>
+              <h3 className="text-lg font-semibold text-gray-900 uppercase">QUICK INSIGHTS</h3>
             </div>
             <div className="space-y-3">
               <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
@@ -469,7 +469,7 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <BarChart3 className="w-5 h-5 text-gray-700" />
-              <h3 className="text-lg font-semibold text-gray-900 uppercase">Weekly Pattern</h3>
+              <h3 className="text-lg font-semibold text-gray-900 uppercase">WEEKLY PATTERN</h3>
             </div>
             <p className="text-sm text-gray-600 mb-4">Your bookmark usage throughout the week</p>
             <div className="space-y-3">
@@ -499,7 +499,7 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <Activity className="w-5 h-5 text-gray-700" />
-              <h3 className="text-lg font-semibold text-gray-900 uppercase">Peak Hours Analysis</h3>
+              <h3 className="text-lg font-semibold text-gray-900 uppercase">PEAK HOURS ANALYSIS</h3>
             </div>
             <p className="text-sm text-gray-600 mb-4">When you're most effective with bookmarks</p>
             <div className="space-y-3">
@@ -527,7 +527,7 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <Target className="w-5 h-5 text-purple-500" />
-              <h3 className="text-lg font-semibold text-gray-900 uppercase">Session Breakdown</h3>
+              <h3 className="text-lg font-semibold text-gray-900 uppercase">SESSION BREAKDOWN</h3>
             </div>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
@@ -558,7 +558,7 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <Activity className="w-5 h-5 text-red-500" />
-              <h3 className="text-lg font-semibold text-gray-900 uppercase">Distraction Analysis</h3>
+              <h3 className="text-lg font-semibold text-gray-900 uppercase">DISTRACTION ANALYSIS</h3>
             </div>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
@@ -589,7 +589,7 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <Target className="w-5 h-5 text-green-500" />
-              <h3 className="text-lg font-semibold text-gray-900 uppercase">Time Goals</h3>
+              <h3 className="text-lg font-semibold text-gray-900 uppercase">TIME GOALS</h3>
             </div>
             <div className="space-y-4">
               <div>
@@ -633,7 +633,7 @@ function InsightsTab({ data }: { data: AnalyticsData | null }) {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <Star className="w-5 h-5 text-yellow-500" />
-            <h3 className="text-lg font-semibold text-gray-900 uppercase">Top Performers</h3>
+            <h3 className="text-lg font-semibold text-gray-900 uppercase">TOP PERFORMERS</h3>
           </div>
           <p className="text-sm text-gray-600 mb-4">Bookmarks with highest engagement</p>
           <div className="space-y-3">
@@ -670,7 +670,7 @@ function InsightsTab({ data }: { data: AnalyticsData | null }) {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="w-5 h-5 text-red-500 rotate-180" />
-            <h3 className="text-lg font-semibold text-gray-900 uppercase">Underperformers</h3>
+            <h3 className="text-lg font-semibold text-gray-900 uppercase">UNDERPERFORMERS</h3>
           </div>
           <p className="text-sm text-gray-600 mb-4">Bookmarks that need attention</p>
           <div className="space-y-3">
@@ -747,7 +747,7 @@ function CategoriesTab({ data }: { data: AnalyticsData | null }) {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <FolderOpen className="w-5 h-5 text-blue-500" />
-            <h3 className="text-lg font-semibold text-gray-900 uppercase">Category Efficiency</h3>
+            <h3 className="text-lg font-semibold text-gray-900 uppercase">CATEGORY EFFICIENCY</h3>
           </div>
           <p className="text-sm text-gray-600 mb-4">Performance metrics by category</p>
           <div className="space-y-4">
@@ -902,7 +902,7 @@ function ProjectsTab() {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <Users className="w-5 h-5 text-green-500" />
-            <h3 className="text-lg font-semibold text-gray-900 uppercase">Active Projects</h3>
+            <h3 className="text-lg font-semibold text-gray-900 uppercase">ACTIVE PROJECTS</h3>
           </div>
           <p className="text-sm text-gray-600 mb-4">Current project status and progress</p>
           <div className="space-y-4">
@@ -953,7 +953,7 @@ function ProjectsTab() {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <BarChart3 className="w-5 h-5 text-blue-500" />
-            <h3 className="text-lg font-semibold text-gray-900 uppercase">Resource Allocation</h3>
+            <h3 className="text-lg font-semibold text-gray-900 uppercase">RESOURCE ALLOCATION</h3>
           </div>
           <p className="text-sm text-gray-600 mb-4">Time and resource distribution</p>
           
@@ -1080,7 +1080,7 @@ function RecommendationsTab({ data }: { data: AnalyticsData | null }) {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <Trash2 className="w-5 h-5 text-red-500" />
-            <h3 className="text-lg font-semibold text-gray-900 uppercase">Cleanup Suggestions</h3>
+            <h3 className="text-lg font-semibold text-gray-900 uppercase">CLEANUP SUGGESTIONS</h3>
           </div>
           <p className="text-sm text-gray-600 mb-4">Actions to improve your bookmark collection</p>
           <div className="space-y-3">
@@ -1116,7 +1116,7 @@ function RecommendationsTab({ data }: { data: AnalyticsData | null }) {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <Lightbulb className="w-5 h-5 text-yellow-500" />
-            <h3 className="text-lg font-semibold text-gray-900 uppercase">Optimization Tips</h3>
+            <h3 className="text-lg font-semibold text-gray-900 uppercase">OPTIMIZATION TIPS</h3>
           </div>
           <p className="text-sm text-gray-600 mb-4">Improve your bookmark management</p>
           <div className="space-y-3">
@@ -1145,7 +1145,7 @@ function RecommendationsTab({ data }: { data: AnalyticsData | null }) {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="w-5 h-5 text-green-500" />
-            <h3 className="text-lg font-semibold text-gray-900 uppercase">Trending Items</h3>
+            <h3 className="text-lg font-semibold text-gray-900 uppercase">TRENDING ITEMS</h3>
           </div>
           <p className="text-sm text-gray-600 mb-4">Your most accessed bookmarks this week</p>
           <div className="space-y-3">

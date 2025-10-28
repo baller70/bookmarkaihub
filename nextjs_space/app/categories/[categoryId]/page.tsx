@@ -148,7 +148,7 @@ export default function CategoryDetailPage() {
         <DashboardLayout>
           <div className="p-8">
             <div className="text-center py-12">
-              <h3 className="text-lg font-semibold mb-2">Category not found</h3>
+              <h3 className="text-lg font-semibold mb-2">CATEGORY NOT FOUND</h3>
               <Button onClick={handleBack} variant="outline">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Categories

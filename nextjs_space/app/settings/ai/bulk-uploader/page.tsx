@@ -138,7 +138,7 @@ export default function BulkUploaderPage() {
                               <Upload className="h-8 w-8 text-white" />
                             </div>
                           </div>
-                          <h4 className="text-lg font-semibold text-blue-600 mb-2">Drop your files here</h4>
+                          <h4 className="text-lg font-semibold text-blue-600 mb-2">DROP YOUR FILES HERE</h4>
                           <p className="text-sm text-gray-600 mb-4">Drag and drop CSV files or paste URLs directly</p>
                           <div className="flex justify-center gap-4 text-xs text-gray-500">
                             <Badge variant="secondary" className="gap-1">

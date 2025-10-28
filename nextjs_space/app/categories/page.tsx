@@ -382,7 +382,7 @@ export default function CategoriesPage() {
           {unassignedCategories.length === 0 && (
             <div className="text-center py-12 bg-white rounded-lg border">
               <Folder className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No categories found</h3>
+              <h3 className="text-lg font-semibold mb-2">NO CATEGORIES FOUND</h3>
               <p className="text-gray-600 mb-4">
                 {searchQuery
                   ? "Try adjusting your search query"

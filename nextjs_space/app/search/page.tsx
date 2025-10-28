@@ -258,7 +258,7 @@ export default function SearchPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <SearchIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No results found</h3>
+                <h3 className="text-lg font-semibold mb-2">NO RESULTS FOUND</h3>
                 <p className="text-muted-foreground">Try adjusting your search query</p>
               </CardContent>
             </Card>

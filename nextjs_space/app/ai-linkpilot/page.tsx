@@ -652,7 +652,7 @@ export default function AILinkPilotPage() {
                             </div>
                           </div>
                         </div>
-                        <h3 className="text-lg font-semibold text-blue-500 mb-2">Drop your files here</h3>
+                        <h3 className="text-lg font-semibold text-blue-500 mb-2">DROP YOUR FILES HERE</h3>
                         <p className="text-sm text-gray-500 mb-4">Drag and drop CSV files or paste URLs directly</p>
                         <div className="flex justify-center gap-4 text-xs text-gray-500 mb-6">
                           <div className="flex items-center gap-1">
