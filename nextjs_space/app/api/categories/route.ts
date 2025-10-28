@@ -23,6 +23,13 @@ export async function GET() {
             bookmarks: true,
           },
         },
+        user: {
+          select: {
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
       },
       orderBy: {
         name: "asc",
@@ -35,11 +42,15 @@ export async function GET() {
       description: category.description,
       color: category.color,
       icon: category.icon,
+      _count: {
+        bookmarks: category._count.bookmarks,
+      },
       bookmarkCount: category._count.bookmarks,
       folderId: category.folderId,
+      createdBy: category.user,
     }))
 
-    return NextResponse.json({ categories: formattedCategories })
+    return NextResponse.json(formattedCategories)
   } catch (error) {
     console.error("Error fetching categories:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
