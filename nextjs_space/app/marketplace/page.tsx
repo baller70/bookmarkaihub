@@ -139,7 +139,7 @@ export default function MarketplacePage() {
                 <Store className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold">Marketplace</h1>
+                <h1 className="text-3xl font-bold">MARKETPLACE</h1>
                 <p className="text-gray-600">Discover and install bookmark collections and templates</p>
               </div>
             </div>

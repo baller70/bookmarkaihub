@@ -97,7 +97,7 @@ export default function TagsPage() {
                   <Tag className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900">Tags</h1>
+                  <h1 className="text-3xl font-bold text-gray-900">TAGS</h1>
                   <p className="text-gray-600">Organize bookmarks with custom tags</p>
                 </div>
               </div>

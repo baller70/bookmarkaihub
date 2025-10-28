@@ -108,7 +108,7 @@ export default function SettingsPage() {
                 <div className="h-6 w-px bg-gray-300" />
                 <div className="flex items-center gap-2">
                   <SettingsIcon className="h-5 w-5" />
-                  <h1 className="text-xl font-semibold">Settings</h1>
+                  <h1 className="text-xl font-semibold">SETTINGS</h1>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -212,7 +212,7 @@ export default function SettingsPage() {
                 <Card className="p-6">
                   <div className="flex items-center gap-2 mb-2">
                     <Palette className="h-5 w-5 text-blue-600" />
-                    <h2 className="text-lg font-semibold">Appearance</h2>
+                    <h2 className="text-lg font-semibold">APPEARANCE</h2>
                   </div>
                   <p className="text-sm text-gray-600 mb-6">Personalize the look and feel to match your taste and environment</p>
 
@@ -365,7 +365,7 @@ export default function SettingsPage() {
                 <Card className="p-6">
                   <div className="flex items-center gap-2 mb-2">
                     <Bell className="h-5 w-5 text-blue-600" />
-                    <h2 className="text-lg font-semibold">Notifications</h2>
+                    <h2 className="text-lg font-semibold">NOTIFICATIONS</h2>
                   </div>
                   <p className="text-sm text-gray-600 mb-6">Manage how and when the app communicates updates, reminders, and alerts</p>
 
@@ -544,7 +544,7 @@ export default function SettingsPage() {
                 <Card className="p-6">
                   <div className="flex items-center gap-2 mb-2">
                     <Shield className="h-5 w-5 text-blue-600" />
-                    <h2 className="text-lg font-semibold">Privacy & Security</h2>
+                    <h2 className="text-lg font-semibold">PRIVACY & SECURITY</h2>
                   </div>
                   <p className="text-sm text-gray-600 mb-6">Control your data, sessions, and account safety</p>
 
@@ -630,7 +630,7 @@ export default function SettingsPage() {
                 <Card className="p-6">
                   <div className="flex items-center gap-2 mb-2">
                     <Download className="h-5 w-5 text-blue-600" />
-                    <h2 className="text-lg font-semibold">Backup & Export</h2>
+                    <h2 className="text-lg font-semibold">BACKUP & EXPORT</h2>
                   </div>
                   <p className="text-sm text-gray-600 mb-6">Ensure your data is safe and can be moved freely</p>
 
@@ -732,7 +732,7 @@ export default function SettingsPage() {
                 <Card className="p-6">
                   <div className="flex items-center gap-2 mb-2">
                     <CreditCard className="h-5 w-5 text-blue-600" />
-                    <h2 className="text-lg font-semibold">Billing & Subscription</h2>
+                    <h2 className="text-lg font-semibold">BILLING & SUBSCRIPTION</h2>
                   </div>
                   <p className="text-sm text-gray-600 mb-6">Manage your subscription, usage, and billing information</p>
 

@@ -85,7 +85,7 @@ export default function AILinkPilotPage() {
                 <Separator orientation="vertical" className="h-6" />
                 <div className="flex items-center gap-2">
                   <Settings className="h-5 w-5 text-gray-700" />
-                  <h1 className="text-xl font-semibold text-gray-900">AI LinkPilot</h1>
+                  <h1 className="text-xl font-semibold text-gray-900">AI LINKPILOT</h1>
                 </div>
               </div>
             </div>
@@ -126,7 +126,7 @@ export default function AILinkPilotPage() {
                   {/* Header */}
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900">Auto-Processing</h2>
+                      <h2 className="text-2xl font-bold text-gray-900">AUTO-PROCESSING</h2>
                       <p className="text-sm text-gray-500 mt-1">autoProcessing.description</p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -504,7 +504,7 @@ export default function AILinkPilotPage() {
                 <div className="space-y-6">
                   {/* Header */}
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">AI Content Discovery</h2>
+                    <h2 className="text-2xl font-bold text-gray-900">AI CONTENT DISCOVERY</h2>
                     <p className="text-sm text-gray-500 mt-1">Personalized recommendations and intelligent link finding powered by AI</p>
                   </div>
 
@@ -588,7 +588,7 @@ export default function AILinkPilotPage() {
                 <div className="space-y-6">
                   {/* Header */}
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Magic Bulk Link Uploader</h2>
+                    <h2 className="text-2xl font-bold text-gray-900">MAGIC BULK LINK UPLOADER</h2>
                     <p className="text-sm text-gray-500 mt-1">Import multiple links at once with intelligent categorization and batch processing</p>
                   </div>
 
@@ -780,7 +780,7 @@ export default function AILinkPilotPage() {
                 <div className="space-y-6">
                   {/* Header */}
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Link Validator</h2>
+                    <h2 className="text-2xl font-bold text-gray-900">LINK VALIDATOR</h2>
                     <p className="text-sm text-gray-500 mt-1">Monitor and maintain the health of your bookmarked links with automated validation</p>
                   </div>
 
@@ -955,7 +955,7 @@ export default function AILinkPilotPage() {
                 <div className="space-y-6">
                   {/* Header */}
                   <div>
-                    <h2 className="text-2xl font-bold text-blue-500">Browser Launcher</h2>
+                    <h2 className="text-2xl font-bold text-blue-500">BROWSER LAUNCHER</h2>
                     <p className="text-sm text-gray-500 mt-1">Capture tabs from your browser and automatically convert them into organized, tagged bookmarks</p>
                   </div>
 
