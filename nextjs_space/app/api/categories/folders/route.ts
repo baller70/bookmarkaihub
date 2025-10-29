@@ -69,9 +69,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if category folder with this name already exists for this user
+    const existingFolder = await prisma.categoryFolder.findFirst({
+      where: {
+        userId: user.id,
+        name: name.trim(),
+      },
+    });
+
+    if (existingFolder) {
+      return NextResponse.json(
+        { error: `A folder named "${name}" already exists. Please choose a different name.` },
+        { status: 409 }
+      );
+    }
+
     const folder = await prisma.categoryFolder.create({
       data: {
-        name,
+        name: name.trim(),
         userId: user.id,
       },
     });

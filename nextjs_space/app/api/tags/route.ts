@@ -49,9 +49,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 })
     }
 
+    // Check if tag with this name already exists for this user
+    const existingTag = await prisma.tag.findFirst({
+      where: {
+        userId: session.user.id,
+        name: name.trim(),
+      },
+    })
+
+    if (existingTag) {
+      return NextResponse.json(
+        { error: `A tag named "${name}" already exists. Please choose a different name.` },
+        { status: 409 }
+      )
+    }
+
     const tag = await prisma.tag.create({
       data: {
-        name,
+        name: name.trim(),
         color: color || "#10B981",
         userId: session.user.id,
       },

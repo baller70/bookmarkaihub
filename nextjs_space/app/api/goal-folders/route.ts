@@ -67,9 +67,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
+    // Check if goal folder with this name already exists for this user
+    const existingFolder = await prisma.goalFolder.findFirst({
+      where: {
+        userId: user.id,
+        name: name.trim(),
+      },
+    });
+
+    if (existingFolder) {
+      return NextResponse.json(
+        { error: `A goal folder named "${name}" already exists. Please choose a different name.` },
+        { status: 409 }
+      );
+    }
+
     const folder = await prisma.goalFolder.create({
       data: {
-        name,
+        name: name.trim(),
         description: description || null,
         color: color || '#3B82F6',
         userId: user.id,
