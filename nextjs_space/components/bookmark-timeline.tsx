@@ -74,7 +74,7 @@ export function BookmarkTimeline({ bookmarks }: BookmarkTimelineProps) {
       bookmark.url.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesCategory =
-      selectedCategory === 'all' || bookmark.category.id === selectedCategory;
+      selectedCategory === 'all' || bookmark.category?.id === selectedCategory;
 
     return matchesSearch && matchesCategory;
   });
@@ -300,10 +300,10 @@ export function BookmarkTimeline({ bookmarks }: BookmarkTimelineProps) {
                                   <Badge
                                     className="bg-white/80 text-gray-700 hover:bg-white"
                                     style={{
-                                      borderLeft: `3px solid ${bookmark.category.color}`,
+                                      borderLeft: `3px solid ${bookmark.category?.color || '#6366f1'}`,
                                     }}
                                   >
-                                    {bookmark.category.name}
+                                    {bookmark.category?.name || 'Uncategorized'}
                                   </Badge>
                                   {bookmark.isFavorite && (
                                     <Heart className="w-4 h-4 text-red-500 fill-red-500" />
