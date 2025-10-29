@@ -133,15 +133,14 @@ export default function BookmarkFolders({ bookmarks }: { bookmarks: any[] }) {
               <CardContent className="p-4">
                 <div className="space-y-3">
                   {/* Logo/Image */}
-                  <div className="relative w-full aspect-square bg-muted rounded-lg overflow-hidden">
+                  <div className="relative w-full aspect-square bg-white rounded-lg overflow-hidden">
                     {bookmark.favicon ? (
-                      <div className="w-full h-full flex items-center justify-center bg-white">
+                      <div className="relative w-full h-full p-4">
                         <Image
                           src={bookmark.favicon}
                           alt={bookmark.title}
-                          width={80}
-                          height={80}
-                          className="object-contain"
+                          fill
+                          className="object-contain p-2"
                         />
                       </div>
                     ) : bookmark.imageUrl ? (
@@ -152,7 +151,7 @@ export default function BookmarkFolders({ bookmarks }: { bookmarks: any[] }) {
                         className="object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
+                      <div className="w-full h-full flex items-center justify-center bg-muted">
                         <BookmarkIcon className="w-12 h-12 text-muted-foreground" />
                       </div>
                     )}
