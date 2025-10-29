@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Folder, Plus, Search } from 'lucide-react';
+import { Folder, Plus, Search, FileText } from 'lucide-react';
 import { CreateGoalFolderModal } from '@/components/create-goal-folder-modal';
 import { CreateGoalModal } from '@/components/create-goal-modal';
 import { Badge } from '@/components/ui/badge';
@@ -86,10 +86,12 @@ export function BookmarkGoals() {
 
       {/* Actions Bar */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Folder className="w-5 h-5 text-blue-500" />
-          <span className="font-semibold">All Folders</span>
-          <Badge variant="secondary">{folders.length} folders</Badge>
+        <div className="flex items-center gap-3">
+          <Folder className="w-6 h-6 text-blue-500" />
+          <span className="text-xl font-bold">All Folders</span>
+          <Badge variant="secondary" className="bg-blue-500 hover:bg-blue-600 text-white">
+            {folders.length} folders
+          </Badge>
         </div>
         <div className="flex gap-2">
           <Button
@@ -105,6 +107,13 @@ export function BookmarkGoals() {
           </Button>
         </div>
       </div>
+
+      {/* Goal Folders Section */}
+      {!isLoading && folders.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold">Goal Folders</h2>
+        </div>
+      )}
 
       {/* Content */}
       {isLoading ? (
@@ -135,27 +144,23 @@ export function BookmarkGoals() {
           {folders.map((folder) => (
             <div
               key={folder.id}
-              className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+              className="border rounded-lg p-6 hover:shadow-md transition-shadow bg-white dark:bg-gray-950"
             >
-              <div className="flex items-start gap-3">
-                <Folder
-                  className="w-8 h-8 mt-1 flex-shrink-0"
-                  style={{ color: folder.color }}
-                  fill={folder.color}
-                  fillOpacity={0.1}
-                />
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold truncate">{folder.name}</h3>
-                  {folder.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                      {folder.description}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-2 mt-2">
-                    <Badge variant="secondary" className="text-xs">
-                      {folder.goals.length} goals
-                    </Badge>
-                  </div>
+              <div className="flex flex-col items-center text-center space-y-4">
+                {/* Blue rounded square icon with folder */}
+                <div className="w-20 h-20 rounded-xl bg-blue-500 flex items-center justify-center">
+                  <Folder className="w-10 h-10 text-white" />
+                </div>
+                
+                {/* Folder Name */}
+                <h3 className="font-bold text-lg break-words w-full">
+                  {folder.name}
+                </h3>
+                
+                {/* Goal Count */}
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <FileText className="w-4 h-4" />
+                  <span className="text-sm">{folder.goals.length} goal{folder.goals.length !== 1 ? 's' : ''}</span>
                 </div>
               </div>
             </div>
