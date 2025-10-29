@@ -197,7 +197,9 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                 <span className="font-medium">{row.name} ({row.columns.length} columns)</span>
               </button>
               <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground">{totalCards} cards</span>
+                <span className="text-sm text-muted-foreground">
+                  {rowIndex === 0 ? totalCards : 0} cards
+                </span>
                 <Button variant="ghost" size="sm">
                   <Plus className="w-4 h-4 mr-2" />
                   Add Column
@@ -209,7 +211,8 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
             {row.isExpanded && (
               <div className="flex gap-6 overflow-x-auto pb-4">
                 {row.columns.map((column) => {
-              const columnBookmarks = groupedBookmarks[column.id] || [];
+              // Only show bookmarks in the first row (row-1), other rows are blank
+              const columnBookmarks = rowIndex === 0 ? (groupedBookmarks[column.id] || []) : [];
               
               return (
                 <div key={column.id} className="flex-shrink-0 w-[340px] space-y-3">
