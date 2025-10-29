@@ -144,16 +144,16 @@ export function BookmarkGoals() {
           {folders.map((folder) => (
             <div
               key={folder.id}
-              className="border rounded-2xl p-8 hover:shadow-md transition-shadow bg-white dark:bg-gray-950 cursor-pointer"
+              className="border rounded-2xl p-6 hover:shadow-md transition-shadow bg-white dark:bg-gray-950 cursor-pointer"
             >
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {/* Blue rounded square icon with folder - Top Left */}
-                <div className="w-24 h-24 rounded-2xl bg-blue-500 flex items-center justify-center">
-                  <Folder className="w-12 h-12 text-white" />
+                <div className="w-16 h-16 rounded-xl bg-blue-500 flex items-center justify-center">
+                  <Folder className="w-8 h-8 text-white" />
                 </div>
                 
                 {/* Folder Name - Left Aligned */}
-                <h3 className="font-bold text-xl break-words">
+                <h3 className="font-bold text-lg break-words">
                   {folder.name}
                 </h3>
                 
