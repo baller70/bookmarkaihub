@@ -134,7 +134,17 @@ export default function BookmarkFolders({ bookmarks }: { bookmarks: any[] }) {
                 <div className="space-y-3">
                   {/* Logo/Image */}
                   <div className="relative w-full aspect-square bg-muted rounded-lg overflow-hidden">
-                    {bookmark.imageUrl ? (
+                    {bookmark.favicon ? (
+                      <div className="w-full h-full flex items-center justify-center bg-white">
+                        <Image
+                          src={bookmark.favicon}
+                          alt={bookmark.title}
+                          width={80}
+                          height={80}
+                          className="object-contain"
+                        />
+                      </div>
+                    ) : bookmark.imageUrl ? (
                       <Image
                         src={bookmark.imageUrl}
                         alt={bookmark.title}
@@ -150,20 +160,9 @@ export default function BookmarkFolders({ bookmarks }: { bookmarks: any[] }) {
 
                   {/* Title and URL */}
                   <div className="space-y-1">
-                    <div className="flex items-start gap-2">
-                      {bookmark.favicon && (
-                        <Image
-                          src={bookmark.favicon}
-                          alt=""
-                          width={16}
-                          height={16}
-                          className="mt-1 flex-shrink-0"
-                        />
-                      )}
-                      <h3 className="font-semibold text-sm line-clamp-2">
-                        {bookmark.title}
-                      </h3>
-                    </div>
+                    <h3 className="font-semibold text-sm line-clamp-2">
+                      {bookmark.title}
+                    </h3>
                     <p className="text-xs text-muted-foreground truncate">
                       {bookmark.url}
                     </p>
