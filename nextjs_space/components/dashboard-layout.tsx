@@ -4,6 +4,7 @@
 
 import { useState } from "react"
 import { Sidebar } from "@/components/sidebar"
+import { BottomNav } from "@/components/bottom-nav"
 import { Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -29,8 +30,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
 
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <BottomNav />
       
-      <main className="lg:ml-48 pt-16 lg:pt-0">
+      <main className="lg:ml-48 pt-16 lg:pt-0 pb-20 lg:pb-0">
         <div className="max-w-full lg:max-w-6xl mx-auto px-4 sm:px-6 lg:px-6 py-4 sm:py-6 lg:py-8">
           {children}
         </div>

@@ -172,7 +172,7 @@ export function BookmarkCard({
           "group relative overflow-hidden cursor-pointer transition-all duration-300",
           "border border-gray-200/80 hover:shadow-lg",
           "bg-gradient-to-br from-blue-50/30 via-white to-purple-50/20",
-          "rounded-3xl h-[640px]",
+          "rounded-3xl h-[600px] sm:h-[640px]",
           isDeleting && "opacity-50 pointer-events-none",
           isDragging && "opacity-50 z-50"
         )}
@@ -236,21 +236,21 @@ export function BookmarkCard({
 
         <div className="relative flex h-full">
           {/* Main Content Area */}
-          <div className="flex-1 p-6 flex flex-col">
+          <div className="flex-1 p-4 sm:p-6 flex flex-col">
             {/* Header with logo and title */}
-            <div className="flex items-start space-x-4 mb-4">
+            <div className="flex items-start space-x-3 sm:space-x-4 mb-3 sm:mb-4">
               {/* Small Header Logo */}
-              <div className="relative w-16 h-16 flex-shrink-0 bg-black rounded-2xl overflow-hidden shadow-sm">
+              <div className="relative w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0 bg-black rounded-2xl overflow-hidden shadow-sm">
                 {bookmark.favicon ? (
                   <Image
                     src={bookmark.favicon}
                     alt={bookmark.title}
                     fill
-                    className="object-cover p-2"
+                    className="object-cover p-1.5 sm:p-2"
                     unoptimized
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white font-bold text-lg">
+                  <div className="w-full h-full flex items-center justify-center text-white font-bold text-base sm:text-lg">
                     {bookmark.title?.charAt(0)?.toUpperCase()}
                   </div>
                 )}
@@ -258,18 +258,18 @@ export function BookmarkCard({
               
               {/* Title and URL */}
               <div className="flex-1 min-w-0 pt-1">
-                <h3 className="text-lg font-bold text-gray-900 mb-0.5 truncate tracking-tight font-audiowide">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-0.5 truncate tracking-tight font-audiowide">
                   {bookmark.title}
                 </h3>
-                <p className="text-sm text-blue-600 font-medium truncate font-saira">
+                <p className="text-xs sm:text-sm text-blue-600 font-medium truncate font-saira">
                   {bookmark.url?.replace(/^https?:\/\/(www\.)?/, '')}
                 </p>
               </div>
             </div>
 
             {/* LARGE CENTERED MIDDLE LOGO */}
-            <div className="flex items-center justify-center my-4">
-              <div className="relative w-32 h-32 bg-white rounded-3xl shadow-lg overflow-hidden border-4 border-white">
+            <div className="flex items-center justify-center my-3 sm:my-4">
+              <div className="relative w-24 h-24 sm:w-32 sm:h-32 bg-white rounded-3xl shadow-lg overflow-hidden border-4 border-white">
                 {bookmark.favicon ? (
                   <Image
                     src={bookmark.favicon}
@@ -279,7 +279,7 @@ export function BookmarkCard({
                     unoptimized
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white text-4xl font-bold">
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white text-3xl sm:text-4xl font-bold">
                     {bookmark.title?.charAt(0)?.toUpperCase()}
                   </div>
                 )}
@@ -287,15 +287,15 @@ export function BookmarkCard({
             </div>
 
             {/* Description */}
-            <p className="text-sm text-gray-700 mb-6 line-clamp-3 min-h-[60px] leading-5 font-saira">
+            <p className="text-xs sm:text-sm text-gray-700 mb-4 sm:mb-6 line-clamp-3 min-h-[48px] sm:min-h-[60px] leading-5 font-saira">
               {bookmark.description || "No description available"}
             </p>
 
             {/* Tags */}
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
               <Badge 
                 className={cn(
-                  "text-xs px-3 py-1.5 rounded-lg font-medium",
+                  "text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium",
                   priorityColors[bookmark.priority as keyof typeof priorityColors] || "bg-yellow-100 text-yellow-800"
                 )}
               >
@@ -304,7 +304,7 @@ export function BookmarkCard({
               {bookmark.tags?.slice(0, 1).map((tag: any) => (
                 <Badge
                   key={tag.tag.id}
-                  className="text-xs px-3 py-1.5 rounded-lg font-medium"
+                  className="text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium"
                   style={{ 
                     backgroundColor: `${tag.tag.color}20`,
                     color: tag.tag.color,
@@ -317,24 +317,24 @@ export function BookmarkCard({
             </div>
 
             {/* Stats Row */}
-            <div className="flex items-start justify-between mb-4 min-h-[70px]">
-              <div className="flex flex-col space-y-2">
-                <div className="flex items-center space-x-2 bg-green-50/50 rounded-xl px-3 py-1.5">
-                  <Eye className="h-4 w-4 text-gray-600" />
-                  <span className="text-base font-bold text-gray-800 font-russo">{bookmark.totalVisits || 0}</span>
-                  <div className="w-2 h-2 rounded-full bg-green-400" />
+            <div className="flex items-start justify-between mb-3 sm:mb-4 min-h-[60px] sm:min-h-[70px]">
+              <div className="flex flex-col space-y-1.5 sm:space-y-2">
+                <div className="flex items-center space-x-1.5 sm:space-x-2 bg-green-50/50 rounded-xl px-2 sm:px-3 py-1 sm:py-1.5">
+                  <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600" />
+                  <span className="text-sm sm:text-base font-bold text-gray-800 font-russo">{bookmark.totalVisits || 0}</span>
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-green-400" />
                 </div>
-                <div className="flex items-center space-x-2 bg-green-50/50 rounded-xl px-3 py-1.5">
-                  <Clock className="h-4 w-4 text-green-600" />
-                  <span className="text-base font-bold text-gray-800 font-russo">{bookmark.timeSpent || 0}m</span>
-                  <div className="w-2 h-2 rounded-full bg-green-400" />
+                <div className="flex items-center space-x-1.5 sm:space-x-2 bg-green-50/50 rounded-xl px-2 sm:px-3 py-1 sm:py-1.5">
+                  <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
+                  <span className="text-sm sm:text-base font-bold text-gray-800 font-russo">{bookmark.timeSpent || 0}m</span>
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-green-400" />
                 </div>
               </div>
 
               {/* Usage Hexagon */}
               <div className="relative flex flex-col items-center">
                 <div className="relative">
-                  <svg width="70" height="70" viewBox="0 0 70 70" className="transform">
+                  <svg width="60" height="60" viewBox="0 0 70 70" className="transform sm:w-[70px] sm:h-[70px]">
                     <polygon 
                       points="35,8 58,21 58,49 35,62 12,49 12,21" 
                       fill="none" 
@@ -343,41 +343,41 @@ export function BookmarkCard({
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-lg font-bold text-red-500 font-audiowide">
+                    <span className="text-base sm:text-lg font-bold text-red-500 font-audiowide">
                       {bookmark.usagePercentage?.toFixed(0) || 0}%
                     </span>
                   </div>
                 </div>
                 <div className="mt-1">
-                  <span className="text-[10px] font-bold text-gray-700 tracking-wider font-audiowide">USAGE</span>
+                  <span className="text-[9px] sm:text-[10px] font-bold text-gray-700 tracking-wider font-audiowide">USAGE</span>
                 </div>
               </div>
             </div>
 
             {/* Divider Line */}
-            <div className="border-t border-gray-200 mb-3"></div>
+            <div className="border-t border-gray-200 mb-2 sm:mb-3"></div>
 
             {/* Task Stats */}
-            <div className="space-y-2.5 mb-3">
+            <div className="space-y-2 sm:space-y-2.5 mb-2 sm:mb-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-russo text-slate-800">OPEN TASK</span>
-                <span className="text-sm text-gray-500 font-saira">TOTAL: {bookmark.openTasks || 0}</span>
+                <span className="text-xs sm:text-sm font-russo text-slate-800">OPEN TASK</span>
+                <span className="text-xs sm:text-sm text-gray-500 font-saira">TOTAL: {bookmark.openTasks || 0}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-russo text-slate-800">COMPLETED TASK</span>
-                <span className="text-sm text-gray-500 font-saira">TOTAL: {bookmark.completedTasks || 0}</span>
+                <span className="text-xs sm:text-sm font-russo text-slate-800">COMPLETED TASK</span>
+                <span className="text-xs sm:text-sm text-gray-500 font-saira">TOTAL: {bookmark.completedTasks || 0}</span>
               </div>
             </div>
 
             {/* Progress Section at the bottom */}
-            <div className="py-2 space-y-2">
+            <div className="py-1.5 sm:py-2 space-y-1.5 sm:space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500 font-saira uppercase">PROGRESS</span>
-                <span className="text-sm font-bold text-green-500 font-saira">{progress.toFixed(0)}%</span>
+                <span className="text-xs sm:text-sm text-gray-500 font-saira uppercase">PROGRESS</span>
+                <span className="text-xs sm:text-sm font-bold text-green-500 font-saira">{progress.toFixed(0)}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-gray-200 rounded-full h-1.5 sm:h-2">
                 <div 
-                  className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-green-500 h-1.5 sm:h-2 rounded-full transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -385,75 +385,75 @@ export function BookmarkCard({
           </div>
 
           {/* Right Action Bar */}
-          <div className="flex flex-col items-center justify-center space-y-2.5 px-2.5 py-6 border-l border-gray-200/50 bg-gradient-to-b from-gray-50/50 to-transparent">
+          <div className="flex flex-col items-center justify-center space-y-2 sm:space-y-2.5 px-2 sm:px-2.5 py-4 sm:py-6 border-l border-gray-200/50 bg-gradient-to-b from-gray-50/50 to-transparent">
             <Button
               variant="ghost"
               size="sm"
               className={cn(
-                "h-8 w-8 p-0 rounded-full hover:bg-red-50 transition-colors",
+                "h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full hover:bg-red-50 transition-colors touch-target",
                 isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"
               )}
               onClick={handleToggleFavorite}
               title="Toggle Favorite"
             >
-              <Heart className={cn("h-3.5 w-3.5", isFavorite && "fill-current")} />
+              <Heart className={cn("h-3 w-3 sm:h-3.5 sm:w-3.5", isFavorite && "fill-current")} />
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 rounded-full hover:bg-blue-50 text-gray-400 hover:text-blue-500 transition-colors"
+              className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full hover:bg-blue-50 text-gray-400 hover:text-blue-500 transition-colors touch-target"
               onClick={handleVisit}
               title="Visit URL"
             >
-              <Eye className="h-3.5 w-3.5" />
+              <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 rounded-full hover:bg-yellow-50 text-gray-400 hover:text-yellow-500 transition-colors"
+              className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full hover:bg-yellow-50 text-gray-400 hover:text-yellow-500 transition-colors touch-target"
               onClick={(e) => {
                 e.stopPropagation()
                 setShowDetail(true)
               }}
               title="Edit Bookmark"
             >
-              <Edit className="h-3.5 w-3.5" />
+              <Edit className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 rounded-full hover:bg-green-50 text-gray-400 hover:text-green-500 transition-colors"
+              className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full hover:bg-green-50 text-gray-400 hover:text-green-500 transition-colors touch-target"
               onClick={handleCopy}
               title="Copy URL"
             >
-              <Copy className="h-3.5 w-3.5" />
+              <Copy className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+              className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors touch-target"
               onClick={handleDelete}
               title="Delete Bookmark"
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 rounded-full hover:bg-purple-50 text-gray-400 hover:text-purple-500 transition-colors"
+              className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full hover:bg-purple-50 text-gray-400 hover:text-purple-500 transition-colors touch-target"
               onClick={handleMoveToFolder}
               title="Move to Folder"
             >
-              <Folder className="h-3.5 w-3.5" />
+              <Folder className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 rounded-full hover:bg-indigo-50 text-gray-400 hover:text-indigo-500 transition-colors"
+              className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full hover:bg-indigo-50 text-gray-400 hover:text-indigo-500 transition-colors touch-target"
               onClick={handleChangePriority}
               title="Change Priority"
             >
-              <Target className="h-3.5 w-3.5" />
+              <Target className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             </Button>
           </div>
         </div>
