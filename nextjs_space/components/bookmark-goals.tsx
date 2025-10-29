@@ -48,6 +48,7 @@ export function BookmarkGoals() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateFolderModalOpen, setIsCreateFolderModalOpen] = useState(false);
   const [isCreateGoalModalOpen, setIsCreateGoalModalOpen] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -83,6 +84,7 @@ export function BookmarkGoals() {
 
   const handleGoalCreated = () => {
     fetchFolders();
+    setEditingGoal(null);
   };
 
   const handleFolderClick = (folder: GoalFolder) => {
@@ -94,8 +96,8 @@ export function BookmarkGoals() {
   };
 
   const handleEditGoal = (goal: Goal) => {
-    // TODO: Implement edit goal modal
-    toast.info('Edit goal functionality coming soon!');
+    setEditingGoal(goal);
+    setIsCreateGoalModalOpen(true);
   };
 
   const handleDeleteGoal = async (goalId: string) => {
@@ -260,10 +262,13 @@ export function BookmarkGoals() {
         {/* Modals */}
         <CreateGoalModal
           isOpen={isCreateGoalModalOpen}
-          onClose={() => setIsCreateGoalModalOpen(false)}
+          onClose={() => {
+            setIsCreateGoalModalOpen(false);
+            setEditingGoal(null);
+          }}
           onGoalCreated={handleGoalCreated}
+          editGoal={editingGoal}
         />
-        {/* Note: Edit functionality uses a browser alert for now */}
       </div>
     );
   }
@@ -372,8 +377,12 @@ export function BookmarkGoals() {
       />
       <CreateGoalModal
         isOpen={isCreateGoalModalOpen}
-        onClose={() => setIsCreateGoalModalOpen(false)}
+        onClose={() => {
+          setIsCreateGoalModalOpen(false);
+          setEditingGoal(null);
+        }}
         onGoalCreated={handleGoalCreated}
+        editGoal={editingGoal}
       />
     </div>
   );

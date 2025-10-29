@@ -39,16 +39,41 @@ interface GoalFolder {
   name: string;
 }
 
+interface Goal {
+  id: string;
+  title: string;
+  description?: string;
+  goalType: string;
+  color: string;
+  priority: string;
+  status: string;
+  deadline?: string;
+  progress: number;
+  tags: string[];
+  notes?: string;
+  folderId?: string;
+  bookmarks: Array<{
+    id: string;
+    bookmark: {
+      id: string;
+      title: string;
+      url: string;
+    };
+  }>;
+}
+
 interface CreateGoalModalProps {
   isOpen: boolean;
   onClose: () => void;
   onGoalCreated: () => void;
+  editGoal?: Goal | null;
 }
 
 export function CreateGoalModal({
   isOpen,
   onClose,
   onGoalCreated,
+  editGoal = null,
 }: CreateGoalModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -72,8 +97,26 @@ export function CreateGoalModal({
     if (isOpen) {
       fetchBookmarks();
       fetchFolders();
+      
+      // Populate form if editing
+      if (editGoal) {
+        setTitle(editGoal.title);
+        setDescription(editGoal.description || '');
+        setGoalType(editGoal.goalType);
+        setColor(editGoal.color);
+        setPriority(editGoal.priority);
+        setStatus(editGoal.status);
+        setDeadline(editGoal.deadline ? editGoal.deadline.split('T')[0] : '');
+        setFolderId(editGoal.folderId || '');
+        setProgress(editGoal.progress);
+        setTags(editGoal.tags || []);
+        setNotes(editGoal.notes || '');
+        setSelectedBookmarks(editGoal.bookmarks.map(b => b.bookmark.id));
+      } else {
+        resetForm();
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, editGoal]);
 
   const fetchBookmarks = async () => {
     try {
@@ -137,8 +180,11 @@ export function CreateGoalModal({
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/goals', {
-        method: 'POST',
+      const url = editGoal ? `/api/goals/${editGoal.id}` : '/api/goals';
+      const method = editGoal ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: title.trim(),
@@ -157,16 +203,16 @@ export function CreateGoalModal({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create goal');
+        throw new Error(`Failed to ${editGoal ? 'update' : 'create'} goal`);
       }
 
-      toast.success('Goal created successfully');
+      toast.success(`Goal ${editGoal ? 'updated' : 'created'} successfully`);
       resetForm();
       onGoalCreated();
       onClose();
     } catch (error) {
-      console.error('Error creating goal:', error);
-      toast.error('Failed to create goal');
+      console.error(`Error ${editGoal ? 'updating' : 'creating'} goal:`, error);
+      toast.error(`Failed to ${editGoal ? 'update' : 'create'} goal`);
     } finally {
       setIsSubmitting(false);
     }
@@ -195,10 +241,12 @@ export function CreateGoalModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Target className="w-5 h-5" />
-            Create New Goal
+            {editGoal ? 'Edit Goal' : 'Create New Goal'}
           </DialogTitle>
           <p className="text-sm text-muted-foreground">
-            Create a new goal with deadlines, progress tracking, and bookmark connections
+            {editGoal 
+              ? 'Update your goal details, progress, and connected bookmarks' 
+              : 'Create a new goal with deadlines, progress tracking, and bookmark connections'}
           </p>
         </DialogHeader>
 
@@ -495,7 +543,7 @@ export function CreateGoalModal({
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={isSubmitting}>
-            Create Goal
+            {editGoal ? 'Update Goal' : 'Create Goal'}
           </Button>
         </div>
       </DialogContent>
