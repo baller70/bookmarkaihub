@@ -226,45 +226,38 @@ export default function CategoriesPage() {
           {/* Bordered Container */}
           <div className="border border-gray-300 rounded-lg p-3 sm:p-4 md:p-6 bg-white overflow-hidden">
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex-shrink-0">
-                  <Folder className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-1">MANAGE CATEGORIES</h1>
-                  <p className="text-sm text-gray-600">Organize your bookmarks with custom categories</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={fetchData}
-                  className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => setIsAddCategoryModalOpen(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Category
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsAddFolderModalOpen(true)}
-                  className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50"
-                >
-                  <Folder className="h-4 w-4 mr-2" />
-                  Add Folder
-                </Button>
-              </div>
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">MANAGE CATEGORIES</h1>
+              <p className="text-sm text-gray-600">Organize your bookmarks with custom categories</p>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchData}
+                className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => setIsAddCategoryModalOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Category
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsAddFolderModalOpen(true)}
+                className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50"
+              >
+                <Folder className="h-4 w-4 mr-2" />
+                Add Folder
+              </Button>
             </div>
           </div>
 

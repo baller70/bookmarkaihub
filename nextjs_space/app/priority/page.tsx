@@ -99,28 +99,21 @@ export default function PriorityPage() {
           {/* Bordered Container */}
           <div className="border border-gray-300 rounded-lg p-3 sm:p-4 md:p-6 bg-white overflow-hidden">
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex-shrink-0">
-                  <AlertTriangle className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-1">PRIORITY MANAGEMENT</h1>
-                  <p className="text-sm text-gray-600">Organize bookmarks by priority levels</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={fetchBookmarks}
-                  className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh
-                </Button>
-              </div>
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">PRIORITY MANAGEMENT</h1>
+              <p className="text-sm text-gray-600">Organize bookmarks by priority levels</p>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchBookmarks}
+                className="bg-white border-gray-300 text-gray-900 hover:bg-gray-50"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
             </div>
           </div>
 
