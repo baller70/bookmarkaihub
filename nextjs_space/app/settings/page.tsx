@@ -1,8 +1,9 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useTheme } from "next-themes"
 import { DashboardAuth } from "@/components/dashboard-auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardContent } from "@/components/ui/card"
@@ -62,6 +63,7 @@ const settingsSections = [
 
 export default function SettingsPage() {
   const router = useRouter()
+  const { theme, setTheme } = useTheme()
   const [activeTab, setActiveTab] = useState<SettingsTab>("appearance")
   const [showCustomColorPicker, setShowCustomColorPicker] = useState(false)
   const [settings, setSettings] = useState({
@@ -88,7 +90,16 @@ export default function SettingsPage() {
     autoRenewal: true,
   })
 
+  // Sync settings.theme with next-themes
+  useEffect(() => {
+    if (theme) {
+      setSettings(prev => ({ ...prev, theme }))
+    }
+  }, [theme])
+
   const handleSave = () => {
+    // Apply theme immediately
+    setTheme(settings.theme)
     toast.success("Settings saved successfully!")
   }
 

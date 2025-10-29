@@ -23,7 +23,7 @@ interface CreateSnapshotModalProps {
 }
 
 export function CreateSnapshotModal({ open, onOpenChange, onSuccess }: CreateSnapshotModalProps) {
-  const [name, setName] = useState('')
+  const [name, setName] = useState('Q1 2024 Snapshot')
   const [description, setDescription] = useState('')
   const [includeSettings, setIncludeSettings] = useState(true)
   const [includeAnalytics, setIncludeAnalytics] = useState(true)
@@ -53,7 +53,7 @@ export function CreateSnapshotModal({ open, onOpenChange, onSuccess }: CreateSna
 
       toast.success('Time capsule created successfully!')
       onOpenChange(false)
-      setName('')
+      setName('Q1 2024 Snapshot')
       setDescription('')
       onSuccess?.()
     } catch (error) {
@@ -62,6 +62,12 @@ export function CreateSnapshotModal({ open, onOpenChange, onSuccess }: CreateSna
     } finally {
       setIsCreating(false)
     }
+  }
+
+  const handleCancel = () => {
+    setName('Q1 2024 Snapshot')
+    setDescription('')
+    onOpenChange(false)
   }
 
   return (
@@ -118,7 +124,7 @@ export function CreateSnapshotModal({ open, onOpenChange, onSuccess }: CreateSna
           </div>
         </div>
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isCreating}>
+          <Button variant="outline" onClick={handleCancel} disabled={isCreating}>
             Cancel
           </Button>
           <Button onClick={handleCreate} disabled={isCreating} className="bg-black text-white hover:bg-black/90">

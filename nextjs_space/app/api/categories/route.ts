@@ -50,7 +50,7 @@ export async function GET() {
       createdBy: category.user,
     }))
 
-    return NextResponse.json(formattedCategories)
+    return NextResponse.json({ categories: formattedCategories })
   } catch (error) {
     console.error("Error fetching categories:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
