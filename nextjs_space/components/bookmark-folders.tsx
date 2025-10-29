@@ -41,21 +41,27 @@ export default function BookmarkFolders({ bookmarks }: { bookmarks: any[] }) {
     const categoryMap = new Map<string, Category>();
 
     bookmarks.forEach((bookmark) => {
-      if (bookmark.category) {
-        const catId = bookmark.category.id;
-        if (categoryMap.has(catId)) {
-          const cat = categoryMap.get(catId)!;
-          cat.bookmarkCount += 1;
-        } else {
-          categoryMap.set(catId, {
-            id: bookmark.category.id,
-            name: bookmark.category.name,
-            description: `${bookmark.category.name} related bookmarks`,
-            color: bookmark.category.color || '#3b82f6',
-            bookmarkCount: 1,
-          });
+      // Handle both direct category and categories array
+      const categories = bookmark.categories || [];
+      
+      categories.forEach((catRel: any) => {
+        const cat = catRel.category;
+        if (cat) {
+          const catId = cat.id;
+          if (categoryMap.has(catId)) {
+            const existingCat = categoryMap.get(catId)!;
+            existingCat.bookmarkCount += 1;
+          } else {
+            categoryMap.set(catId, {
+              id: cat.id,
+              name: cat.name,
+              description: `${cat.name} related bookmarks`,
+              color: cat.color || '#3b82f6',
+              bookmarkCount: 1,
+            });
+          }
         }
-      }
+      });
     });
 
     // Convert to array and sort by name
@@ -70,9 +76,10 @@ export default function BookmarkFolders({ bookmarks }: { bookmarks: any[] }) {
     setSelectedFolder(folder);
     
     // Filter bookmarks for this folder
-    const filtered = bookmarks.filter(
-      (bookmark) => bookmark.category?.id === folder.id
-    );
+    const filtered = bookmarks.filter((bookmark) => {
+      const categories = bookmark.categories || [];
+      return categories.some((catRel: any) => catRel.category?.id === folder.id);
+    });
     setFolderBookmarks(filtered);
     
     toast.success(`Opened folder: ${folder.name}`);
