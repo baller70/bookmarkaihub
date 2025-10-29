@@ -8,6 +8,7 @@ import { AnalyticsChart } from "@/components/analytics-chart"
 import { BookmarkGrid } from "@/components/bookmark-grid"
 import { BookmarkList } from "@/components/bookmark-list"
 import { BookmarkTimeline } from "@/components/bookmark-timeline"
+import { BookmarkHierarchy } from "@/components/bookmark-hierarchy"
 import { BookmarkFolders } from "@/components/bookmark-folders"
 import { BookmarkKanban } from "@/components/bookmark-kanban"
 import { BookmarkCompact } from "@/components/bookmark-compact"
@@ -219,6 +220,8 @@ export function DashboardContent() {
         return <BookmarkList bookmarks={currentBookmarks} onUpdate={fetchBookmarks} />
       case "TIMELINE":
         return <BookmarkTimeline bookmarks={currentBookmarks} onUpdate={fetchBookmarks} />
+      case "HIERARCHY":
+        return <BookmarkHierarchy bookmarks={currentBookmarks} onUpdate={fetchBookmarks} />
       case "FOLDER":
         return <BookmarkFolders bookmarks={currentBookmarks} onUpdate={fetchBookmarks} />
       case "KANBAN":
