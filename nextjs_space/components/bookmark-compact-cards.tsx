@@ -131,17 +131,17 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
               {/* Top Section */}
               <div className="relative p-4 pb-2 flex items-start justify-between z-10">
                 {/* Favicon - Smaller */}
-                <div className="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
                   {bookmark.favicon ? (
                     <Image
                       src={bookmark.favicon}
                       alt={bookmark.title}
-                      width={40}
-                      height={40}
+                      width={32}
+                      height={32}
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <ExternalLink className="w-5 h-5 text-white" />
+                    <ExternalLink className="w-4 h-4 text-white" />
                   )}
                 </div>
 
@@ -200,17 +200,17 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
               </div>
 
               {/* Bottom Right Logo - Moved to corner */}
-              <div className="absolute bottom-3 right-3 w-12 h-12 bg-white rounded-xl border-2 border-gray-200 flex items-center justify-center overflow-hidden z-10">
+              <div className="absolute bottom-3 right-3 w-16 h-16 bg-white rounded-xl border-2 border-gray-200 flex items-center justify-center overflow-hidden z-10">
                 {bookmark.favicon ? (
                   <Image
                     src={bookmark.favicon}
                     alt={bookmark.title}
-                    width={48}
-                    height={48}
+                    width={64}
+                    height={64}
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <ExternalLink className="w-6 h-6 text-gray-400" />
+                  <ExternalLink className="w-8 h-8 text-gray-400" />
                 )}
               </div>
 
