@@ -34,7 +34,7 @@ export async function GET(
       orderBy: { name: 'asc' },
     });
 
-    const formattedCategories = categories.map((category) => ({
+    const formattedCategories = categories.map((category: any) => ({
       id: category.id,
       name: category.name,
       description: category.description,

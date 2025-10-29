@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    const formattedFolders = folders.map((folder) => ({
+    const formattedFolders = folders.map((folder: any) => ({
       id: folder.id,
       name: folder.name,
       categoryCount: folder._count.categories,

@@ -86,7 +86,7 @@ export function DashboardHeader({
 
           {/* All Categories Dropdown */}
           <Select defaultValue="all">
-            <SelectTrigger className="w-[150px] h-9 text-xs text-white">
+            <SelectTrigger className="w-[150px] h-9 text-xs text-gray-900 bg-white border-gray-300">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -104,7 +104,7 @@ export function DashboardHeader({
               size="sm"
               onClick={handleSyncAll}
               disabled={isSyncing}
-              className="h-9 px-4 gap-2 text-white"
+              className="h-9 px-4 gap-2 text-gray-900 bg-white border-gray-300 hover:bg-gray-50"
             >
               <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
               <span className="text-xs font-medium">{isSyncing ? 'Syncing...' : 'Sync All'}</span>
@@ -195,7 +195,7 @@ export function DashboardHeader({
 
         {/* Category Selector */}
         <Select defaultValue="all">
-          <SelectTrigger className="w-full h-10 text-xs text-white">
+          <SelectTrigger className="w-full h-10 text-xs text-gray-900 bg-white border-gray-300">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
