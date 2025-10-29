@@ -9,7 +9,7 @@ import { BookmarkGrid } from "@/components/bookmark-grid"
 import { BookmarkList } from "@/components/bookmark-list"
 import { BookmarkTimeline } from "@/components/bookmark-timeline"
 import { BookmarkHierarchy } from "@/components/bookmark-hierarchy"
-import { BookmarkFolders } from "@/components/bookmark-folders"
+import BookmarkFolders from "@/components/bookmark-folders"
 import { BookmarkKanban } from "@/components/bookmark-kanban"
 import { BookmarkCompact } from "@/components/bookmark-compact"
 import { Button } from "@/components/ui/button"
@@ -223,7 +223,7 @@ export function DashboardContent() {
       case "HIERARCHY":
         return <BookmarkHierarchy bookmarks={currentBookmarks} onUpdate={fetchBookmarks} />
       case "FOLDER":
-        return <BookmarkFolders bookmarks={currentBookmarks} onUpdate={fetchBookmarks} />
+        return <BookmarkFolders bookmarks={bookmarks} />
       case "KANBAN":
         return <BookmarkKanban bookmarks={currentBookmarks} onUpdate={fetchBookmarks} />
       default:
