@@ -102,6 +102,8 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
       columns: [...defaultColumns],
     },
   ]);
+  const [editingColumn, setEditingColumn] = useState<{ rowId: string; columnId: string } | null>(null);
+  const [editingValue, setEditingValue] = useState('');
 
   // Group bookmarks by column
   const groupedBookmarks = bookmarks.reduce((groups: any, bookmark: any) => {
@@ -136,6 +138,34 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
     setRows(rows.map(row => 
       row.id === rowId ? { ...row, isExpanded: !row.isExpanded } : row
     ));
+  };
+
+  const startEditingColumn = (rowId: string, columnId: string, currentName: string) => {
+    setEditingColumn({ rowId, columnId });
+    setEditingValue(currentName);
+  };
+
+  const saveColumnName = (rowId: string, columnId: string) => {
+    if (editingValue.trim()) {
+      setRows(rows.map(row => {
+        if (row.id === rowId) {
+          return {
+            ...row,
+            columns: row.columns.map(col => 
+              col.id === columnId ? { ...col, name: editingValue.trim().toUpperCase() } : col
+            )
+          };
+        }
+        return row;
+      }));
+    }
+    setEditingColumn(null);
+    setEditingValue('');
+  };
+
+  const cancelEditingColumn = () => {
+    setEditingColumn(null);
+    setEditingValue('');
   };
 
   return (
@@ -222,9 +252,30 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                       <div className={`w-2 h-2 rounded-full ${column.statusDotColor} mt-1.5`} />
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className={`font-bold text-sm ${column.statusColor}`}>
-                            {column.name}
-                          </h3>
+                          {editingColumn?.rowId === row.id && editingColumn?.columnId === column.id ? (
+                            <Input
+                              value={editingValue}
+                              onChange={(e) => setEditingValue(e.target.value)}
+                              onBlur={() => saveColumnName(row.id, column.id)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  saveColumnName(row.id, column.id);
+                                } else if (e.key === 'Escape') {
+                                  cancelEditingColumn();
+                                }
+                              }}
+                              className="h-6 w-32 text-sm font-bold"
+                              autoFocus
+                            />
+                          ) : (
+                            <h3 
+                              className={`font-bold text-sm ${column.statusColor} cursor-pointer hover:opacity-70 transition-opacity`}
+                              onClick={() => startEditingColumn(row.id, column.id, column.name)}
+                              title="Click to edit"
+                            >
+                              {column.name}
+                            </h3>
+                          )}
                           <span className="text-sm text-muted-foreground">
                             {columnBookmarks.length}
                           </span>
