@@ -137,7 +137,7 @@ export function BookmarkHierarchy({ bookmarks }: BookmarkHierarchyProps) {
         <div className="flex items-center justify-between mb-2">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-2xl font-bold text-gray-900">FOLDER ORGANIZATION CHART</h1>
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-relaxed md:leading-normal">FOLDER ORGANIZATION CHART</h1>
               <Badge variant="secondary" className="bg-gray-100 text-gray-700">
                 {filteredFolders.length} folders
               </Badge>

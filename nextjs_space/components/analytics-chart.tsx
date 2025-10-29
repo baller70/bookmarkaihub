@@ -97,7 +97,7 @@ export function AnalyticsChart({ analytics, onTimeRangeChange }: AnalyticsChartP
         {/* Top Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">TOM ANALYTICS CHART</h3>
+            <h3 className="text-lg font-bold text-gray-900 leading-relaxed md:leading-normal">TOM ANALYTICS CHART</h3>
             <p className="text-xs text-gray-500 mt-0.5">Total for the last 3 months</p>
           </div>
           

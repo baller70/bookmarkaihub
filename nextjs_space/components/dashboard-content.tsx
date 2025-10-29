@@ -360,8 +360,8 @@ export function DashboardContent() {
       )}
 
       {/* View Mode Toggles */}
-      <div className="flex justify-center">
-        <div className="flex items-center gap-2 bg-gray-900 rounded-xl p-2 w-fit">
+      <div className="flex justify-center -mx-6 px-6 md:mx-0 md:px-0">
+        <div className="flex items-center gap-1.5 md:gap-2 bg-gray-900 rounded-xl p-2 w-fit max-w-full overflow-x-auto scrollbar-hide">
           {viewModes.map((mode) => {
             const Icon = mode.icon
             return (
@@ -371,14 +371,14 @@ export function DashboardContent() {
                 size="sm"
                 onClick={() => setViewMode(mode.id)}
                 className={cn(
-                  "px-4 py-3 h-12 text-sm font-medium rounded-lg transition-colors gap-2",
+                  "px-2 sm:px-4 py-3 h-10 sm:h-12 text-xs sm:text-sm font-medium rounded-lg transition-colors gap-1.5 sm:gap-2 whitespace-nowrap flex-shrink-0",
                   viewMode === mode.id
                     ? "bg-white text-gray-900 shadow-sm hover:bg-white"
                     : "text-white hover:text-white hover:bg-gray-800"
                 )}
               >
-                <Icon className="h-5 w-5" />
-                {mode.label}
+                <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="hidden sm:inline">{mode.label}</span>
               </Button>
             )
           })}

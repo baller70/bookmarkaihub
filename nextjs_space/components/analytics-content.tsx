@@ -136,8 +136,8 @@ export function AnalyticsContent({ showTitle = true }: AnalyticsContentProps) {
           </div>
 
           {/* Tabs */}
-          <div className="border-b border-gray-200 mb-6">
-            <div className="flex gap-6">
+          <div className="border-b border-gray-200 mb-6 -mx-6 px-6 md:mx-0 md:px-0">
+            <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide">
               {[
                 { id: 'overview', label: 'Overview' },
                 { id: 'timeTracking', label: 'Time Tracking' },
@@ -149,7 +149,7 @@ export function AnalyticsContent({ showTitle = true }: AnalyticsContentProps) {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as Tab)}
-                  className={`pb-3 text-sm font-medium transition-colors relative ${
+                  className={`pb-3 text-sm font-medium transition-colors relative whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'text-gray-900 border-b-2 border-gray-900'
                       : 'text-gray-600 hover:text-gray-900'
