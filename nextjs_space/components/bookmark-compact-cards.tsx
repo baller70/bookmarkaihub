@@ -117,7 +117,7 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {bookmarks.map((bookmark) => {
           const domain = getDomain(bookmark.url)
           const engagementPct = getEngagementPercentage(bookmark.visitCount)
@@ -129,25 +129,25 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
               onClick={() => openDetailModal(bookmark)}
             >
               {/* Top Section */}
-              <div className="relative p-5 pb-2 flex items-start justify-between z-10">
-                {/* Favicon */}
-                <div className="w-14 h-14 bg-gray-900 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+              <div className="relative p-4 pb-2 flex items-start justify-between z-10">
+                {/* Favicon - Smaller */}
+                <div className="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
                   {bookmark.favicon ? (
                     <Image
                       src={bookmark.favicon}
                       alt={bookmark.title}
-                      width={56}
-                      height={56}
+                      width={40}
+                      height={40}
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <ExternalLink className="w-7 h-7 text-white" />
+                    <ExternalLink className="w-5 h-5 text-white" />
                   )}
                 </div>
 
                 {/* Engagement Badge */}
                 <div className="relative">
-                  <svg width="50" height="55" viewBox="0 0 40 44" className="text-red-500">
+                  <svg width="40" height="44" viewBox="0 0 40 44" className="text-red-500">
                     <path
                       d="M20 2 L35 11 L35 29 L20 38 L5 29 L5 11 Z"
                       fill="none"
@@ -156,7 +156,7 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-xs font-bold text-red-500">
+                    <span className="text-[10px] font-bold text-red-500">
                       {engagementPct}%
                     </span>
                   </div>
@@ -164,18 +164,18 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
               </div>
 
               {/* Middle Section - Title and URL */}
-              <div className="px-5 py-2 flex-shrink-0 z-10 relative">
-                <h3 className="text-base font-bold text-gray-900 uppercase tracking-wide line-clamp-1 leading-tight mb-1.5">
+              <div className="px-4 py-2 flex-shrink-0 z-10 relative">
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide line-clamp-1 leading-tight mb-1">
                   {bookmark.title}
                 </h3>
-                <p className="text-sm text-blue-600 truncate mb-2">
+                <p className="text-xs text-blue-600 truncate mb-2">
                   {domain}
                 </p>
                 {bookmark.priority && (
                   <Badge
                     variant="outline"
                     className={cn(
-                      "text-xs px-2.5 py-0.5 font-medium uppercase",
+                      "text-[10px] px-2 py-0.5 font-medium uppercase",
                       priorityColors[bookmark.priority.toLowerCase()] || priorityColors.medium
                     )}
                   >
@@ -199,25 +199,25 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
                 )}
               </div>
 
-              {/* Bottom Right Logo */}
-              <div className="absolute bottom-16 right-5 w-16 h-16 bg-white rounded-xl border-2 border-gray-200 flex items-center justify-center overflow-hidden z-10">
+              {/* Bottom Right Logo - Moved to corner */}
+              <div className="absolute bottom-3 right-3 w-12 h-12 bg-white rounded-xl border-2 border-gray-200 flex items-center justify-center overflow-hidden z-10">
                 {bookmark.favicon ? (
                   <Image
                     src={bookmark.favicon}
                     alt={bookmark.title}
-                    width={64}
-                    height={64}
+                    width={48}
+                    height={48}
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <ExternalLink className="w-8 h-8 text-gray-400" />
+                  <ExternalLink className="w-6 h-6 text-gray-400" />
                 )}
               </div>
 
               {/* Bottom Section - Visits */}
-              <div className="relative mt-auto px-5 pb-5 pt-2 z-10">
-                <div className="flex items-center gap-2 text-xs text-gray-600">
-                  <Eye className="w-4 h-4" />
+              <div className="relative mt-auto px-4 pb-4 pt-2 z-10">
+                <div className="flex items-center gap-1.5 text-[10px] text-gray-600">
+                  <Eye className="w-3 h-3" />
                   <span className="font-medium uppercase tracking-wide">
                     {bookmark.visitCount} VISIT{bookmark.visitCount !== 1 ? 'S' : ''}
                   </span>
