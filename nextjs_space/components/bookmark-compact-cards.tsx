@@ -125,7 +125,7 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
           return (
             <div
               key={bookmark.id}
-              className="relative bg-white border border-gray-200 rounded-xl overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-gray-300 group aspect-square flex flex-col"
+              className="relative bg-white border border-black rounded-xl overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-black group aspect-square flex flex-col"
               onClick={() => openDetailModal(bookmark)}
             >
               {/* Top Section */}
