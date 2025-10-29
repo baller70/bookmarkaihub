@@ -140,24 +140,24 @@ export function BookmarkGoals() {
         </div>
       ) : (
         /* Folders Grid */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {folders.map((folder) => (
             <div
               key={folder.id}
-              className="border rounded-lg p-6 hover:shadow-md transition-shadow bg-white dark:bg-gray-950"
+              className="border rounded-2xl p-8 hover:shadow-md transition-shadow bg-white dark:bg-gray-950 cursor-pointer"
             >
-              <div className="flex flex-col items-center text-center space-y-4">
-                {/* Blue rounded square icon with folder */}
-                <div className="w-20 h-20 rounded-xl bg-blue-500 flex items-center justify-center">
-                  <Folder className="w-10 h-10 text-white" />
+              <div className="space-y-6">
+                {/* Blue rounded square icon with folder - Top Left */}
+                <div className="w-24 h-24 rounded-2xl bg-blue-500 flex items-center justify-center">
+                  <Folder className="w-12 h-12 text-white" />
                 </div>
                 
-                {/* Folder Name */}
-                <h3 className="font-bold text-lg break-words w-full">
+                {/* Folder Name - Left Aligned */}
+                <h3 className="font-bold text-xl break-words">
                   {folder.name}
                 </h3>
                 
-                {/* Goal Count */}
+                {/* Goal Count - Left Aligned */}
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <FileText className="w-4 h-4" />
                   <span className="text-sm">{folder.goals.length} goal{folder.goals.length !== 1 ? 's' : ''}</span>
