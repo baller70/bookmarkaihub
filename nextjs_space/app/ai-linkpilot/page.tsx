@@ -75,29 +75,53 @@ export default function AILinkPilotPage() {
     <DashboardAuth>
       <div className="min-h-screen bg-gray-50">
           {/* Header */}
-          <div className="bg-white border-b border-gray-200 px-8 py-4">
+          <div className="bg-white border-b border-gray-200 px-4 sm:px-8 py-3 sm:py-4">
             <div className="flex items-center justify-between max-w-7xl">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 sm:gap-4">
                 <Link href="/dashboard" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
                   <ArrowLeft className="h-4 w-4" />
-                  <span className="text-sm">Back to Dashboard</span>
+                  <span className="text-xs sm:text-sm hidden sm:inline">Back to Dashboard</span>
                 </Link>
-                <Separator orientation="vertical" className="h-6" />
+                <Separator orientation="vertical" className="h-6 hidden sm:block" />
                 <div className="flex items-center gap-2">
-                  <Settings className="h-5 w-5 text-gray-700" />
-                  <h1 className="text-xl font-semibold text-gray-900">AI LINKPILOT</h1>
+                  <Settings className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
+                  <h1 className="text-base sm:text-xl font-semibold text-gray-900">AI LINKPILOT</h1>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Main Content */}
-          <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
             {/* Bordered Container */}
             <div className="border border-gray-300 rounded-lg bg-white overflow-hidden">
+            
+            {/* Mobile: Horizontal Tabs */}
+            <div className="lg:hidden p-3 border-b">
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                {sidebarItems.map((item) => {
+                  const Icon = item.icon
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id)}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+                        activeTab === item.id
+                          ? "bg-black text-white"
+                          : "bg-gray-100 text-gray-700"
+                      }`}
+                    >
+                      <Icon className="h-3 w-3" />
+                      {item.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+            
               <div className="flex">
-            {/* Sidebar */}
-            <div className="w-64 bg-white border-r border-gray-200 p-4">
+            {/* Desktop Sidebar */}
+            <div className="hidden lg:block w-64 bg-white border-r border-gray-200 p-4">
               <nav className="space-y-1">
                 {sidebarItems.map((item) => {
                   const Icon = item.icon
@@ -120,7 +144,7 @@ export default function AILinkPilotPage() {
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 p-8">
+            <div className="flex-1 p-4 sm:p-6 lg:p-8">
               {activeTab === "auto-processing" && (
                 <div className="space-y-6">
                   {/* Header */}

@@ -93,32 +93,33 @@ export default function SettingsPage() {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
         {/* Header */}
         <div className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => router.push("/dashboard")}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 px-2 sm:px-3"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  Back to Dashboard
+                  <span className="hidden sm:inline">Back to Dashboard</span>
                 </Button>
-                <div className="h-6 w-px bg-gray-300" />
+                <div className="hidden sm:block h-6 w-px bg-gray-300" />
                 <div className="flex items-center gap-2">
-                  <SettingsIcon className="h-5 w-5" />
-                  <h1 className="text-xl font-semibold">SETTINGS</h1>
+                  <SettingsIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <h1 className="text-base sm:text-xl font-semibold truncate">SETTINGS</h1>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={handleReset}>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Button variant="outline" size="sm" onClick={handleReset} className="hidden sm:flex">
                   <RotateCcw className="h-4 w-4 mr-2" />
                   Reset
                 </Button>
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={handleSave}>
-                  <Check className="h-4 w-4 mr-2" />
-                  Save Changes
+                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm px-3" onClick={handleSave}>
+                  <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Save Changes</span>
+                  <span className="sm:hidden">Save</span>
                 </Button>
               </div>
             </div>
@@ -126,12 +127,86 @@ export default function SettingsPage() {
         </div>
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
           {/* Bordered Container */}
-          <div className="border border-gray-300 rounded-lg p-6 bg-white">
+          <div className="border border-gray-300 rounded-lg p-3 sm:p-6 bg-white">
+          
+          {/* Mobile: Horizontal Tabs */}
+          <div className="lg:hidden mb-6">
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              <button
+                onClick={() => setActiveTab("appearance")}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors",
+                  activeTab === "appearance"
+                    ? "bg-black text-white"
+                    : "bg-gray-100 text-gray-700"
+                )}
+              >
+                <Palette className="h-4 w-4" />
+                Appearance
+              </button>
+              <button
+                onClick={() => setActiveTab("notifications")}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors",
+                  activeTab === "notifications"
+                    ? "bg-black text-white"
+                    : "bg-gray-100 text-gray-700"
+                )}
+              >
+                <Bell className="h-4 w-4" />
+                Notifications
+              </button>
+              <button
+                onClick={() => setActiveTab("privacy")}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors",
+                  activeTab === "privacy"
+                    ? "bg-black text-white"
+                    : "bg-gray-100 text-gray-700"
+                )}
+              >
+                <Shield className="h-4 w-4" />
+                Privacy
+              </button>
+              <button
+                onClick={() => setActiveTab("backup")}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors",
+                  activeTab === "backup"
+                    ? "bg-black text-white"
+                    : "bg-gray-100 text-gray-700"
+                )}
+              >
+                <Download className="h-4 w-4" />
+                Backup
+              </button>
+              <button
+                onClick={() => setActiveTab("billing")}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors",
+                  activeTab === "billing"
+                    ? "bg-black text-white"
+                    : "bg-gray-100 text-gray-700"
+                )}
+              >
+                <CreditCard className="h-4 w-4" />
+                Billing
+              </button>
+              <button
+                onClick={() => router.push("/settings/oracle")}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap bg-gray-100 text-gray-700"
+              >
+                <Sparkles className="h-4 w-4" />
+                Oracle
+              </button>
+            </div>
+          </div>
+          
           <div className="grid grid-cols-12 gap-6">
-            {/* Sidebar */}
-            <div className="col-span-3">
+            {/* Desktop Sidebar */}
+            <div className="hidden lg:block col-span-3">
               <Card className="p-2">
                 <nav className="space-y-1">
                   <button
@@ -206,7 +281,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Content Area */}
-            <div className="col-span-9">
+            <div className="col-span-12 lg:col-span-9">
               {/* Appearance Tab */}
               {activeTab === "appearance" && (
                 <Card className="p-6">

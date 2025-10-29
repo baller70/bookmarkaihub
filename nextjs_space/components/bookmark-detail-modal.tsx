@@ -359,7 +359,7 @@ export function BookmarkDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-[900px] max-h-[90vh] overflow-y-auto p-0">
         <input
           ref={fileInputRef}
           type="file"
@@ -390,11 +390,11 @@ export function BookmarkDetailModal({
         />
         
         {/* Header */}
-        <div className="border-b px-6 py-4 bg-white">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
+        <div className="border-b px-3 sm:px-6 py-3 sm:py-4 bg-white">
+          <div className="flex flex-col gap-3 sm:gap-0 sm:flex-row items-start justify-between">
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 w-full sm:w-auto">
               {bookmark.favicon && (
-                <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-black">
+                <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-lg overflow-hidden bg-black flex-shrink-0">
                   <Image
                     src={bookmark.favicon}
                     alt=""
@@ -404,52 +404,52 @@ export function BookmarkDetailModal({
                   />
                 </div>
               )}
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                  {bookmark.title}
+              <div className="min-w-0 flex-1">
+                <h2 className="text-sm sm:text-xl font-bold text-gray-900 flex items-center gap-2 truncate">
+                  <span className="truncate">{bookmark.title}</span>
                   <button 
-                    className="p-1 hover:bg-gray-100 rounded"
+                    className="p-1 hover:bg-gray-100 rounded flex-shrink-0"
                     onClick={() => {}}
                   >
-                    <Edit className="h-4 w-4 text-gray-400" />
+                    <Edit className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
                   </button>
                 </h2>
-                <p className="text-sm text-gray-500">{bookmark.url}</p>
+                <p className="text-xs sm:text-sm text-gray-500 truncate">{bookmark.url}</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 w-full sm:w-auto justify-end">
               <Button
                 size="icon"
                 variant="outline"
                 onClick={handleFavorite}
-                className="rounded-lg !bg-white border-gray-300 hover:!bg-gray-50"
+                className="rounded-lg !bg-white border-gray-300 hover:!bg-gray-50 h-8 w-8 sm:h-10 sm:w-10"
               >
-                <Heart className={cn("h-4 w-4 text-gray-700", isFavorite && "fill-current text-red-500")} />
+                <Heart className={cn("h-3 w-3 sm:h-4 sm:w-4 text-gray-700", isFavorite && "fill-current text-red-500")} />
               </Button>
               <Button
                 size="icon"
                 variant="outline"
                 onClick={handleShare}
-                className="rounded-lg !bg-white border-gray-300 hover:!bg-gray-50"
+                className="rounded-lg !bg-white border-gray-300 hover:!bg-gray-50 h-8 w-8 sm:h-10 sm:w-10"
               >
-                <Share2 className="h-4 w-4 text-gray-700" />
+                <Share2 className="h-3 w-3 sm:h-4 sm:w-4 text-gray-700" />
               </Button>
               <Button
                 size="icon"
                 variant="outline"
                 onClick={handleCopyUrl}
-                className="rounded-lg !bg-white border-gray-300 hover:!bg-gray-50"
+                className="rounded-lg !bg-white border-gray-300 hover:!bg-gray-50 h-8 w-8 sm:h-10 sm:w-10"
               >
-                <Copy className="h-4 w-4 text-gray-700" />
+                <Copy className="h-3 w-3 sm:h-4 sm:w-4 text-gray-700" />
               </Button>
               <Button
                 variant="outline"
                 onClick={handleVisit}
-                className="!bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900 rounded-lg uppercase"
+                className="!bg-white border-gray-300 hover:!bg-gray-50 !text-gray-900 rounded-lg uppercase text-xs sm:text-sm px-2 sm:px-4 h-8 sm:h-10"
               >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Visit Site
+                <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Visit Site</span>
               </Button>
             </div>
           </div>
@@ -457,23 +457,25 @@ export function BookmarkDetailModal({
 
         {/* Tabs */}
         <Tabs defaultValue="overview" className="w-full">
-          <div className="border-b px-6 bg-gray-50">
-            <TabsList className="bg-transparent h-auto p-0 gap-8">
-              {["OVERVIEW", "ARP", "NOTIFICATION", "TASK", "MEDIA", "COMMENT"].map((tab) => (
-                <TabsTrigger 
-                  key={tab}
-                  value={tab.toLowerCase()} 
-                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-3 font-medium text-gray-600 data-[state=active]:text-gray-900"
-                >
-                  {tab}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+          <div className="border-b px-3 sm:px-6 bg-gray-50">
+            <div className="overflow-x-auto scrollbar-hide">
+              <TabsList className="bg-transparent h-auto p-0 gap-3 sm:gap-8 flex min-w-full w-max sm:w-full">
+                {["OVERVIEW", "ARP", "NOTIFICATION", "TASK", "MEDIA", "COMMENT"].map((tab) => (
+                  <TabsTrigger 
+                    key={tab}
+                    value={tab.toLowerCase()} 
+                    className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-2 sm:pb-3 font-medium text-xs sm:text-sm text-gray-600 data-[state=active]:text-gray-900 whitespace-nowrap"
+                  >
+                    {tab}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
           </div>
 
           {/* OVERVIEW TAB */}
-          <TabsContent value="overview" className="p-4 sm:p-6 mt-0 bg-white">
-            <div className="grid grid-cols-2 gap-8">
+          <TabsContent value="overview" className="p-3 sm:p-6 mt-0 bg-white">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
               {/* Left Column - Logo */}
               <div className="space-y-6">
                 <div className="relative aspect-square bg-gray-100 rounded-lg flex items-center justify-center group">
@@ -752,14 +754,14 @@ export function BookmarkDetailModal({
           </TabsContent>
 
           {/* ARP TAB */}
-          <TabsContent value="arp" className="p-4 sm:p-6 bg-white mt-0">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold">ACTION RESEARCH PLAN</h2>
-                <Badge variant="outline" className="text-sm">1 Section</Badge>
+          <TabsContent value="arp" className="p-3 sm:p-6 bg-white mt-0">
+            <div className="space-y-4 sm:space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <h2 className="text-lg sm:text-2xl font-bold">ACTION RESEARCH PLAN</h2>
+                <Badge variant="outline" className="text-xs sm:text-sm">1 Section</Badge>
               </div>
 
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-3 h-3 rounded-full bg-blue-500"></div>
@@ -836,26 +838,28 @@ export function BookmarkDetailModal({
 
           {/* NOTIFICATION TAB */}
           <TabsContent value="notification" className="p-0 bg-white mt-0">
-            <div className="grid grid-cols-[200px_1fr] h-[600px]">
-              <div className="border-r bg-gray-50 p-4 space-y-2">
-                <div className="text-sm font-bold mb-4">NOTIFICATION SETTINGS</div>
-                <Button className="w-full justify-start bg-blue-600 text-white hover:bg-blue-700">
-                  <Timer className="w-4 h-4 mr-2" />
-                  SCHEDULER
-                </Button>
-                <Button variant="ghost" className="w-full justify-start">
-                  <Settings className="w-4 h-4 mr-2" />
-                  PREFERENCES
-                </Button>
-                <Button variant="ghost" className="w-full justify-start">
-                  <History className="w-4 h-4 mr-2" />
-                  HISTORY
-                </Button>
-                <Button variant="ghost" className="w-full justify-start">
-                  <Users className="w-4 h-4 mr-2" />
-                  TEAM
-                  <Badge variant="outline" className="ml-auto text-xs">Premium</Badge>
-                </Button>
+            <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] min-h-[400px] lg:h-[600px]">
+              <div className="border-b lg:border-r lg:border-b-0 bg-gray-50 p-3 sm:p-4">
+                <div className="text-xs sm:text-sm font-bold mb-3 hidden lg:block">NOTIFICATION SETTINGS</div>
+                <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible scrollbar-hide">
+                  <Button className="justify-start bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm whitespace-nowrap">
+                    <Timer className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                    SCHEDULER
+                  </Button>
+                  <Button variant="ghost" className="justify-start text-xs sm:text-sm whitespace-nowrap">
+                    <Settings className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                    PREFERENCES
+                  </Button>
+                  <Button variant="ghost" className="justify-start text-xs sm:text-sm whitespace-nowrap">
+                    <History className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                    HISTORY
+                  </Button>
+                  <Button variant="ghost" className="justify-start text-xs sm:text-sm whitespace-nowrap">
+                    <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                    TEAM
+                    <Badge variant="outline" className="ml-auto text-xs">Premium</Badge>
+                  </Button>
+                </div>
               </div>
               
               <div className="p-4 sm:p-6 space-y-6">
@@ -896,30 +900,32 @@ export function BookmarkDetailModal({
 
           {/* TASK TAB */}
           <TabsContent value="task" className="p-0 bg-white mt-0">
-            <div className="grid grid-cols-[200px_1fr] h-[600px]">
-              <div className="border-r bg-gray-50 p-4 space-y-2">
-                <Button className="w-full justify-start bg-blue-600 text-white hover:bg-blue-700">
-                  <Timer className="w-4 h-4 mr-2" />
-                  TIMER
-                </Button>
-                <Button variant="ghost" className="w-full justify-start">
-                  <ListTodo className="w-4 h-4 mr-2" />
-                  TASKS
-                  <Badge variant="outline" className="ml-auto">0</Badge>
-                </Button>
-                <Button variant="ghost" className="w-full justify-start">
-                  <ListTodo className="w-4 h-4 mr-2" />
-                  LISTS
-                  <Badge variant="outline" className="ml-auto">0</Badge>
-                </Button>
-                <Button variant="ghost" className="w-full justify-start">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  ANALYTICS
-                </Button>
-                <Button variant="ghost" className="w-full justify-start">
-                  <Settings className="w-4 h-4 mr-2" />
-                  SETTINGS
-                </Button>
+            <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] min-h-[400px] lg:h-[600px]">
+              <div className="border-b lg:border-r lg:border-b-0 bg-gray-50 p-3 sm:p-4">
+                <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible scrollbar-hide">
+                  <Button className="justify-start bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm whitespace-nowrap">
+                    <Timer className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                    TIMER
+                  </Button>
+                  <Button variant="ghost" className="justify-start text-xs sm:text-sm whitespace-nowrap">
+                    <ListTodo className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                    TASKS
+                    <Badge variant="outline" className="ml-auto text-xs">0</Badge>
+                  </Button>
+                  <Button variant="ghost" className="justify-start text-xs sm:text-sm whitespace-nowrap">
+                    <ListTodo className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                    LISTS
+                    <Badge variant="outline" className="ml-auto text-xs">0</Badge>
+                  </Button>
+                  <Button variant="ghost" className="justify-start text-xs sm:text-sm whitespace-nowrap">
+                    <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                    ANALYTICS
+                  </Button>
+                  <Button variant="ghost" className="justify-start text-xs sm:text-sm whitespace-nowrap">
+                    <Settings className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                    SETTINGS
+                  </Button>
+                </div>
               </div>
               
               <div className="p-4 sm:p-6 space-y-6">
