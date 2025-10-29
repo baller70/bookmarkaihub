@@ -75,6 +75,7 @@ export function BookmarkDetailModal({
   
   // Analytics tracking state
   const modalOpenTimeRef = useRef<Date | null>(null)
+  const visitTrackedRef = useRef<boolean>(false) // Track if visit already recorded for this modal opening
   const [currentVisits, setCurrentVisits] = useState(bookmark?.totalVisits || 0)
   const [currentTimeSpent, setCurrentTimeSpent] = useState(bookmark?.timeSpent || 0)
   
@@ -132,7 +133,10 @@ export function BookmarkDetailModal({
   // Analytics tracking: Track visits and time spent
   useEffect(() => {
     const trackVisit = async () => {
-      if (!bookmark?.id) return
+      // Prevent double counting by checking if visit already tracked for this opening
+      if (!bookmark?.id || visitTrackedRef.current) return
+      
+      visitTrackedRef.current = true // Mark as tracked
       
       try {
         const response = await fetch(`/api/bookmarks/${bookmark.id}/track-visit`, {
@@ -183,6 +187,7 @@ export function BookmarkDetailModal({
     // When modal opens
     if (open && bookmark?.id) {
       modalOpenTimeRef.current = new Date()
+      visitTrackedRef.current = false // Reset tracking flag when modal opens
       trackVisit()
       
       // Track time spent every 5 seconds while modal is open
@@ -198,6 +203,8 @@ export function BookmarkDetailModal({
           trackTimeSpent()
           modalOpenTimeRef.current = null
         }
+        // Reset tracking flag when modal closes
+        visitTrackedRef.current = false
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

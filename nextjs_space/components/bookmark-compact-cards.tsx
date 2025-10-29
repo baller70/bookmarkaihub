@@ -97,10 +97,11 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
     }
   }
 
-  // Calculate engagement percentage (simplified version)
+  // Calculate engagement percentage (starts at 0%, grows gradually with visits)
   const getEngagementPercentage = (visitCount: number) => {
-    // Simple calculation: cap at 100%
-    return Math.min(visitCount * 5, 100)
+    // Each visit adds 1% until it reaches 100%
+    // This means: 0 visits = 0%, 1 visit = 1%, 100 visits = 100%
+    return Math.min(visitCount, 100)
   }
 
   if (!bookmarks?.length) {
