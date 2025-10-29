@@ -138,3 +138,69 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: rgba(156, 163, 175, 0.8);
 }
+
+/* Mobile-specific improvements */
+@layer utilities {
+  /* Improve tap targets on mobile */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Better horizontal scroll for mobile */
+  .scroll-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .scroll-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Prevent text selection on mobile for interactive elements */
+  .no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Smooth transitions for mobile interactions */
+  .smooth-transition {
+    transition: all 0.2s ease-in-out;
+  }
+}
+
+/* Mobile-optimized spacing */
+@media (max-width: 640px) {
+  body {
+    font-size: 14px;
+  }
+
+  /* Reduce excessive padding on mobile */
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Improve button sizing on mobile */
+  button {
+    min-height: 40px;
+  }
+
+  /* Better touch targets for links */
+  a {
+    padding: 0.25rem;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 640px) and (max-width: 1024px) {
+  .container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}

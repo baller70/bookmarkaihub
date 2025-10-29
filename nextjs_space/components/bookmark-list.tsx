@@ -24,7 +24,7 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {bookmarks.map((bookmark) => (
         <div key={bookmark.id} className="w-full">
           <BookmarkListCard bookmark={bookmark} onUpdate={onUpdate} />

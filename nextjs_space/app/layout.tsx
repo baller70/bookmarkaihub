@@ -23,6 +23,13 @@ const russoOne = Russo_One({
   variable: "--font-russo"
 })
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+}
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXTAUTH_URL || 'http://localhost:3000'),
   title: "BookmarkHub - Your Digital Workspace",

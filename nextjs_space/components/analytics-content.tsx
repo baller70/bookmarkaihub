@@ -102,7 +102,7 @@ export function AnalyticsContent({ showTitle = true }: AnalyticsContentProps) {
     <div className="space-y-6">
       {showTitle && (
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 uppercase">Analytics Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 uppercase">Analytics Dashboard</h1>
           <p className="text-sm text-gray-600 mt-1">
             Comprehensive Insights Into Your Bookmark Usage And Productivity Patterns
           </p>
@@ -181,7 +181,7 @@ function OverviewTab({ data }: { data: AnalyticsData | null }) {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-4">
         <Card className="bg-white border border-blue-200">
           <CardContent className="pt-6 pb-6">
             <div className="flex items-center justify-between">
@@ -190,7 +190,7 @@ function OverviewTab({ data }: { data: AnalyticsData | null }) {
                   <BookmarkIcon className="w-4 h-4 text-blue-500" />
                   <span>Total Bookmarks</span>
                 </div>
-                <div className="text-3xl font-bold text-gray-900">{data.overview.totalBookmarks}</div>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900">{data.overview.totalBookmarks}</div>
                 <div className="text-xs text-gray-600 mt-1">+{data.overview.bookmarksAdded} this period</div>
               </div>
             </div>
@@ -205,7 +205,7 @@ function OverviewTab({ data }: { data: AnalyticsData | null }) {
                   <Eye className="w-4 h-4 text-green-500" />
                   <span>Total Visits</span>
                 </div>
-                <div className="text-3xl font-bold text-gray-900">{data.overview.totalVisits}</div>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900">{data.overview.totalVisits}</div>
                 <div className="text-xs text-gray-600 mt-1">All time</div>
               </div>
             </div>
@@ -220,7 +220,7 @@ function OverviewTab({ data }: { data: AnalyticsData | null }) {
                   <Activity className="w-4 h-4 text-purple-500" />
                   <span>Engagement Score</span>
                 </div>
-                <div className="text-3xl font-bold text-gray-900">{data.overview.engagementScore.toFixed(1)}%</div>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900">{data.overview.engagementScore.toFixed(1)}%</div>
                 <div className="text-xs text-gray-600 mt-1">Average</div>
               </div>
             </div>
@@ -235,7 +235,7 @@ function OverviewTab({ data }: { data: AnalyticsData | null }) {
                   <Clock className="w-4 h-4 text-orange-500" />
                   <span>Active Time</span>
                 </div>
-                <div className="text-3xl font-bold text-gray-900">{data.overview.activeTime}h</div>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900">{data.overview.activeTime}h</div>
                 <div className="text-xs text-gray-600 mt-1">Total</div>
               </div>
             </div>
@@ -401,7 +401,7 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-4">
         <Card className="bg-white border border-blue-200">
           <CardContent className="pt-6 pb-6">
             <div className="flex items-center justify-between">
@@ -410,7 +410,7 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
                   <Clock className="w-4 h-4 text-blue-500" />
                   <span>Daily Average</span>
                 </div>
-                <div className="text-3xl font-bold text-gray-900">{dailyAverage}h</div>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900">{dailyAverage}h</div>
                 <div className="text-xs text-gray-600 mt-1">Last 7 days</div>
               </div>
             </div>
@@ -425,7 +425,7 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
                   <Timer className="w-4 h-4 text-orange-500" />
                   <span>Total Hours</span>
                 </div>
-                <div className="text-3xl font-bold text-gray-900">{data.overview.activeTime}h</div>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900">{data.overview.activeTime}h</div>
                 <div className="text-xs text-gray-600 mt-1">All time</div>
               </div>
             </div>
@@ -440,7 +440,7 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
                   <Target className="w-4 h-4 text-purple-500" />
                   <span>Total Visits</span>
                 </div>
-                <div className="text-3xl font-bold text-gray-900">{data.overview.totalVisits}</div>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900">{data.overview.totalVisits}</div>
                 <div className="text-xs text-gray-600 mt-1">All bookmarks</div>
               </div>
             </div>
@@ -455,7 +455,7 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
                   <TrendingUp className="w-4 h-4 text-green-500" />
                   <span>Efficiency</span>
                 </div>
-                <div className="text-3xl font-bold text-gray-900">{data.overview.engagementScore.toFixed(0)}%</div>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900">{data.overview.engagementScore.toFixed(0)}%</div>
                 <div className="text-xs text-gray-600 mt-1">Engagement score</div>
               </div>
             </div>
@@ -464,7 +464,7 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
       </div>
 
       {/* Weekly Pattern and Peak Hours */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card className="bg-white border border-gray-200">
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
@@ -627,7 +627,7 @@ function InsightsTab({ data }: { data: AnalyticsData | null }) {
   if (!data) return null
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {/* Top Performers */}
       <Card className="bg-white border border-gray-200">
         <CardContent className="pt-6">
@@ -741,7 +741,7 @@ function CategoriesTab({ data }: { data: AnalyticsData | null }) {
   }).slice(0, 5)
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {/* Category Efficiency */}
       <Card className="bg-white border border-gray-200">
         <CardContent className="pt-6">
@@ -896,7 +896,7 @@ function ProjectsTab() {
   ]
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {/* Active Projects */}
       <Card className="bg-white border border-gray-200">
         <CardContent className="pt-6">

@@ -472,7 +472,7 @@ export function BookmarkDetailModal({
           </div>
 
           {/* OVERVIEW TAB */}
-          <TabsContent value="overview" className="p-6 mt-0 bg-white">
+          <TabsContent value="overview" className="p-4 sm:p-6 mt-0 bg-white">
             <div className="grid grid-cols-2 gap-8">
               {/* Left Column - Logo */}
               <div className="space-y-6">
@@ -752,7 +752,7 @@ export function BookmarkDetailModal({
           </TabsContent>
 
           {/* ARP TAB */}
-          <TabsContent value="arp" className="p-6 bg-white mt-0">
+          <TabsContent value="arp" className="p-4 sm:p-6 bg-white mt-0">
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold">ACTION RESEARCH PLAN</h2>
@@ -808,7 +808,7 @@ export function BookmarkDetailModal({
                 </div>
               </div>
 
-              <div className="border rounded-lg p-6 space-y-4">
+              <div className="border rounded-lg p-4 sm:p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <Input 
                     placeholder="ENTER SECTION TITLE..." 
@@ -858,7 +858,7 @@ export function BookmarkDetailModal({
                 </Button>
               </div>
               
-              <div className="p-6 space-y-6">
+              <div className="p-4 sm:p-6 space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-lg font-bold">NOTIFICATIONS & REMINDERS</h3>
@@ -922,7 +922,7 @@ export function BookmarkDetailModal({
                 </Button>
               </div>
               
-              <div className="p-6 space-y-6">
+              <div className="p-4 sm:p-6 space-y-6">
                 <div className="border rounded-lg p-8 text-center space-y-4">
                   <div className="inline-flex items-center gap-2 px-4 py-1 bg-red-50 text-red-600 rounded-full text-sm font-medium">
                     <Activity className="w-4 h-4" />
@@ -977,7 +977,7 @@ export function BookmarkDetailModal({
                   </div>
                 </div>
 
-                <div className="border rounded-lg p-6">
+                <div className="border rounded-lg p-4 sm:p-6">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="w-2 h-2 rounded-full bg-gray-400"></div>
                     <h4 className="font-medium">CURRENT TASK</h4>
@@ -998,7 +998,7 @@ export function BookmarkDetailModal({
           </TabsContent>
 
           {/* MEDIA TAB */}
-          <TabsContent value="media" className="p-6 bg-white mt-0">
+          <TabsContent value="media" className="p-4 sm:p-6 bg-white mt-0">
             <div className="space-y-6">
               <div>
                 <h2 className="text-xl font-bold mb-2">Media Hub</h2>
@@ -1013,7 +1013,7 @@ export function BookmarkDetailModal({
                   { icon: "📄", label: "Documents", count: 0 },
                   { icon: "📁", label: "Folders", count: 0 },
                 ].map((item) => (
-                  <div key={item.label} className="border rounded-lg p-6 text-center hover:border-blue-500 cursor-pointer transition-colors">
+                  <div key={item.label} className="border rounded-lg p-4 sm:p-6 text-center hover:border-blue-500 cursor-pointer transition-colors">
                     <div className="text-4xl mb-2">{item.icon}</div>
                     <div className="text-2xl font-bold">{item.count}</div>
                     <div className="text-sm text-gray-600">{item.label}</div>
@@ -1077,7 +1077,7 @@ export function BookmarkDetailModal({
           </TabsContent>
 
           {/* COMMENT TAB */}
-          <TabsContent value="comment" className="p-6 bg-white mt-0">
+          <TabsContent value="comment" className="p-4 sm:p-6 bg-white mt-0">
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
