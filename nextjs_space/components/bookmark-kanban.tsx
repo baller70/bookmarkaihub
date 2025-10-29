@@ -31,7 +31,14 @@ interface KanbanColumn {
   statusDotColor: string;
 }
 
-const columns: KanbanColumn[] = [
+interface KanbanRow {
+  id: string;
+  name: string;
+  isExpanded: boolean;
+  columns: KanbanColumn[];
+}
+
+const defaultColumns: KanbanColumn[] = [
   {
     id: 'BACKLOG',
     name: 'BACKLOG',
@@ -87,7 +94,14 @@ const getCardAccentColor = (priority: string) => {
 
 export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [isRowExpanded, setIsRowExpanded] = useState(true);
+  const [rows, setRows] = useState<KanbanRow[]>([
+    {
+      id: 'row-1',
+      name: 'Row 1',
+      isExpanded: true,
+      columns: [...defaultColumns],
+    },
+  ]);
 
   // Group bookmarks by column
   const groupedBookmarks = bookmarks.reduce((groups: any, bookmark: any) => {
@@ -106,6 +120,23 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   }, {});
 
   const totalCards = bookmarks.length;
+
+  const handleAddRow = () => {
+    const newRowNumber = rows.length + 1;
+    const newRow: KanbanRow = {
+      id: `row-${newRowNumber}`,
+      name: `Row ${newRowNumber}`,
+      isExpanded: true,
+      columns: [...defaultColumns],
+    };
+    setRows([...rows, newRow]);
+  };
+
+  const toggleRowExpansion = (rowId: string) => {
+    setRows(rows.map(row => 
+      row.id === rowId ? { ...row, isExpanded: !row.isExpanded } : row
+    ));
+  };
 
   return (
     <div className="space-y-6">
@@ -148,34 +179,36 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
         </div>
       </div>
 
-      {/* Board Container */}
-      <div className="rounded-xl border bg-card text-card-foreground shadow p-4 space-y-4">
-        {/* Row Header */}
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => setIsRowExpanded(!isRowExpanded)}
-            className="flex items-center gap-2 hover:bg-muted/50 px-2 py-1 rounded"
-          >
-            <ChevronDown
-              className={`w-4 h-4 transition-transform ${
-                isRowExpanded ? '' : '-rotate-90'
-              }`}
-            />
-            <span className="font-medium">Row 1 ({columns.length} columns)</span>
-          </button>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">{totalCards} cards</span>
-            <Button variant="ghost" size="sm">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Column
-            </Button>
-          </div>
-        </div>
+      {/* Rows Container */}
+      <div className="space-y-6">
+        {rows.map((row, rowIndex) => (
+          <div key={row.id} className="rounded-xl border bg-card text-card-foreground shadow p-4 space-y-4">
+            {/* Row Header */}
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => toggleRowExpansion(row.id)}
+                className="flex items-center gap-2 hover:bg-muted/50 px-2 py-1 rounded"
+              >
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${
+                    row.isExpanded ? '' : '-rotate-90'
+                  }`}
+                />
+                <span className="font-medium">{row.name} ({row.columns.length} columns)</span>
+              </button>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground">{totalCards} cards</span>
+                <Button variant="ghost" size="sm">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Column
+                </Button>
+              </div>
+            </div>
 
-        {/* Kanban Board */}
-        {isRowExpanded && (
-          <div className="flex gap-6 overflow-x-auto pb-4">
-            {columns.map((column) => {
+            {/* Kanban Board */}
+            {row.isExpanded && (
+              <div className="flex gap-6 overflow-x-auto pb-4">
+                {row.columns.map((column) => {
               const columnBookmarks = groupedBookmarks[column.id] || [];
               
               return (
@@ -319,6 +352,19 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
             })}
           </div>
         )}
+      </div>
+        ))}
+
+        {/* Add Row Button */}
+        <Button 
+          variant="outline" 
+          size="lg" 
+          onClick={handleAddRow}
+          className="w-full border-dashed border-2"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add Row
+        </Button>
       </div>
     </div>
   );
