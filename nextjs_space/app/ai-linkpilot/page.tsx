@@ -1,8 +1,10 @@
 
 "use client"
 
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { DashboardAuth } from "@/components/dashboard-auth"
-import { Card } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -13,6 +15,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { cn } from "@/lib/utils"
 import { 
   Settings, 
   Wand2, 
@@ -25,10 +28,9 @@ import {
   ArrowLeft,
   History
 } from "lucide-react"
-import { useState } from "react"
-import Link from "next/link"
 
 export default function AILinkPilotPage() {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState("auto-processing")
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     intake: true,
@@ -73,78 +75,75 @@ export default function AILinkPilotPage() {
 
   return (
     <DashboardAuth>
-      <div className="min-h-screen bg-gray-50">
-          {/* Header */}
-          <div className="bg-white border-b border-gray-200 px-4 sm:px-8 py-3 sm:py-4">
-            <div className="flex items-center justify-between max-w-7xl">
-              <div className="flex items-center gap-2 sm:gap-4">
-                <Link href="/dashboard" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
-                  <ArrowLeft className="h-4 w-4" />
-                  <span className="text-xs sm:text-sm hidden sm:inline">Back to Dashboard</span>
-                </Link>
-                <Separator orientation="vertical" className="h-6 hidden sm:block" />
-                <div className="flex items-center gap-2">
-                  <Settings className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
-                  <h1 className="text-base sm:text-xl font-semibold text-gray-900">AI LINKPILOT</h1>
+      <div className="min-h-screen bg-white">
+        <div className="container mx-auto py-4 sm:py-8 px-3 sm:px-4">
+          {/* Main bordered container */}
+          <div className="border border-gray-300 rounded-lg p-4 sm:p-6 bg-white">
+            {/* Top Navigation Bar */}
+            <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b pb-4">
+              <div className="flex items-center gap-3 sm:gap-6 flex-wrap w-full sm:w-auto">
+                <Button
+                  variant="ghost"
+                  onClick={() => router.push('/dashboard')}
+                  className="gap-2 text-xs sm:text-sm text-gray-600 hover:text-gray-900 px-0"
+                >
+                  <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+                  Back to Dashboard
+                </Button>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <span className="text-sm sm:text-base font-semibold">AI LINKPILOT</span>
+                  {activeTab !== "auto-processing" && (
+                    <>
+                      <span className="text-gray-400 hidden sm:inline">-</span>
+                      <span className="text-sm sm:text-base text-gray-700 hidden sm:inline">
+                        {sidebarItems.find(item => item.id === activeTab)?.label}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
+              <Badge variant="secondary" className="bg-gray-100 text-gray-700 hover:bg-gray-100 text-xs">
+                AI-Powered
+              </Badge>
             </div>
-          </div>
 
-          {/* Main Content */}
-          <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
-            {/* Bordered Container */}
-            <div className="border border-gray-300 rounded-lg bg-white overflow-hidden">
-            
-            {/* Mobile: Horizontal Tabs */}
-            <div className="lg:hidden p-3 border-b">
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                {sidebarItems.map((item) => {
-                  const Icon = item.icon
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setActiveTab(item.id)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
-                        activeTab === item.id
-                          ? "bg-black text-white"
-                          : "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      <Icon className="h-3 w-3" />
-                      {item.label}
-                    </button>
-                  )
-                })}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Left sidebar - AI LinkPilot Sections */}
+              <div className="lg:col-span-1 space-y-6">
+                {/* AI LinkPilot Sections Card */}
+                <Card className="bg-white border shadow-sm">
+                  <CardHeader className="pb-4">
+                    <h2 className="text-xl font-bold text-black mb-2 uppercase">AI LinkPilot</h2>
+                    <p className="text-sm text-gray-600">Automate and optimize your bookmarks</p>
+                  </CardHeader>
+                  <CardContent className="space-y-2 pb-6">
+                    {sidebarItems.map((item) => {
+                      const Icon = item.icon
+                      const isActive = activeTab === item.id
+                      
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => setActiveTab(item.id)}
+                          className={cn(
+                            "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors",
+                            isActive 
+                              ? "bg-black text-white font-medium" 
+                              : "text-gray-700 hover:bg-gray-100"
+                          )}
+                        >
+                          <Icon className="h-5 w-5 flex-shrink-0" />
+                          <span className="flex-1">{item.label}</span>
+                        </button>
+                      )
+                    })}
+                  </CardContent>
+                </Card>
               </div>
-            </div>
-            
-              <div className="flex">
-            {/* Desktop Sidebar */}
-            <div className="hidden lg:block w-64 bg-white border-r border-gray-200 p-4">
-              <nav className="space-y-1">
-                {sidebarItems.map((item) => {
-                  const Icon = item.icon
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setActiveTab(item.id)}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                        activeTab === item.id
-                          ? "bg-gray-100 text-gray-900"
-                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                      }`}
-                    >
-                      <Icon className="h-4 w-4" />
-                      {item.label}
-                    </button>
-                  )
-                })}
-              </nav>
-            </div>
 
-            {/* Content Area */}
-            <div className="flex-1 p-4 sm:p-6 lg:p-8">
+              {/* Main content area */}
+              <div className="lg:col-span-2">
               {activeTab === "auto-processing" && (
                 <div className="space-y-6">
                   {/* Header */}

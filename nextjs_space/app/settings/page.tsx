@@ -5,7 +5,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { DashboardAuth } from "@/components/dashboard-auth"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { Card, CardHeader, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -52,6 +52,14 @@ const ACCENT_COLORS = [
   { name: "Cyan", value: "#06B6D4" },
 ]
 
+const settingsSections = [
+  { id: "appearance" as SettingsTab, label: "Appearance", icon: Palette },
+  { id: "notifications" as SettingsTab, label: "Notifications", icon: Bell },
+  { id: "privacy" as SettingsTab, label: "Privacy & Security", icon: Shield },
+  { id: "backup" as SettingsTab, label: "Backup & Export", icon: Download },
+  { id: "billing" as SettingsTab, label: "Billing & Subscription", icon: CreditCard },
+]
+
 export default function SettingsPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<SettingsTab>("appearance")
@@ -88,200 +96,90 @@ export default function SettingsPage() {
     toast.info("Settings reset to defaults")
   }
 
+  const getCurrentSectionLabel = () => {
+    return settingsSections.find(s => s.id === activeTab)?.label || 'Appearance'
+  }
+
   return (
     <DashboardAuth>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-        {/* Header */}
-        <div className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+      <div className="min-h-screen bg-white">
+        <div className="container mx-auto py-4 sm:py-8 px-3 sm:px-4">
+          {/* Main bordered container */}
+          <div className="border border-gray-300 rounded-lg p-4 sm:p-6 bg-white">
+            {/* Top Navigation Bar */}
+            <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b pb-4">
+              <div className="flex items-center gap-3 sm:gap-6 flex-wrap w-full sm:w-auto">
                 <Button
                   variant="ghost"
-                  size="sm"
-                  onClick={() => router.push("/dashboard")}
-                  className="flex items-center gap-2 px-2 sm:px-3"
+                  onClick={() => router.push('/dashboard')}
+                  className="gap-2 text-xs sm:text-sm text-gray-600 hover:text-gray-900 px-0"
                 >
-                  <ArrowLeft className="h-4 w-4" />
-                  <span className="hidden sm:inline">Back to Dashboard</span>
+                  <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+                  Back to Dashboard
                 </Button>
-                <div className="hidden sm:block h-6 w-px bg-gray-300" />
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <SettingsIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                  <h1 className="text-base sm:text-xl font-semibold truncate">SETTINGS</h1>
+                  <span className="text-sm sm:text-base font-semibold">SETTINGS</span>
+                  <span className="text-gray-400 hidden sm:inline">-</span>
+                  <span className="text-sm sm:text-base text-gray-700 hidden sm:inline">{getCurrentSectionLabel()}</span>
                 </div>
               </div>
               <div className="flex items-center gap-1 sm:gap-2">
-                <Button variant="outline" size="sm" onClick={handleReset} className="hidden sm:flex">
-                  <RotateCcw className="h-4 w-4 mr-2" />
+                <Button variant="outline" size="sm" onClick={handleReset} className="hidden sm:flex text-xs">
+                  <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                   Reset
                 </Button>
                 <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm px-3" onClick={handleSave}>
                   <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">Save Changes</span>
+                  <span className="hidden sm:inline">Save</span>
                   <span className="sm:hidden">Save</span>
                 </Button>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
-          {/* Bordered Container */}
-          <div className="border border-gray-300 rounded-lg p-3 sm:p-6 bg-white">
-          
-          {/* Mobile: Horizontal Tabs */}
-          <div className="lg:hidden mb-6">
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              <button
-                onClick={() => setActiveTab("appearance")}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors",
-                  activeTab === "appearance"
-                    ? "bg-black text-white"
-                    : "bg-gray-100 text-gray-700"
-                )}
-              >
-                <Palette className="h-4 w-4" />
-                Appearance
-              </button>
-              <button
-                onClick={() => setActiveTab("notifications")}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors",
-                  activeTab === "notifications"
-                    ? "bg-black text-white"
-                    : "bg-gray-100 text-gray-700"
-                )}
-              >
-                <Bell className="h-4 w-4" />
-                Notifications
-              </button>
-              <button
-                onClick={() => setActiveTab("privacy")}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors",
-                  activeTab === "privacy"
-                    ? "bg-black text-white"
-                    : "bg-gray-100 text-gray-700"
-                )}
-              >
-                <Shield className="h-4 w-4" />
-                Privacy
-              </button>
-              <button
-                onClick={() => setActiveTab("backup")}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors",
-                  activeTab === "backup"
-                    ? "bg-black text-white"
-                    : "bg-gray-100 text-gray-700"
-                )}
-              >
-                <Download className="h-4 w-4" />
-                Backup
-              </button>
-              <button
-                onClick={() => setActiveTab("billing")}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors",
-                  activeTab === "billing"
-                    ? "bg-black text-white"
-                    : "bg-gray-100 text-gray-700"
-                )}
-              >
-                <CreditCard className="h-4 w-4" />
-                Billing
-              </button>
-              <button
-                onClick={() => router.push("/settings/oracle")}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap bg-gray-100 text-gray-700"
-              >
-                <Sparkles className="h-4 w-4" />
-                Oracle
-              </button>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-12 gap-6">
-            {/* Desktop Sidebar */}
-            <div className="hidden lg:block col-span-3">
-              <Card className="p-2">
-                <nav className="space-y-1">
-                  <button
-                    onClick={() => setActiveTab("appearance")}
-                    className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
-                      activeTab === "appearance"
-                        ? "bg-blue-50 text-blue-600"
-                        : "text-gray-700 hover:bg-gray-50"
-                    )}
-                  >
-                    <Palette className="h-4 w-4" />
-                    Appearance
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("notifications")}
-                    className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
-                      activeTab === "notifications"
-                        ? "bg-blue-50 text-blue-600"
-                        : "text-gray-700 hover:bg-gray-50"
-                    )}
-                  >
-                    <Bell className="h-4 w-4" />
-                    Notifications
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("privacy")}
-                    className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
-                      activeTab === "privacy"
-                        ? "bg-blue-50 text-blue-600"
-                        : "text-gray-700 hover:bg-gray-50"
-                    )}
-                  >
-                    <Shield className="h-4 w-4" />
-                    Privacy & Security
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("backup")}
-                    className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
-                      activeTab === "backup"
-                        ? "bg-blue-50 text-blue-600"
-                        : "text-gray-700 hover:bg-gray-50"
-                    )}
-                  >
-                    <Download className="h-4 w-4" />
-                    Backup & Export
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("billing")}
-                    className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
-                      activeTab === "billing"
-                        ? "bg-blue-50 text-blue-600"
-                        : "text-gray-700 hover:bg-gray-50"
-                    )}
-                  >
-                    <CreditCard className="h-4 w-4" />
-                    Billing & Subscription
-                  </button>
-                  <button
-                    onClick={() => router.push("/settings/oracle")}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <Sparkles className="h-4 w-4" />
-                    Oracle AI Chat Bot
-                  </button>
-                </nav>
-              </Card>
-            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Left sidebar - Settings Sections */}
+              <div className="lg:col-span-1 space-y-6">
+                {/* Settings Sections Card */}
+                <Card className="bg-white border shadow-sm">
+                  <CardHeader className="pb-4">
+                    <h2 className="text-xl font-bold text-black mb-2 uppercase">Settings</h2>
+                    <p className="text-sm text-gray-600">Customize your experience</p>
+                  </CardHeader>
+                  <CardContent className="space-y-2 pb-6">
+                    {settingsSections.map((section) => {
+                      const Icon = section.icon
+                      const isActive = activeTab === section.id
+                      
+                      return (
+                        <button
+                          key={section.id}
+                          onClick={() => setActiveTab(section.id)}
+                          className={cn(
+                            "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors",
+                            isActive 
+                              ? "bg-black text-white font-medium" 
+                              : "text-gray-700 hover:bg-gray-100"
+                          )}
+                        >
+                          <Icon className="h-5 w-5 flex-shrink-0" />
+                          <span className="flex-1">{section.label}</span>
+                        </button>
+                      )
+                    })}
+                    <button
+                      onClick={() => router.push("/settings/oracle")}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100"
+                    >
+                      <Sparkles className="h-5 w-5 flex-shrink-0" />
+                      <span className="flex-1">Oracle AI Chat Bot</span>
+                    </button>
+                  </CardContent>
+                </Card>
+              </div>
 
-            {/* Content Area */}
-            <div className="col-span-12 lg:col-span-9">
+              {/* Main content area */}
+              <div className="lg:col-span-2">
               {/* Appearance Tab */}
               {activeTab === "appearance" && (
                 <Card className="p-6">
