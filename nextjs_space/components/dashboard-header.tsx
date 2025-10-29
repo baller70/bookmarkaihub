@@ -57,7 +57,7 @@ export function DashboardHeader({
         </div>
 
         {/* Right: Action Buttons */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           {/* Bulk Select Button with Badge */}
           <div className="relative">
             <Button
@@ -136,7 +136,7 @@ export function DashboardHeader({
       </div>
 
       {/* Mobile Header */}
-      <div className="lg:hidden space-y-4">
+      <div className="lg:hidden space-y-5">
         {/* Title */}
         <div className="text-center">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900 font-audiowide tracking-tight">

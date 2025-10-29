@@ -81,7 +81,7 @@ export default function AILinkPilotPage() {
           <div className="border border-gray-300 rounded-lg p-3 sm:p-4 md:p-6 bg-white overflow-hidden">
             {/* Top Navigation Bar */}
             <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b pb-4">
-              <div className="flex items-center gap-3 sm:gap-6 flex-wrap w-full sm:w-auto">
+              <div className="flex items-center gap-4 sm:gap-8 flex-wrap w-full sm:w-auto">
                 <Button
                   variant="ghost"
                   onClick={() => router.push('/dashboard')}

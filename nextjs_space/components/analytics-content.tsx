@@ -120,7 +120,7 @@ export function AnalyticsContent({ showTitle = true }: AnalyticsContentProps) {
                 Deep Insights Into Your Bookmark Usage And Productivity
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               {['7d', '30d', '90d', '1y'].map((period) => (
                 <Button
                   key={period}
