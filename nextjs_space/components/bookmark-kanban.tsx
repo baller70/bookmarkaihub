@@ -179,7 +179,7 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
       </div>
 
       {/* Control Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 px-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 sm:gap-4 px-2">
         {/* Search */}
         <div className="relative w-full sm:flex-1 sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -188,21 +188,21 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
             placeholder="Search cards..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-10 sm:h-9 text-sm"
+            className="pl-10 h-11 sm:h-10 text-sm"
           />
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2 justify-end overflow-x-auto">
-          <Button variant="outline" size="sm" className="flex-shrink-0">
+        <div className="flex items-center gap-2.5 justify-end overflow-x-auto">
+          <Button variant="outline" size="sm" className="flex-shrink-0 h-10 px-3">
             <Filter className="w-4 h-4 sm:mr-2" />
             <span className="hidden sm:inline">Filter</span>
           </Button>
-          <Button variant="outline" size="sm" className="flex-shrink-0">
+          <Button variant="outline" size="sm" className="flex-shrink-0 h-10 px-3">
             <Settings className="w-4 h-4 sm:mr-2" />
             <span className="hidden sm:inline">Settings</span>
           </Button>
-          <Button size="sm" className="flex-shrink-0">
+          <Button size="sm" className="flex-shrink-0 h-10 px-3">
             <Plus className="w-4 h-4 sm:mr-2" />
             <span className="hidden sm:inline">Add Card</span>
           </Button>
@@ -240,13 +240,13 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
             {/* Kanban Board */}
             {row.isExpanded && (
               <div className="overflow-x-auto -mx-2 sm:-mx-3 md:-mx-4 px-2 sm:px-3 md:px-4">
-                <div className="flex gap-3 sm:gap-4 md:gap-6 pb-2 sm:pb-4 min-w-max">
+                <div className="flex gap-4 sm:gap-5 md:gap-6 pb-3 sm:pb-4 min-w-max">
                 {row.columns.map((column) => {
               // Only show bookmarks in the first row (row-1), other rows are blank
               const columnBookmarks = rowIndex === 0 ? (groupedBookmarks[column.id] || []) : [];
               
               return (
-                <div key={column.id} className="flex-shrink-0 w-[260px] sm:w-[300px] lg:w-[340px] space-y-3">
+                <div key={column.id} className="flex-shrink-0 w-[280px] sm:w-[320px] lg:w-[360px] space-y-3.5">
                   {/* Column Header */}
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-start gap-2 min-w-0 flex-1">
@@ -298,9 +298,9 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                   </div>
 
                   {/* Cards Container */}
-                  <div className="space-y-2 sm:space-y-3">
+                  <div className="space-y-3 sm:space-y-3.5">
                     {columnBookmarks.length === 0 ? (
-                      <div className="text-center py-6 sm:py-8 text-muted-foreground text-xs sm:text-sm">
+                      <div className="text-center py-8 sm:py-10 text-muted-foreground text-xs sm:text-sm">
                         No cards in {column.name.toLowerCase()}
                       </div>
                     ) : (
@@ -314,13 +314,13 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                         return (
                           <div
                             key={bookmark.id}
-                            className={`group relative bg-white border rounded-lg p-3 sm:p-4 hover:shadow-md transition-all cursor-pointer touch-target ${accentColor} ${
+                            className={`group relative bg-white border rounded-lg p-4 sm:p-4.5 hover:shadow-md transition-all cursor-pointer touch-target ${accentColor} ${
                               accentColor ? 'border-l-4' : ''
                             }`}
                           >
                             {/* Card Header */}
-                            <div className="flex items-start justify-between mb-2 sm:mb-3">
-                              <h4 className="font-bold text-xs sm:text-sm pr-8 line-clamp-2">
+                            <div className="flex items-start justify-between mb-3 sm:mb-3.5">
+                              <h4 className="font-bold text-xs sm:text-sm pr-8 line-clamp-2 leading-relaxed">
                                 {bookmark.title.toUpperCase()}
                               </h4>
                               <div className="absolute top-2 sm:top-3 right-2 sm:right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -334,12 +334,12 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                             </div>
 
                             {/* Description */}
-                            <p className="text-[10px] sm:text-xs text-muted-foreground mb-2 sm:mb-3 line-clamp-2">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground mb-3 sm:mb-3.5 line-clamp-2 leading-relaxed">
                               {bookmark.description || `${bookmark.title} is a website that introduces innovative solutions...`}
                             </p>
 
                             {/* Tags */}
-                            <div className="flex flex-wrap gap-1 sm:gap-1.5 mb-2 sm:mb-3">
+                            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-3.5">
                               {tags.map((tag: any, idx: number) => (
                                 <Badge
                                   key={idx}

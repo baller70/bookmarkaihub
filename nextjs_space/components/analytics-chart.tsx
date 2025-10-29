@@ -92,13 +92,13 @@ export function AnalyticsChart({ analytics, onTimeRangeChange }: AnalyticsChartP
   })) || []
 
   return (
-    <Card className="p-6 bg-white border border-gray-200 shadow-sm">
+    <Card className="p-5 md:p-6 bg-white border border-gray-200 shadow-sm">
       <div className="space-y-6">
         {/* Top Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h3 className="text-lg font-bold text-gray-900 leading-relaxed md:leading-normal">TOM ANALYTICS CHART</h3>
-            <p className="text-xs text-gray-500 mt-0.5">Total for the last 3 months</p>
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-0">
+          <div className="space-y-1">
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 leading-relaxed">TOM ANALYTICS CHART</h3>
+            <p className="text-xs text-gray-500">Total for the last 3 months</p>
           </div>
           
           {/* Time Range Tabs */}
@@ -110,7 +110,7 @@ export function AnalyticsChart({ analytics, onTimeRangeChange }: AnalyticsChartP
                 size="sm"
                 onClick={() => handleTimeRangeChange(range.id)}
                 className={cn(
-                  "px-3 py-1.5 text-xs font-medium rounded-md h-8",
+                  "px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-md h-8",
                   selectedRange === range.id
                     ? "bg-gray-100 text-gray-900"
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
@@ -123,10 +123,10 @@ export function AnalyticsChart({ analytics, onTimeRangeChange }: AnalyticsChartP
         </div>
 
         {/* Chart Header with Metrics */}
-        <div className="flex items-center gap-4">
-          <div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+          <div className="space-y-1">
             <h4 className="text-base font-semibold text-gray-900">Analytics Chart</h4>
-            <p className="text-xs text-gray-500 mt-0.5">Last 28 days</p>
+            <p className="text-xs text-gray-500">Last 28 days</p>
           </div>
           
           {/* Metrics Dropdown with Checkboxes */}

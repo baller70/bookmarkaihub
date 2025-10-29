@@ -298,7 +298,7 @@ export function DashboardContent() {
       <div className="space-y-4">
         <div className="flex items-start justify-between">
           <div>
-            <div className="text-xs text-gray-500 mb-1">Total bookmarks</div>
+            <div className="text-xs text-gray-500 mb-2 md:mb-1">Total bookmarks</div>
             <div className="text-5xl font-bold text-gray-900">{bookmarks?.length || 0}</div>
           </div>
           
@@ -361,7 +361,7 @@ export function DashboardContent() {
 
       {/* View Mode Toggles */}
       <div className="flex justify-center -mx-6 px-6 md:mx-0 md:px-0">
-        <div className="flex items-center gap-1.5 md:gap-2 bg-gray-900 rounded-xl p-2 w-fit max-w-full overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-2 md:gap-2.5 bg-gray-900 rounded-xl p-2.5 md:p-2 w-fit max-w-full overflow-x-auto scrollbar-hide">
           {viewModes.map((mode) => {
             const Icon = mode.icon
             return (
@@ -371,7 +371,7 @@ export function DashboardContent() {
                 size="sm"
                 onClick={() => setViewMode(mode.id)}
                 className={cn(
-                  "px-2 sm:px-4 py-3 h-10 sm:h-12 text-xs sm:text-sm font-medium rounded-lg transition-colors gap-1.5 sm:gap-2 whitespace-nowrap flex-shrink-0",
+                  "px-3 sm:px-4 py-3 h-11 sm:h-12 text-xs sm:text-sm font-medium rounded-lg transition-colors gap-2 sm:gap-2.5 whitespace-nowrap flex-shrink-0",
                   viewMode === mode.id
                     ? "bg-white text-gray-900 shadow-sm hover:bg-white"
                     : "text-white hover:text-white hover:bg-gray-800"
@@ -399,14 +399,14 @@ export function DashboardContent() {
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
+        <div className="flex items-center gap-3">
           <span className="text-sm text-gray-600">Per page</span>
           <Select value={itemsPerPage.toString()} onValueChange={(value) => {
             setItemsPerPage(parseInt(value))
             setCurrentPage(1)
           }}>
-            <SelectTrigger className="w-[80px] h-9 bg-white border-gray-300">
+            <SelectTrigger className="w-[90px] h-10 bg-white border-gray-300">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -418,30 +418,30 @@ export function DashboardContent() {
           </Select>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
           <span className="text-sm text-black">
             Page {currentPage} of {totalPages || 1}
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="h-9 text-black bg-white hover:bg-gray-50"
+              className="h-10 text-black bg-white hover:bg-gray-50 px-3 sm:px-4"
             >
-              <ChevronLeft className="h-4 w-4" />
-              Previous
+              <ChevronLeft className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">Previous</span>
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
-              className="h-9 text-black bg-white hover:bg-gray-50"
+              className="h-10 text-black bg-white hover:bg-gray-50 px-3 sm:px-4"
             >
-              Next
-              <ChevronRight className="h-4 w-4" />
+              <span className="hidden sm:inline">Next</span>
+              <ChevronRight className="h-4 w-4 sm:ml-1" />
             </Button>
           </div>
         </div>

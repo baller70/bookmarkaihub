@@ -91,15 +91,15 @@ export default function AboutYou() {
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="flex items-start justify-between pb-6 border-b border-gray-200">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2 uppercase">About You</h1>
-          <p className="text-base text-gray-600">Tell us about yourself to get personalized bookmark recommendations</p>
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-0 pb-6 border-b border-gray-200">
+        <div className="space-y-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 uppercase">About You</h1>
+          <p className="text-sm sm:text-base text-gray-600">Tell us about yourself to get personalized bookmark recommendations</p>
         </div>
         <Button 
           onClick={handleSave} 
           disabled={saving}
-          className="bg-black text-white hover:bg-gray-800 px-6 py-2 h-auto"
+          className="bg-black text-white hover:bg-gray-800 px-6 py-2.5 h-auto flex-shrink-0"
         >
           <span className="flex items-center gap-2">
             <span>💾</span>
@@ -110,14 +110,14 @@ export default function AboutYou() {
 
       {/* Basic Information */}
       <Card className="bg-white border border-gray-200 shadow-sm">
-        <CardHeader className="border-b border-gray-100">
-          <div className="flex items-center gap-2">
+        <CardHeader className="border-b border-gray-100 space-y-2">
+          <div className="flex items-center gap-2.5">
             <User className="w-5 h-5 text-gray-700" />
-            <CardTitle className="text-lg font-semibold text-gray-900 uppercase">BASIC INFORMATION</CardTitle>
+            <CardTitle className="text-base sm:text-lg font-semibold text-gray-900 uppercase">BASIC INFORMATION</CardTitle>
           </div>
           <CardDescription className="text-sm text-gray-600">Your basic profile information and avatar</CardDescription>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 space-y-6">
           {/* Avatar and Name Row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {/* Avatar Section */}
