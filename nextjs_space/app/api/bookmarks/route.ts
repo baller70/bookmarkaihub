@@ -79,7 +79,7 @@ export async function GET(request: Request) {
       return sum + (bookmark.totalVisits || 0)
     }, 0)
 
-    // Calculate usage percentage for each bookmark
+    // Calculate usage percentage for each bookmark and map field names
     const bookmarksWithUsage = bookmarks.map((bookmark: any) => {
       const usagePercentage = totalVisitsAcrossAll > 0 
         ? (bookmark.totalVisits / totalVisitsAcrossAll) * 100 
@@ -87,6 +87,7 @@ export async function GET(request: Request) {
       
       return {
         ...bookmark,
+        visitCount: bookmark.totalVisits, // Map totalVisits to visitCount for frontend consistency
         usagePercentage
       }
     })

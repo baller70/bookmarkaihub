@@ -46,7 +46,13 @@ export async function GET(
       return NextResponse.json({ error: "Bookmark not found" }, { status: 404 })
     }
 
-    return NextResponse.json(bookmark)
+    // Map totalVisits to visitCount for frontend consistency
+    const bookmarkWithMappedFields = {
+      ...bookmark,
+      visitCount: bookmark.totalVisits,
+    }
+
+    return NextResponse.json(bookmarkWithMappedFields)
   } catch (error) {
     console.error("Error fetching bookmark:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
@@ -142,7 +148,13 @@ export async function PUT(
       },
     })
 
-    return NextResponse.json(bookmark)
+    // Map totalVisits to visitCount for frontend consistency
+    const bookmarkWithMappedFields = {
+      ...bookmark,
+      visitCount: bookmark.totalVisits,
+    }
+
+    return NextResponse.json(bookmarkWithMappedFields)
   } catch (error) {
     console.error("Error updating bookmark:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
@@ -200,7 +212,13 @@ export async function PATCH(
       },
     })
 
-    return NextResponse.json(bookmark)
+    // Map totalVisits to visitCount for frontend consistency
+    const bookmarkWithMappedFields = {
+      ...bookmark,
+      visitCount: bookmark.totalVisits,
+    }
+
+    return NextResponse.json(bookmarkWithMappedFields)
   } catch (error) {
     console.error("Error patching bookmark:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
