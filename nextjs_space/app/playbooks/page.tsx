@@ -233,9 +233,9 @@ export default function PlaybooksPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-12 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
               {/* Sidebar */}
-              <div className="col-span-3 space-y-2">
+              <div className="lg:col-span-3 space-y-2">
                 <h3 className="font-semibold mb-4">MY PLAYBOOKS</h3>
                 {playbooks.map(playbook => (
                   <Card
@@ -262,7 +262,7 @@ export default function PlaybooksPage() {
               </div>
 
               {/* Main Player */}
-              <div className="col-span-9 space-y-6">
+              <div className="lg:col-span-9 space-y-4 sm:space-y-6">
                 {activePlaybook && (
                   <>
                     {/* Now Playing */}

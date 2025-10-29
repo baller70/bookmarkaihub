@@ -97,7 +97,7 @@ export default function PriorityPage() {
       <DashboardLayout>
         <div className="p-4 md:p-8 max-w-7xl mx-auto">
           {/* Bordered Container */}
-          <div className="border border-gray-300 rounded-lg p-6 bg-white">
+          <div className="border border-gray-300 rounded-lg p-3 sm:p-4 md:p-6 bg-white overflow-hidden">
           {/* Header */}
           <div className="flex items-start justify-between mb-6">
             <div>

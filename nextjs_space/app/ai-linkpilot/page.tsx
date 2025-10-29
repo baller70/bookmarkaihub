@@ -78,7 +78,7 @@ export default function AILinkPilotPage() {
       <div className="min-h-screen bg-white">
         <div className="container mx-auto py-4 sm:py-8 px-3 sm:px-4">
           {/* Main bordered container */}
-          <div className="border border-gray-300 rounded-lg p-4 sm:p-6 bg-white">
+          <div className="border border-gray-300 rounded-lg p-3 sm:p-4 md:p-6 bg-white overflow-hidden">
             {/* Top Navigation Bar */}
             <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b pb-4">
               <div className="flex items-center gap-3 sm:gap-6 flex-wrap w-full sm:w-auto">
@@ -108,14 +108,14 @@ export default function AILinkPilotPage() {
               </Badge>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
               {/* Left sidebar - AI LinkPilot Sections */}
-              <div className="lg:col-span-1 space-y-6">
+              <div className="lg:col-span-1 space-y-4 sm:space-y-6">
                 {/* AI LinkPilot Sections Card */}
-                <Card className="bg-white border shadow-sm">
+                <Card className="bg-white border shadow-sm overflow-hidden">
                   <CardHeader className="pb-4">
-                    <h2 className="text-xl font-bold text-black mb-2 uppercase">AI LinkPilot</h2>
-                    <p className="text-sm text-gray-600">Automate and optimize your bookmarks</p>
+                    <h2 className="text-lg sm:text-lg sm:text-xl font-bold text-black mb-2 uppercase">AI LinkPilot</h2>
+                    <p className="text-xs sm:text-sm text-gray-600">Automate and optimize your bookmarks</p>
                   </CardHeader>
                   <CardContent className="space-y-2 pb-6">
                     {sidebarItems.map((item) => {
@@ -143,18 +143,18 @@ export default function AILinkPilotPage() {
               </div>
 
               {/* Main content area */}
-              <div className="lg:col-span-2">
+              <div className="lg:col-span-2 min-w-0">
               {activeTab === "auto-processing" && (
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {/* Header */}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900">AUTO-PROCESSING</h2>
-                      <p className="text-sm text-gray-500 mt-1">autoProcessing.description</p>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+                    <div className="min-w-0">
+                      <h2 className="text-xl sm:text-xl sm:text-2xl font-bold text-gray-900">AUTO-PROCESSING</h2>
+                      <p className="text-xs sm:text-xs sm:text-sm text-gray-500 mt-1">autoProcessing.description</p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                       <Select defaultValue="english">
-                        <SelectTrigger className="w-40">
+                        <SelectTrigger className="w-32 sm:w-40">
                           <div className="flex items-center gap-2">
                             <span>🇺🇸</span>
                             <SelectValue />
@@ -164,7 +164,7 @@ export default function AILinkPilotPage() {
                           <SelectItem value="english">English</SelectItem>
                         </SelectContent>
                       </Select>
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" className="hidden sm:flex">
                         <History className="h-4 w-4 mr-2" />
                         autoProcessing.history
                       </Button>
@@ -172,33 +172,33 @@ export default function AILinkPilotPage() {
                   </div>
 
                   {/* Tag Cloud Snapshot Card */}
-                  <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-                    <h3 className="font-semibold text-gray-900 mb-2">TAG CLOUD SNAPSHOT</h3>
-                    <p className="text-sm text-gray-600">Top tags from the past 7 days</p>
+                  <Card className="p-4 sm:p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 overflow-hidden">
+                    <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2">TAG CLOUD SNAPSHOT</h3>
+                    <p className="text-xs sm:text-sm text-gray-600">Top tags from the past 7 days</p>
                   </Card>
 
                   {/* Intake Scope */}
                   <Card className="overflow-hidden bg-white border-gray-200">
                     <button
                       onClick={() => toggleSection("intake")}
-                      className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors bg-white"
+                      className="w-full px-4 sm:px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors bg-white"
                     >
-                      <div className="flex items-center gap-3">
-                        <Settings className="h-5 w-5 text-gray-700" />
-                        <div className="text-left">
-                          <h3 className="font-semibold text-gray-900">INTAKE SCOPE</h3>
-                          <p className="text-sm text-gray-500">Control which types of link additions trigger auto-processing</p>
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <Settings className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700 flex-shrink-0" />
+                        <div className="text-left min-w-0">
+                          <h3 className="text-sm sm:text-base font-semibold text-gray-900">INTAKE SCOPE</h3>
+                          <p className="text-xs sm:text-xs sm:text-sm text-gray-500 line-clamp-1">Control which types of link additions trigger auto-processing</p>
                         </div>
                       </div>
                       {expandedSections.intake ? (
-                        <ChevronUp className="h-5 w-5 text-gray-400" />
+                        <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0" />
                       ) : (
-                        <ChevronDown className="h-5 w-5 text-gray-400" />
+                        <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0" />
                       )}
                     </button>
                     {expandedSections.intake && (
-                      <div className="px-6 pb-6 space-y-4 bg-white">
-                        <div className="grid grid-cols-2 gap-4">
+                      <div className="px-4 sm:px-6 pb-6 space-y-4 bg-white">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                             <div>
                               <p className="font-medium text-gray-900 text-sm">Manual saves</p>
@@ -236,35 +236,35 @@ export default function AILinkPilotPage() {
                   <Card className="overflow-hidden bg-white border-gray-200">
                     <button
                       onClick={() => toggleSection("tagging")}
-                      className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors bg-white"
+                      className="w-full px-4 sm:px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors bg-white"
                     >
-                      <div className="flex items-center gap-3">
-                        <Wand2 className="h-5 w-5 text-gray-700" />
-                        <div className="text-left">
-                          <h3 className="font-semibold text-gray-900">AUTO-TAGGING & METADATA</h3>
-                          <p className="text-sm text-gray-500">Configure automatic tag generation and content analysis</p>
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <Wand2 className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700 flex-shrink-0" />
+                        <div className="text-left min-w-0">
+                          <h3 className="text-sm sm:text-base font-semibold text-gray-900">AUTO-TAGGING & METADATA</h3>
+                          <p className="text-xs sm:text-xs sm:text-sm text-gray-500 line-clamp-1">Configure automatic tag generation and content analysis</p>
                         </div>
                       </div>
                       {expandedSections.tagging ? (
-                        <ChevronUp className="h-5 w-5 text-gray-400" />
+                        <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0" />
                       ) : (
-                        <ChevronDown className="h-5 w-5 text-gray-400" />
+                        <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0" />
                       )}
                     </button>
                     {expandedSections.tagging && (
-                      <div className="px-6 pb-6 space-y-6 bg-white">
+                      <div className="px-4 sm:px-6 pb-6 space-y-4 sm:space-y-6 bg-white">
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="font-medium text-gray-900">Enable auto-tagging</p>
-                            <p className="text-sm text-gray-500">Automatically generate tags for new links</p>
+                            <p className="text-xs sm:text-sm text-gray-500">Automatically generate tags for new links</p>
                           </div>
                           <Switch checked={autoTagging} onCheckedChange={setAutoTagging} />
                         </div>
 
                         <div>
-                          <div className="flex items-center justify-between mb-3">
-                            <Label className="text-gray-900">Confidence threshold</Label>
-                            <span className="text-sm text-gray-500">~{confidenceThreshold[0]}% of links will auto-apply</span>
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                            <Label className="text-gray-900 text-sm sm:text-base">Confidence threshold</Label>
+                            <span className="text-xs sm:text-xs sm:text-sm text-gray-500">~{confidenceThreshold[0]}% of links will auto-apply</span>
                           </div>
                           <Slider
                             value={confidenceThreshold}
@@ -280,7 +280,7 @@ export default function AILinkPilotPage() {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                           <div>
                             <Label className="mb-2 block text-gray-900">Preferred tag style</Label>
                             <Select value={tagStyle} onValueChange={setTagStyle}>
@@ -338,29 +338,29 @@ export default function AILinkPilotPage() {
                   <Card className="overflow-hidden bg-white border-gray-200">
                     <button
                       onClick={() => toggleSection("filtering")}
-                      className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors bg-white"
+                      className="w-full px-4 sm:px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors bg-white"
                     >
-                      <div className="flex items-center gap-3">
-                        <svg className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                         </svg>
-                        <div className="text-left">
-                          <h3 className="font-semibold text-gray-900">FILTERING & CATEGORIZATION</h3>
-                          <p className="text-sm text-gray-500">Configure content filtering, duplicate handling, and smart categorization</p>
+                        <div className="text-left min-w-0">
+                          <h3 className="text-sm sm:text-base font-semibold text-gray-900">FILTERING & CATEGORIZATION</h3>
+                          <p className="text-xs sm:text-xs sm:text-sm text-gray-500 line-clamp-1">Configure content filtering, duplicate handling, and smart categorization</p>
                         </div>
                       </div>
                       {expandedSections.filtering ? (
-                        <ChevronUp className="h-5 w-5 text-gray-400" />
+                        <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0" />
                       ) : (
-                        <ChevronDown className="h-5 w-5 text-gray-400" />
+                        <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0" />
                       )}
                     </button>
                     {expandedSections.filtering && (
-                      <div className="px-6 pb-6 space-y-6 bg-white">
+                      <div className="px-4 sm:px-6 pb-6 space-y-4 sm:space-y-6 bg-white">
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="font-medium text-gray-900">Strip tracking parameters</p>
-                            <p className="text-sm text-gray-500">Remove UTM codes and tracking parameters from URLs</p>
+                            <p className="text-xs sm:text-sm text-gray-500">Remove UTM codes and tracking parameters from URLs</p>
                           </div>
                           <Switch checked={stripTracking} onCheckedChange={setStripTracking} />
                         </div>
@@ -385,7 +385,7 @@ export default function AILinkPilotPage() {
                               onChange={(e) => setMinContentLength(e.target.value)}
                               className="w-32"
                             />
-                            <span className="text-sm text-gray-500">words</span>
+                            <span className="text-xs sm:text-sm text-gray-500">words</span>
                           </div>
                           <p className="text-xs text-gray-500 mt-2">Reject pages with less content than this threshold</p>
                         </div>
@@ -438,9 +438,9 @@ export default function AILinkPilotPage() {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                           <div>
-                            <Label className="mb-2 block text-gray-900">Fallback folder</Label>
+                            <Label className="mb-2 block text-gray-900 text-sm">Fallback folder</Label>
                             <Select value={fallbackFolder} onValueChange={setFallbackFolder}>
                               <SelectTrigger>
                                 <div className="flex items-center gap-2">
@@ -454,7 +454,7 @@ export default function AILinkPilotPage() {
                             </Select>
                           </div>
                           <div>
-                            <Label className="mb-2 block text-gray-900">Draft expiration</Label>
+                            <Label className="mb-2 block text-gray-900 text-sm">Draft expiration</Label>
                             <Select value={draftExpiration} onValueChange={setDraftExpiration}>
                               <SelectTrigger>
                                 <SelectValue />
@@ -475,28 +475,28 @@ export default function AILinkPilotPage() {
                   <Card className="overflow-hidden bg-white border-gray-200">
                     <button
                       onClick={() => toggleSection("rules")}
-                      className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors bg-white"
+                      className="w-full px-4 sm:px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors bg-white"
                     >
-                      <div className="flex items-center gap-3">
-                        <svg className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
-                        <div className="text-left">
-                          <h3 className="font-semibold text-gray-900">RULE BUILDER</h3>
-                          <p className="text-sm text-gray-500">Create custom rules for automatic link processing</p>
+                        <div className="text-left min-w-0">
+                          <h3 className="text-sm sm:text-base font-semibold text-gray-900">RULE BUILDER</h3>
+                          <p className="text-xs sm:text-xs sm:text-sm text-gray-500 line-clamp-1">Create custom rules for automatic link processing</p>
                         </div>
                       </div>
                       {expandedSections.rules ? (
-                        <ChevronUp className="h-5 w-5 text-gray-400" />
+                        <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0" />
                       ) : (
-                        <ChevronDown className="h-5 w-5 text-gray-400" />
+                        <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0" />
                       )}
                     </button>
                     {expandedSections.rules && (
-                      <div className="px-6 pb-6 bg-white">
+                      <div className="px-4 sm:px-6 pb-6 bg-white">
                         <div className="text-center py-8">
-                          <p className="text-sm text-gray-500 mb-4">0 rules configured</p>
-                          <Button className="bg-black text-white hover:bg-gray-800">
+                          <p className="text-xs sm:text-xs sm:text-sm text-gray-500 mb-4">0 rules configured</p>
+                          <Button className="bg-black text-white hover:bg-gray-800 text-sm">
                             <span className="mr-2">+</span>
                             Add Rule
                           </Button>
@@ -506,10 +506,10 @@ export default function AILinkPilotPage() {
                   </Card>
 
                   {/* Import/Export Settings */}
-                  <Card className="p-6 bg-white border-gray-200">
-                    <h3 className="font-semibold text-gray-900 mb-2">IMPORT / EXPORT SETTINGS</h3>
-                    <p className="text-sm text-gray-500 mb-4">Backup or restore your auto-processing configuration</p>
-                    <div className="flex gap-3">
+                  <Card className="p-4 sm:p-6 bg-white border-gray-200 overflow-hidden">
+                    <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2">IMPORT / EXPORT SETTINGS</h3>
+                    <p className="text-xs sm:text-xs sm:text-sm text-gray-500 mb-4">Backup or restore your auto-processing configuration</p>
+                    <div className="flex flex-col sm:flex-row gap-3">
                       <Button variant="outline" className="flex-1">
                         <Download className="h-4 w-4 mr-2" />
                         Export JSON
@@ -527,8 +527,8 @@ export default function AILinkPilotPage() {
                 <div className="space-y-6">
                   {/* Header */}
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">AI CONTENT DISCOVERY</h2>
-                    <p className="text-sm text-gray-500 mt-1">Personalized recommendations and intelligent link finding powered by AI</p>
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900">AI CONTENT DISCOVERY</h2>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">Personalized recommendations and intelligent link finding powered by AI</p>
                   </div>
 
                   {/* Sub-tabs */}
@@ -542,12 +542,12 @@ export default function AILinkPilotPage() {
                   </div>
 
                   {/* Personalized Recommendations */}
-                  <Card className="p-6 bg-white border-gray-200">
+                  <Card className="p-4 sm:p-6 bg-white border-gray-200">
                     <div className="flex items-center gap-2 mb-4">
                       <Wand2 className="h-5 w-5 text-gray-700" />
                       <h3 className="font-semibold text-gray-900">PERSONALIZED RECOMMENDATIONS</h3>
                     </div>
-                    <p className="text-sm text-gray-500 mb-6">AI-powered suggestions based on your interests and reading habits</p>
+                    <p className="text-xs sm:text-sm text-gray-500 mb-6">AI-powered suggestions based on your interests and reading habits</p>
 
                     <div className="space-y-6">
                       <div>
@@ -596,9 +596,9 @@ export default function AILinkPilotPage() {
                   </Card>
 
                   {/* Generate Recommendations Button */}
-                  <Card className="p-6 bg-white border-gray-200">
+                  <Card className="p-4 sm:p-6 bg-white border-gray-200">
                     <h3 className="font-semibold text-gray-900 mb-2">GENERATE RECOMMENDATIONS</h3>
-                    <p className="text-sm text-gray-500 mb-4">Get AI-powered content suggestions</p>
+                    <p className="text-xs sm:text-sm text-gray-500 mb-4">Get AI-powered content suggestions</p>
                     <Button className="bg-black text-white hover:bg-gray-800">
                       <Wand2 className="h-4 w-4 mr-2" />
                       Generate
@@ -608,15 +608,15 @@ export default function AILinkPilotPage() {
               )}
 
               {activeTab === "bulk-uploader" && (
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {/* Header */}
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">MAGIC BULK LINK UPLOADER</h2>
-                    <p className="text-sm text-gray-500 mt-1">Import multiple links at once with intelligent categorization and batch processing</p>
+                    <h2 className="text-xl sm:text-xl sm:text-2xl font-bold text-gray-900">MAGIC BULK LINK UPLOADER</h2>
+                    <p className="text-xs sm:text-xs sm:text-sm text-gray-500 mt-1">Import multiple links at once with intelligent categorization and batch processing</p>
                   </div>
 
                   {/* Warning Banner */}
-                  <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 flex items-center justify-between">
+                  <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <svg className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -636,9 +636,9 @@ export default function AILinkPilotPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                     {/* Import Links Section */}
-                    <Card className="col-span-2 p-6 bg-white border-gray-200">
+                    <Card className="lg:col-span-2 p-4 sm:p-6 bg-white border-gray-200 overflow-hidden">
                       <h3 className="font-semibold text-gray-900 mb-4">IMPORT LINKS</h3>
                       
                       {/* Upload Method Tabs */}
@@ -675,8 +675,8 @@ export default function AILinkPilotPage() {
                             </div>
                           </div>
                         </div>
-                        <h3 className="text-lg font-semibold text-blue-500 mb-2">DROP YOUR FILES HERE</h3>
-                        <p className="text-sm text-gray-500 mb-4">Drag and drop CSV files or paste URLs directly</p>
+                        <h3 className="text-base sm:text-lg font-semibold text-blue-500 mb-2">DROP YOUR FILES HERE</h3>
+                        <p className="text-xs sm:text-sm text-gray-500 mb-4">Drag and drop CSV files or paste URLs directly</p>
                         <div className="flex justify-center gap-4 text-xs text-gray-500 mb-6">
                           <div className="flex items-center gap-1">
                             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -701,7 +701,7 @@ export default function AILinkPilotPage() {
                     </Card>
 
                     {/* Batch Settings Section */}
-                    <Card className="p-6 bg-white border-gray-200">
+                    <Card className="p-4 sm:p-6 bg-white border-gray-200 overflow-hidden">
                       <div className="flex items-center gap-2 mb-4">
                         <svg className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
@@ -800,15 +800,15 @@ export default function AILinkPilotPage() {
               )}
 
               {activeTab === "link-validator" && (
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {/* Header */}
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">LINK VALIDATOR</h2>
-                    <p className="text-sm text-gray-500 mt-1">Monitor and maintain the health of your bookmarked links with automated validation</p>
+                    <h2 className="text-xl sm:text-xl sm:text-2xl font-bold text-gray-900">LINK VALIDATOR</h2>
+                    <p className="text-xs sm:text-xs sm:text-sm text-gray-500 mt-1">Monitor and maintain the health of your bookmarked links with automated validation</p>
                   </div>
 
                   {/* Validation Summary */}
-                  <Card className="p-6 bg-white border-gray-200">
+                  <Card className="p-4 sm:p-6 bg-white border-gray-200 overflow-hidden">
                     <div className="flex items-center gap-2 mb-6">
                       <svg className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -816,33 +816,33 @@ export default function AILinkPilotPage() {
                       <h3 className="font-semibold text-gray-900">VALIDATION SUMMARY</h3>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
                       <div className="text-center">
                         <div className="flex justify-center mb-2">
-                          <svg className="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                           </svg>
                         </div>
                         <div className="text-3xl font-bold text-gray-900 mb-1">0</div>
-                        <div className="text-sm text-gray-500">Total Links</div>
+                        <div className="text-xs sm:text-sm text-gray-500">Total Links</div>
                       </div>
 
                       <div className="text-center">
                         <div className="flex justify-center mb-2">
-                          <CheckCircle2 className="h-8 w-8 text-green-500" />
+                          <CheckCircle2 className="h-6 w-6 sm:h-8 sm:w-8 text-green-500" />
                         </div>
-                        <div className="text-3xl font-bold text-gray-900 mb-1">0</div>
-                        <div className="text-sm text-gray-500">Healthy</div>
+                        <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">0</div>
+                        <div className="text-xs sm:text-xs sm:text-sm text-gray-500">Healthy</div>
                       </div>
 
                       <div className="text-center">
                         <div className="flex justify-center mb-2">
-                          <svg className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg className="h-6 w-6 sm:h-8 sm:w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                         </div>
                         <div className="text-3xl font-bold text-gray-900 mb-1">0</div>
-                        <div className="text-sm text-gray-500">Broken</div>
+                        <div className="text-xs sm:text-sm text-gray-500">Broken</div>
                       </div>
 
                       <div className="text-center">
@@ -852,7 +852,7 @@ export default function AILinkPilotPage() {
                           </svg>
                         </div>
                         <div className="text-3xl font-bold text-gray-900 mb-1">0</div>
-                        <div className="text-sm text-gray-500">Redirects</div>
+                        <div className="text-xs sm:text-sm text-gray-500">Redirects</div>
                       </div>
 
                       <div className="text-center">
@@ -862,7 +862,7 @@ export default function AILinkPilotPage() {
                           </svg>
                         </div>
                         <div className="text-3xl font-bold text-gray-900 mb-1">0</div>
-                        <div className="text-sm text-gray-500">Timeouts</div>
+                        <div className="text-xs sm:text-sm text-gray-500">Timeouts</div>
                       </div>
 
                       <div className="text-center">
@@ -872,14 +872,14 @@ export default function AILinkPilotPage() {
                           </svg>
                         </div>
                         <div className="text-3xl font-bold text-gray-900 mb-1">0</div>
-                        <div className="text-sm text-gray-500">Phishing</div>
+                        <div className="text-xs sm:text-sm text-gray-500">Phishing</div>
                       </div>
                     </div>
                   </Card>
 
-                  <div className="grid grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {/* Scope & Input */}
-                    <Card className="p-6 bg-white border-gray-200">
+                    <Card className="p-4 sm:p-6 bg-white border-gray-200">
                       <div className="flex items-center gap-2 mb-4">
                         <svg className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -918,7 +918,7 @@ export default function AILinkPilotPage() {
                     </Card>
 
                     {/* Schedule & Options */}
-                    <Card className="p-6 bg-white border-gray-200">
+                    <Card className="p-4 sm:p-6 bg-white border-gray-200">
                       <div className="flex items-center gap-2 mb-4">
                         <svg className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -964,10 +964,10 @@ export default function AILinkPilotPage() {
                     </Card>
 
                     {/* Status Distribution */}
-                    <Card className="p-6 bg-white border-gray-200">
+                    <Card className="p-4 sm:p-6 bg-white border-gray-200">
                       <h3 className="font-semibold text-gray-900 mb-4">STATUS DISTRIBUTION</h3>
                       <div className="flex items-center justify-center h-40">
-                        <p className="text-sm text-gray-500">No data available</p>
+                        <p className="text-xs sm:text-sm text-gray-500">No data available</p>
                       </div>
                     </Card>
                   </div>
@@ -978,11 +978,11 @@ export default function AILinkPilotPage() {
                 <div className="space-y-6">
                   {/* Header */}
                   <div>
-                    <h2 className="text-2xl font-bold text-blue-500">BROWSER LAUNCHER</h2>
-                    <p className="text-sm text-gray-500 mt-1">Capture tabs from your browser and automatically convert them into organized, tagged bookmarks</p>
+                    <h2 className="text-xl sm:text-2xl font-bold text-blue-500">BROWSER LAUNCHER</h2>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">Capture tabs from your browser and automatically convert them into organized, tagged bookmarks</p>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {/* Main Capture Area */}
                     <Card className="col-span-2 p-12 bg-white border-gray-200">
                       <div className="text-center">
@@ -992,7 +992,7 @@ export default function AILinkPilotPage() {
                           </svg>
                         </div>
                         <h3 className="text-xl font-semibold text-gray-900 mb-3">READY TO CAPTURE TABS</h3>
-                        <p className="text-sm text-gray-500 mb-6">
+                        <p className="text-xs sm:text-sm text-gray-500 mb-6">
                           Use the browser extension or keyboard shortcut to capture your<br />
                           current tabs and convert them into bookmarks.
                         </p>
@@ -1016,7 +1016,7 @@ export default function AILinkPilotPage() {
                     </Card>
 
                     {/* Settings Sidebar */}
-                    <Card className="p-6 bg-white border-gray-200">
+                    <Card className="p-4 sm:p-6 bg-white border-gray-200">
                       <div className="flex items-center gap-2 mb-4">
                         <Settings className="h-5 w-5 text-gray-700" />
                         <h3 className="font-semibold text-gray-900">SETTINGS</h3>

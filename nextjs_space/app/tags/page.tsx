@@ -88,7 +88,7 @@ export default function TagsPage() {
       <DashboardLayout>
         <div className="p-4 md:p-8 max-w-7xl mx-auto">
           {/* Bordered Container */}
-          <div className="border border-gray-300 rounded-lg p-6 bg-white">
+          <div className="border border-gray-300 rounded-lg p-3 sm:p-4 md:p-6 bg-white overflow-hidden">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between">
@@ -127,7 +127,7 @@ export default function TagsPage() {
 
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <Card className="p-6 bg-white border-gray-200">
+            <Card className="p-4 sm:p-6 bg-white border-gray-200 overflow-hidden">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Total Tags</p>
@@ -136,7 +136,7 @@ export default function TagsPage() {
                 <Tag className="h-10 w-10 text-purple-500" />
               </div>
             </Card>
-            <Card className="p-6 bg-white border-gray-200">
+            <Card className="p-4 sm:p-6 bg-white border-gray-200 overflow-hidden">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Most Used</p>
@@ -145,7 +145,7 @@ export default function TagsPage() {
                 <TrendingUp className="h-10 w-10 text-green-500" />
               </div>
             </Card>
-            <Card className="p-6 bg-white border-gray-200">
+            <Card className="p-4 sm:p-6 bg-white border-gray-200 overflow-hidden">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Active Tags</p>
@@ -154,7 +154,7 @@ export default function TagsPage() {
                 <Tag className="h-10 w-10 text-blue-500" />
               </div>
             </Card>
-            <Card className="p-6 bg-white border-gray-200">
+            <Card className="p-4 sm:p-6 bg-white border-gray-200 overflow-hidden">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Unused Tags</p>
