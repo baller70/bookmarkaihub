@@ -55,6 +55,7 @@ model User {
   tags          Tag[]
   analytics     Analytics[]
   goals         Goal[]
+  goalFolders   GoalFolder[]
   dnaProfile    DNAProfile?
   playbooks     Playbook[]
   searchHistory SearchHistory[]
@@ -103,6 +104,7 @@ model Bookmark {
   notes        Note[]
   history      BookmarkHistory[]
   playbookItems PlaybookItem[]
+  goals        GoalBookmark[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -244,20 +246,57 @@ model BookmarkHistory {
 }
 
 // Goal system (Goal 2.0)
-model Goal {
-  id          String    @id @default(cuid())
-  title       String
-  description String?   @db.Text
-  deadline    DateTime?
-  progress    Float     @default(0) // 0-100
-  status      GoalStatus @default(ACTIVE)
+model GoalFolder {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  color       String   @default("#3B82F6") // Blue default
   
   userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goals       Goal[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, name])
+}
+
+model Goal {
+  id          String     @id @default(cuid())
+  title       String
+  description String?    @db.Text
+  goalType    String     @default("Custom") // Custom, Learning, Project, Health, etc.
+  color       String     @default("#3b82f6") // Hex color
+  priority    Priority   @default(MEDIUM)
+  status      GoalStatus @default(NOT_STARTED)
+  deadline    DateTime?
+  progress    Float      @default(0) // 0-100
+  tags        String[]   @default([]) // Array of tag strings
+  notes       String?    @db.Text
+  
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  folderId    String?
+  folder      GoalFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  
+  bookmarks   GoalBookmark[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   completedAt DateTime?
+}
+
+model GoalBookmark {
+  id         String   @id @default(cuid())
+  goalId     String
+  bookmarkId String
+  
+  goal       Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  bookmark   Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+
+  @@unique([goalId, bookmarkId])
 }
 
 // Enums
@@ -286,6 +325,8 @@ enum BookmarkAction {
 }
 
 enum GoalStatus {
+  NOT_STARTED
+  IN_PROGRESS
   ACTIVE
   COMPLETED
   PAUSED
