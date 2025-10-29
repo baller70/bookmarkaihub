@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Slider } from '@/components/ui/slider';
 import { Target, TrendingUp, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -31,6 +32,11 @@ interface Bookmark {
       name: string;
     };
   }>;
+}
+
+interface GoalFolder {
+  id: string;
+  name: string;
 }
 
 interface CreateGoalModalProps {
@@ -51,17 +57,21 @@ export function CreateGoalModal({
   const [priority, setPriority] = useState('MEDIUM');
   const [status, setStatus] = useState('NOT_STARTED');
   const [deadline, setDeadline] = useState('');
+  const [folderId, setFolderId] = useState<string>('');
+  const [progress, setProgress] = useState(0);
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
   const [notes, setNotes] = useState('');
   const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const [folders, setFolders] = useState<GoalFolder[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       fetchBookmarks();
+      fetchFolders();
     }
   }, [isOpen]);
 
@@ -74,6 +84,18 @@ export function CreateGoalModal({
       }
     } catch (error) {
       console.error('Error fetching bookmarks:', error);
+    }
+  };
+
+  const fetchFolders = async () => {
+    try {
+      const response = await fetch('/api/goal-folders');
+      if (response.ok) {
+        const data = await response.json();
+        setFolders(data);
+      }
+    } catch (error) {
+      console.error('Error fetching folders:', error);
     }
   };
 
@@ -126,6 +148,8 @@ export function CreateGoalModal({
           priority,
           status,
           deadline: deadline || null,
+          folderId: folderId || null,
+          progress,
           tags,
           notes: notes.trim() || null,
           bookmarkIds: selectedBookmarks,
@@ -156,6 +180,8 @@ export function CreateGoalModal({
     setPriority('MEDIUM');
     setStatus('NOT_STARTED');
     setDeadline('');
+    setFolderId('');
+    setProgress(0);
     setTags([]);
     setNewTag('');
     setNotes('');
@@ -230,6 +256,24 @@ export function CreateGoalModal({
               />
             </div>
 
+            {/* Folder (Optional) */}
+            <div className="space-y-2">
+              <Label>Folder (Optional)</Label>
+              <Select value={folderId} onValueChange={setFolderId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="No folder (unassigned)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">No folder (unassigned)</SelectItem>
+                  {folders.map((folder) => (
+                    <SelectItem key={folder.id} value={folder.id}>
+                      {folder.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               {/* Goal Type */}
               <div className="space-y-2">
@@ -292,6 +336,18 @@ export function CreateGoalModal({
                   onChange={(e) => setDeadline(e.target.value)}
                 />
               </div>
+            </div>
+
+            {/* Progress Slider */}
+            <div className="space-y-2">
+              <Label>Progress ({progress}%)</Label>
+              <Slider
+                value={[progress]}
+                onValueChange={(value) => setProgress(value[0])}
+                max={100}
+                step={1}
+                className="w-full"
+              />
             </div>
           </TabsContent>
 
@@ -423,7 +479,7 @@ export function CreateGoalModal({
                 </div>
                 <div>
                   <span className="text-sm text-muted-foreground">Progress:</span>
-                  <span className="ml-2 font-semibold">0%</span>
+                  <span className="ml-2 font-semibold">{progress}%</span>
                 </div>
                 <div>
                   <span className="text-sm text-muted-foreground">Bookmarks:</span>
