@@ -45,6 +45,10 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { ManageToolsModal } from "@/components/manage-tools-modal"
+import { TodoTool } from "@/components/todo-tool"
+import { QuickNotesTool } from "@/components/quick-notes-tool"
+import { HabitsTool } from "@/components/habits-tool"
 
 interface BookmarkDetailModalProps {
   bookmark: any
@@ -86,6 +90,11 @@ export function BookmarkDetailModal({
   const [comments, setComments] = useState<any[]>([])
   const [newComment, setNewComment] = useState("")
   
+  // Tools state
+  const [availableTools, setAvailableTools] = useState<any[]>([])
+  const [showManageTools, setShowManageTools] = useState(false)
+  const [toolsLoading, setToolsLoading] = useState(true)
+  
   const fileInputRef = useRef<HTMLInputElement>(null)
   const logoInputRef = useRef<HTMLInputElement>(null)
   const faviconInputRef = useRef<HTMLInputElement>(null)
@@ -101,8 +110,27 @@ export function BookmarkDetailModal({
       // Update analytics state
       setCurrentVisits(bookmark.totalVisits || 0)
       setCurrentTimeSpent(bookmark.timeSpent || 0)
+      // Fetch tools
+      fetchTools()
     }
   }, [bookmark])
+
+  // Fetch available tools for this bookmark
+  const fetchTools = async () => {
+    if (!bookmark?.id) return
+    try {
+      setToolsLoading(true)
+      const response = await fetch(`/api/bookmark-tools/${bookmark.id}`)
+      if (response.ok) {
+        const data = await response.json()
+        setAvailableTools(data)
+      }
+    } catch (error) {
+      console.error('Error fetching tools:', error)
+    } finally {
+      setToolsLoading(false)
+    }
+  }
 
   // Timer effect
   useEffect(() => {
@@ -459,16 +487,28 @@ export function BookmarkDetailModal({
         <Tabs defaultValue="overview" className="w-full">
           <div className="border-b px-3 sm:px-6 bg-gray-50">
             <div className="overflow-x-auto scrollbar-hide">
-              <TabsList className="bg-transparent h-auto p-0 gap-3 sm:gap-8 flex min-w-full w-max sm:w-full">
-                {["OVERVIEW", "ARP", "NOTIFICATION", "TASK", "MEDIA", "COMMENT"].map((tab) => (
-                  <TabsTrigger 
-                    key={tab}
-                    value={tab.toLowerCase()} 
-                    className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-2 sm:pb-3 font-medium text-xs sm:text-sm text-gray-600 data-[state=active]:text-gray-900 whitespace-nowrap"
-                  >
-                    {tab}
-                  </TabsTrigger>
-                ))}
+              <TabsList className="bg-transparent h-auto p-0 gap-3 sm:gap-8 flex min-w-full w-max sm:w-full items-center">
+                {availableTools
+                  .filter(tool => tool.isEnabled)
+                  .sort((a, b) => a.order - b.order)
+                  .map((tool) => (
+                    <TabsTrigger 
+                      key={tool.key}
+                      value={tool.key} 
+                      className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-2 sm:pb-3 font-medium text-xs sm:text-sm text-gray-600 data-[state=active]:text-gray-900 whitespace-nowrap"
+                    >
+                      {tool.label}
+                    </TabsTrigger>
+                  ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowManageTools(true)}
+                  className="ml-auto text-xs sm:text-sm text-gray-500 hover:text-gray-700 h-auto py-2 whitespace-nowrap"
+                >
+                  <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                  Manage
+                </Button>
               </TabsList>
             </div>
           </div>
@@ -1164,8 +1204,31 @@ export function BookmarkDetailModal({
               )}
             </div>
           </TabsContent>
+
+          {/* NEW TOOLS - TO-DO LIST */}
+          <TabsContent value="todo" className="mt-0 bg-white">
+            <TodoTool bookmarkId={bookmark?.id} />
+          </TabsContent>
+
+          {/* NEW TOOLS - QUICK NOTES */}
+          <TabsContent value="notes" className="mt-0 bg-white">
+            <QuickNotesTool bookmarkId={bookmark?.id} />
+          </TabsContent>
+
+          {/* NEW TOOLS - HABITS */}
+          <TabsContent value="habits" className="mt-0 bg-white">
+            <HabitsTool bookmarkId={bookmark?.id} />
+          </TabsContent>
         </Tabs>
       </DialogContent>
+
+      {/* Manage Tools Modal */}
+      <ManageToolsModal
+        bookmarkId={bookmark?.id}
+        open={showManageTools}
+        onOpenChange={setShowManageTools}
+        onToolsUpdated={fetchTools}
+      />
     </Dialog>
   )
 }

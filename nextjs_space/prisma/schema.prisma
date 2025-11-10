@@ -105,6 +105,12 @@ model Bookmark {
   history      BookmarkHistory[]
   playbookItems PlaybookItem[]
   goals        GoalBookmark[]
+  
+  // Customizable tools
+  toolPreferences BookmarkToolPreference[]
+  todoItems       TodoItem[]
+  quickNotes      QuickNote[]
+  habits          Habit[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -455,4 +461,108 @@ enum ViewMode {
   LIST
   COMPACT
   TABLE
+}
+
+// Customizable Tools System
+model BookmarkTool {
+  id          String   @id @default(cuid())
+  key         String   @unique // overview, arp, notification, task, media, comment, todo, notes, habits
+  label       String   // Display name
+  icon        String   // Icon name for Lucide
+  isDefault   Boolean  @default(false) // Default tools that ship with all bookmarks
+  isSystem    Boolean  @default(false) // Cannot be deleted (overview, arp, etc.)
+  
+  preferences BookmarkToolPreference[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BookmarkToolPreference {
+  id         String   @id @default(cuid())
+  bookmarkId String
+  toolKey    String
+  isEnabled  Boolean  @default(true)
+  order      Int      @default(0) // For custom ordering of tabs
+  
+  bookmark   Bookmark     @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  tool       BookmarkTool @relation(fields: [toolKey], references: [key], onDelete: Cascade)
+  
+  @@unique([bookmarkId, toolKey])
+}
+
+// To-Do List Tool
+model TodoItem {
+  id          String   @id @default(cuid())
+  bookmarkId  String
+  title       String
+  description String?  @db.Text
+  completed   Boolean  @default(false)
+  priority    TodoPriority @default(MEDIUM)
+  dueDate     DateTime?
+  order       Int      @default(0)
+  
+  bookmark    Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  completedAt DateTime?
+}
+
+enum TodoPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+// Quick Notes Tool (Rich text notes)
+model QuickNote {
+  id          String   @id @default(cuid())
+  bookmarkId  String
+  title       String?
+  content     String   @db.Text // Can store markdown or HTML
+  
+  bookmark    Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Habit Tracker Tool
+model Habit {
+  id          String   @id @default(cuid())
+  bookmarkId  String
+  name        String
+  description String?  @db.Text
+  color       String   @default("#3B82F6") // Hex color for visualization
+  frequency   HabitFrequency @default(DAILY)
+  targetCount Int      @default(1) // How many times per period
+  isActive    Boolean  @default(true)
+  
+  bookmark    Bookmark      @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  checkins    HabitCheckIn[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HabitCheckIn {
+  id          String   @id @default(cuid())
+  habitId     String
+  date        DateTime @db.Date // Date of check-in
+  completed   Boolean  @default(true)
+  count       Int      @default(1) // Number of times completed on this date
+  note        String?  @db.Text
+  
+  habit       Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([habitId, date])
+}
+
+enum HabitFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
 }
