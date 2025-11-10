@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Plus, Trash2, Flag, Clock, GripVertical } from "lucide-react"
+import { Plus, Trash2, Flag, Clock, GripVertical, Search, Target } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
@@ -23,6 +23,9 @@ export function TasksTab({ bookmarkId }: TasksTabProps) {
   const [newTaskDesc, setNewTaskDesc] = useState("")
   const [newTaskPriority, setNewTaskPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('MEDIUM')
   const [draggedItem, setDraggedItem] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [statusFilter, setStatusFilter] = useState("active")
+  const [priorityFilter, setPriorityFilter] = useState("all")
 
   useEffect(() => {
     if (bookmarkId) {
@@ -168,6 +171,24 @@ export function TasksTab({ bookmarkId }: TasksTabProps) {
     }
   }
 
+  // Filter and search logic
+  const filteredTodos = todos.filter(todo => {
+    // Search filter
+    const matchesSearch = !searchQuery || 
+      todo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (todo.description && todo.description.toLowerCase().includes(searchQuery.toLowerCase()))
+    
+    // Status filter
+    const matchesStatus = statusFilter === "all" || 
+      (statusFilter === "active" && !todo.completed) ||
+      (statusFilter === "completed" && todo.completed)
+    
+    // Priority filter
+    const matchesPriority = priorityFilter === "all" || todo.priority === priorityFilter
+
+    return matchesSearch && matchesStatus && matchesPriority
+  })
+
   const completedCount = todos.filter(t => t.completed).length
   const totalCount = todos.length
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0
@@ -181,22 +202,61 @@ export function TasksTab({ bookmarkId }: TasksTabProps) {
   }
 
   return (
-    <div className="space-y-4">
-      {/* Progress Bar */}
-      {totalCount > 0 && (
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-gray-700">Progress</span>
-            <span className="text-sm text-gray-600">{completedCount}/{totalCount} tasks completed</span>
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-wide">Task Manager</h2>
+            <p className="text-sm text-gray-600 mt-1">Organize and track your pomodoro tasks</p>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
+          <Button onClick={() => setShowAddForm(true)} className="bg-blue-600 hover:bg-blue-700">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Task
+          </Button>
         </div>
-      )}
+      </div>
+
+      {/* Search and Filters */}
+      <div className="space-y-3">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Input
+            placeholder="Search tasks..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Priorities</SelectItem>
+              <SelectItem value="HIGH">High Priority</SelectItem>
+              <SelectItem value="MEDIUM">Medium Priority</SelectItem>
+              <SelectItem value="LOW">Low Priority</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
       {/* Add Task Form */}
       {showAddForm && (
@@ -233,80 +293,94 @@ export function TasksTab({ bookmarkId }: TasksTabProps) {
         </div>
       )}
 
-      {/* Add Task Button */}
-      {!showAddForm && (
-        <Button onClick={() => setShowAddForm(true)} className="w-full" variant="outline">
-          <Plus className="w-4 h-4 mr-2" />
-          Add New Task
-        </Button>
-      )}
-
       {/* Task List */}
       <div className="space-y-2">
-        {todos.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <ListTodo className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-            <p>No tasks yet. Add your first task above!</p>
+        {filteredTodos.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+              <Target className="w-10 h-10 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No tasks found</h3>
+            <p className="text-sm text-gray-600">Create your first task to get started</p>
           </div>
         ) : (
-          todos.map((todo) => (
-            <div
-              key={todo.id}
-              draggable
-              onDragStart={(e) => handleDragStart(e, todo.id)}
-              onDragOver={handleDragOver}
-              onDrop={(e) => handleDrop(e, todo.id)}
-              className={cn(
-                "group p-4 border rounded-lg transition-all duration-200",
-                todo.completed ? "bg-gray-50 opacity-60" : "bg-white hover:border-blue-300 hover:shadow-sm",
-                draggedItem === todo.id && "opacity-50"
-              )}
-            >
-              <div className="flex items-start gap-3">
-                <GripVertical className="w-5 h-5 text-gray-400 cursor-move mt-0.5" />
-                <Checkbox
-                  checked={todo.completed}
-                  onCheckedChange={() => handleToggleComplete(todo.id, todo.completed)}
-                  className="mt-1"
-                />
-                <div className="flex-1 min-w-0">
-                  <h4 className={cn(
-                    "font-medium text-gray-900",
-                    todo.completed && "line-through text-gray-500"
-                  )}>
-                    {todo.title}
-                  </h4>
-                  {todo.description && (
-                    <p className="text-sm text-gray-600 mt-1">{todo.description}</p>
-                  )}
-                  <div className="flex items-center gap-2 mt-2">
-                    <Badge className={cn("text-xs", getPriorityColor(todo.priority))}>
-                      <Flag className="w-3 h-3 mr-1" />
-                      {todo.priority}
-                    </Badge>
-                  </div>
+          <>
+            {/* Progress Bar */}
+            {totalCount > 0 && (
+              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200 mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium text-gray-700">Progress</span>
+                  <span className="text-sm text-gray-600">{completedCount}/{totalCount} tasks completed</span>
                 </div>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleAddToQueue(todo.id)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Clock className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleDeleteTask(todo.id)}
-                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  />
                 </div>
               </div>
-            </div>
-          ))
+            )}
+            
+            {filteredTodos.map((todo) => (
+              <div
+                key={todo.id}
+                draggable
+                onDragStart={(e) => handleDragStart(e, todo.id)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, todo.id)}
+                className={cn(
+                  "group p-4 border rounded-lg transition-all duration-200",
+                  todo.completed ? "bg-gray-50 opacity-60" : "bg-white hover:border-blue-300 hover:shadow-sm",
+                  draggedItem === todo.id && "opacity-50"
+                )}
+              >
+                <div className="flex items-start gap-3">
+                  <GripVertical className="w-5 h-5 text-gray-400 cursor-move mt-0.5" />
+                  <Checkbox
+                    checked={todo.completed}
+                    onCheckedChange={() => handleToggleComplete(todo.id, todo.completed)}
+                    className="mt-1"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h4 className={cn(
+                      "font-medium text-gray-900",
+                      todo.completed && "line-through text-gray-500"
+                    )}>
+                      {todo.title}
+                    </h4>
+                    {todo.description && (
+                      <p className="text-sm text-gray-600 mt-1">{todo.description}</p>
+                    )}
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge className={cn("text-xs", getPriorityColor(todo.priority))}>
+                        <Flag className="w-3 h-3 mr-1" />
+                        {todo.priority}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleAddToQueue(todo.id)}
+                      className="h-8 w-8 p-0"
+                      title="Add to timer queue"
+                    >
+                      <Clock className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDeleteTask(todo.id)}
+                      className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </>
         )}
       </div>
     </div>
@@ -319,8 +393,4 @@ function Badge({ className, children }: { className?: string; children: React.Re
       {children}
     </span>
   )
-}
-
-function ListTodo({ className }: { className?: string }) {
-  return <div className={className}></div>
 }

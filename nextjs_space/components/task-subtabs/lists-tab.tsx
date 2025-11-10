@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Trash2, Folder, ListTodo, PlusCircle, X, Clock } from "lucide-react"
+import { Plus, Trash2, Folder, ListTodo, PlusCircle, X, Clock, List } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
@@ -188,7 +188,21 @@ export function ListsTab({ bookmarkId }: ListsTabProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-wide">List Manager</h2>
+            <p className="text-sm text-gray-600 mt-1">Create focused lists of 4-5 tasks for timer sessions</p>
+          </div>
+          <Button onClick={() => setShowAddListForm(true)} className="bg-blue-600 hover:bg-blue-700">
+            <Plus className="w-4 h-4 mr-2" />
+            Create List
+          </Button>
+        </div>
+      </div>
+
       {/* Add List Form */}
       {showAddListForm && (
         <div className="p-4 border rounded-lg space-y-3 bg-gray-50">
@@ -229,23 +243,33 @@ export function ListsTab({ bookmarkId }: ListsTabProps) {
         </div>
       )}
 
-      {/* Add List Button */}
-      {!showAddListForm && (
-        <Button onClick={() => setShowAddListForm(true)} className="w-full" variant="outline">
-          <Plus className="w-4 h-4 mr-2" />
-          Create New List
-        </Button>
-      )}
-
-      {/* Lists Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {taskLists.length === 0 ? (
-          <div className="col-span-2 text-center py-8 text-gray-500">
-            <Folder className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-            <p>No lists yet. Create your first list above!</p>
+      {/* Lists Content */}
+      {taskLists.length === 0 && !showAddListForm ? (
+        <div className="border-2 border-dashed rounded-lg py-16">
+          <div className="flex flex-col items-center justify-center text-center">
+            <div className="mb-4">
+              <svg className="w-16 h-16 text-gray-400 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Lists Created</h3>
+            <p className="text-sm text-gray-600 mb-6 max-w-md">
+              Create your first focused task list to get started with organized pomodoro sessions.
+            </p>
+            <Button onClick={() => setShowAddListForm(true)} className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="w-4 h-4 mr-2" />
+              Create Your First List
+            </Button>
           </div>
-        ) : (
-          taskLists.map((list) => (
+        </div>
+      ) : taskLists.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {taskLists.map((list) => (
             <div
               key={list.id}
               className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white"
@@ -350,9 +374,9 @@ export function ListsTab({ bookmarkId }: ListsTabProps) {
                 )}
               </div>
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }
