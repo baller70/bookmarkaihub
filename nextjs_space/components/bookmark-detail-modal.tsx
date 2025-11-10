@@ -46,7 +46,6 @@ import {
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { ManageToolsModal } from "@/components/manage-tools-modal"
-import { TodoTool } from "@/components/todo-tool"
 import { QuickNotesTool } from "@/components/quick-notes-tool"
 import { HabitsTool } from "@/components/habits-tool"
 
@@ -939,8 +938,108 @@ export function BookmarkDetailModal({
           </TabsContent>
 
           {/* TASK TAB */}
-          <TabsContent value="task" className="mt-0 bg-white">
-            <TodoTool bookmarkId={bookmark?.id} />
+          <TabsContent value="task" className="p-0 bg-white mt-0">
+            <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] min-h-[400px] lg:h-[600px]">
+              <div className="border-b lg:border-r lg:border-b-0 bg-gray-50 p-3 sm:p-4">
+                <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible scrollbar-hide">
+                  <Button className="justify-start bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm whitespace-nowrap">
+                    <Timer className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                    TIMER
+                  </Button>
+                  <Button variant="ghost" className="justify-start text-xs sm:text-sm whitespace-nowrap">
+                    <ListTodo className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                    TASKS
+                    <Badge variant="outline" className="ml-auto text-xs">0</Badge>
+                  </Button>
+                  <Button variant="ghost" className="justify-start text-xs sm:text-sm whitespace-nowrap">
+                    <ListTodo className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                    LISTS
+                    <Badge variant="outline" className="ml-auto text-xs">0</Badge>
+                  </Button>
+                  <Button variant="ghost" className="justify-start text-xs sm:text-sm whitespace-nowrap">
+                    <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                    ANALYTICS
+                  </Button>
+                  <Button variant="ghost" className="justify-start text-xs sm:text-sm whitespace-nowrap">
+                    <Settings className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                    SETTINGS
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="p-4 sm:p-6 space-y-6">
+                <div className="border rounded-lg p-8 text-center space-y-4">
+                  <div className="inline-flex items-center gap-2 px-4 py-1 bg-red-50 text-red-600 rounded-full text-sm font-medium">
+                    <Activity className="w-4 h-4" />
+                    WORK SESSION
+                  </div>
+                  
+                  <div className="text-6xl font-bold text-red-600">
+                    {formatTime(timerTime)}
+                  </div>
+                  
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-red-600 h-2 rounded-full transition-all"
+                      style={{ width: `${((25 * 60 - timerTime) / (25 * 60)) * 100}%` }}
+                    ></div>
+                  </div>
+                  
+                  <div className="text-sm text-gray-500">
+                    <span className="font-medium">0:00</span>
+                    <span className="mx-2">–</span>
+                    <span className="font-medium">25:00</span>
+                  </div>
+                  
+                  <div className="text-sm text-gray-600">Session 1</div>
+                  
+                  <div className="flex gap-3 justify-center pt-4">
+                    {!isTimerRunning ? (
+                      <Button
+                        onClick={handleStartTimer}
+                        className="bg-green-600 hover:bg-green-700 text-white uppercase px-8"
+                      >
+                        <Play className="w-4 h-4 mr-2" />
+                        Start
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={handleStopTimer}
+                        className="bg-red-600 hover:bg-red-700 text-white uppercase px-8"
+                      >
+                        <Pause className="w-4 h-4 mr-2" />
+                        Stop
+                      </Button>
+                    )}
+                    <Button
+                      onClick={handleResetTimer}
+                      variant="outline"
+                      className="uppercase px-8"
+                    >
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      Reset
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="border rounded-lg p-4 sm:p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                    <h4 className="font-medium">CURRENT TASK</h4>
+                  </div>
+                  <p className="text-sm text-gray-500">No task selected</p>
+                </div>
+
+                <div className="border rounded-lg p-4 bg-blue-50 text-center">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-white rounded-full text-sm mb-2">
+                    <Clock className="w-4 h-4 text-blue-600" />
+                    <span className="font-medium">WORK</span>
+                    <span className="font-bold">25:00</span>
+                  </div>
+                  <p className="text-xs text-gray-600">Session 1</p>
+                </div>
+              </div>
+            </div>
           </TabsContent>
 
           {/* MEDIA TAB */}

@@ -125,8 +125,8 @@ export function ManageToolsModal({
                       </div>
                       <p className="text-sm text-gray-500">
                         {tool.isSystem
-                          ? 'Default tool - always available'
-                          : 'Optional tool - can be disabled'}
+                          ? 'Default tool - can be toggled on/off'
+                          : 'Optional tool - can be toggled on/off'}
                       </p>
                     </div>
                   </div>
@@ -134,7 +134,6 @@ export function ManageToolsModal({
                   <Switch
                     checked={tool.isEnabled}
                     onCheckedChange={() => handleToggleTool(tool.key, tool.isEnabled)}
-                    disabled={tool.isSystem}
                   />
                 </div>
               )
