@@ -21,9 +21,10 @@ async function checkData() {
     }
     
     if (bookmarks.length > 0) {
-      console.log(`\n=== FIRST 5 BOOKMARKS ===`);
-      bookmarks.slice(0, 5).forEach(bookmark => {
-        console.log(`- ${bookmark.title} (User: ${bookmark.userId})`);
+      console.log(`\n=== ALL BOOKMARKS ===`);
+      bookmarks.forEach(bookmark => {
+        const userEmail = users.find(u => u.id === bookmark.userId)?.email || 'Unknown';
+        console.log(`- ${bookmark.title} (User: ${userEmail})`);
       });
     } else {
       console.log('\n⚠️ NO BOOKMARKS FOUND IN DATABASE!');
