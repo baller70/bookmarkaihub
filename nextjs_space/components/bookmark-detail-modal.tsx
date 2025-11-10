@@ -907,6 +907,67 @@ export function BookmarkDetailModal({
           <TabsContent value="comment" className="p-4 sm:p-6 bg-white mt-0">
             <CommentsTool bookmarkId={bookmark.id} />
           </TabsContent>
+
+          {/* TASK TAB - Only Tasks */}
+          <TabsContent value="task" className="p-0 bg-white mt-0">
+            <TasksTab bookmarkId={bookmark.id} />
+          </TabsContent>
+
+          {/* LIST TAB - Only Lists */}
+          <TabsContent value="list" className="p-0 bg-white mt-0">
+            <ListsTab bookmarkId={bookmark.id} />
+          </TabsContent>
+
+          {/* TASK + TIMER TAB - Full functionality with sub-tabs */}
+          <TabsContent value="tasktimer" className="p-0 bg-white mt-0">
+            <Tabs defaultValue="tasks" className="w-full">
+              <div className="border-b px-6 bg-gray-50">
+                <TabsList className="bg-transparent h-auto p-0 gap-8">
+                  <TabsTrigger 
+                    value="tasks"
+                    className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-3 font-medium text-sm text-gray-600 data-[state=active]:text-gray-900"
+                  >
+                    TASKS
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="lists"
+                    className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-3 font-medium text-sm text-gray-600 data-[state=active]:text-gray-900"
+                  >
+                    LISTS
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="analytics"
+                    className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-3 font-medium text-sm text-gray-600 data-[state=active]:text-gray-900"
+                  >
+                    ANALYTICS
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="settings"
+                    className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gray-900 rounded-none px-0 pb-3 font-medium text-sm text-gray-600 data-[state=active]:text-gray-900"
+                  >
+                    SETTINGS
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+
+              <TabsContent value="tasks" className="p-0 mt-0">
+                <TasksTab bookmarkId={bookmark.id} />
+              </TabsContent>
+
+              <TabsContent value="lists" className="p-0 mt-0">
+                <ListsTab bookmarkId={bookmark.id} />
+              </TabsContent>
+
+              <TabsContent value="analytics" className="p-0 mt-0">
+                <AnalyticsTab bookmarkId={bookmark.id} />
+              </TabsContent>
+
+              <TabsContent value="settings" className="p-0 mt-0">
+                <SettingsTab bookmarkId={bookmark.id} />
+              </TabsContent>
+            </Tabs>
+          </TabsContent>
+
           <TabsContent value="timer" className="mt-0 bg-white p-6">
             <div className="max-w-2xl mx-auto">
               <div className="text-center space-y-6">
