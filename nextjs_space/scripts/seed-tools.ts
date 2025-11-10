@@ -52,13 +52,6 @@ async function main() {
     },
     // New tools
     {
-      key: 'todo',
-      label: 'TO-DO LIST',
-      icon: 'ListTodo',
-      isDefault: false,
-      isSystem: false,
-    },
-    {
       key: 'notes',
       label: 'QUICK NOTES',
       icon: 'StickyNote',
