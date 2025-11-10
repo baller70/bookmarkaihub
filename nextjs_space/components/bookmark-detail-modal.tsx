@@ -1300,6 +1300,88 @@ export function BookmarkDetailModal({
           <TabsContent value="habits" className="mt-0 bg-white">
             <HabitsTool bookmarkId={bookmark?.id} />
           </TabsContent>
+
+          {/* INDIVIDUAL TASK TOOL - TASKS ONLY */}
+          <TabsContent value="tasks" className="mt-0 bg-white">
+            <TasksTab bookmarkId={bookmark?.id} />
+          </TabsContent>
+
+          {/* INDIVIDUAL TASK TOOL - LISTS ONLY */}
+          <TabsContent value="lists" className="mt-0 bg-white">
+            <ListsTab bookmarkId={bookmark?.id} />
+          </TabsContent>
+
+          {/* INDIVIDUAL TASK TOOL - TIMER ONLY */}
+          <TabsContent value="timer" className="mt-0 bg-white p-6">
+            <div className="max-w-2xl mx-auto">
+              <div className="text-center space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold mb-2">POMODORO TIMER</h2>
+                  <p className="text-sm text-gray-500">Focus on your work with the Pomodoro technique</p>
+                </div>
+
+                {/* Timer Display */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-12 border-2 border-blue-200">
+                  <div className="text-8xl font-bold text-gray-900 mb-6">
+                    {Math.floor(timerTime / 60).toString().padStart(2, '0')}:
+                    {(timerTime % 60).toString().padStart(2, '0')}
+                  </div>
+                  <div className="text-lg text-gray-600 font-medium mb-8">
+                    {isTimerRunning ? 'Focus Time' : 'Ready to Start'}
+                  </div>
+                  
+                  {/* Timer Controls */}
+                  <div className="flex items-center justify-center gap-4">
+                    <Button
+                      size="lg"
+                      onClick={() => setIsTimerRunning(!isTimerRunning)}
+                      className="h-14 px-8 text-base"
+                    >
+                      {isTimerRunning ? (
+                        <>
+                          <Pause className="h-5 w-5 mr-2" />
+                          PAUSE
+                        </>
+                      ) : (
+                        <>
+                          <Play className="h-5 w-5 mr-2" />
+                          START
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      onClick={() => {
+                        setIsTimerRunning(false)
+                        setTimerTime(25 * 60)
+                      }}
+                      className="h-14 px-8 text-base"
+                    >
+                      <RotateCcw className="h-5 w-5 mr-2" />
+                      RESET
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Timer Stats */}
+                <div className="grid grid-cols-3 gap-4 pt-6">
+                  <div className="bg-white border rounded-lg p-4">
+                    <div className="text-2xl font-bold text-gray-900">0</div>
+                    <div className="text-xs text-gray-500 uppercase">Completed</div>
+                  </div>
+                  <div className="bg-white border rounded-lg p-4">
+                    <div className="text-2xl font-bold text-gray-900">25</div>
+                    <div className="text-xs text-gray-500 uppercase">Minutes</div>
+                  </div>
+                  <div className="bg-white border rounded-lg p-4">
+                    <div className="text-2xl font-bold text-gray-900">0</div>
+                    <div className="text-xs text-gray-500 uppercase">Today</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
         </Tabs>
       </DialogContent>
 
