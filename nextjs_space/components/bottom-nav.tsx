@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { signOut } from "next-auth/react"
 import { cn } from "@/lib/utils"
 import {
   LayoutDashboard,
@@ -9,6 +10,7 @@ import {
   Bot,
   Store,
   Settings,
+  LogOut,
 } from "lucide-react"
 
 const navigation = [
@@ -42,6 +44,10 @@ const navigation = [
 export function BottomNav() {
   const pathname = usePathname()
 
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/auth/signin" })
+  }
+
   return (
     <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 safe-area-bottom">
       <nav className="flex items-center justify-around px-2 py-2.5">
@@ -68,6 +74,16 @@ export function BottomNav() {
             </Link>
           )
         })}
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="flex flex-col items-center justify-center min-w-[60px] max-w-[76px] flex-1 py-2.5 px-1.5 rounded-lg transition-all touch-target text-red-600 hover:text-red-700 hover:bg-red-50"
+        >
+          <LogOut className="h-5 w-5 mb-1.5 flex-shrink-0" />
+          <span className="text-[10px] font-medium truncate w-full text-center leading-normal">
+            Logout
+          </span>
+        </button>
       </nav>
     </div>
   )

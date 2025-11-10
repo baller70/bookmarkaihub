@@ -183,30 +183,31 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
 
         {/* User & Logout */}
         {session && (
-          <div className="p-4 border-t border-gray-200">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <div className="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
-                  {session.user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {session.user?.name || 'User'}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate">
-                    {session.user?.email}
-                  </p>
-                </div>
+          <div className="p-4 border-t border-gray-200 space-y-2">
+            {/* User Info */}
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
+                {session.user?.name?.charAt(0)?.toUpperCase() || 'U'}
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => signOut({ callbackUrl: "/auth/signin" })}
-                className="p-1 flex-shrink-0"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {session.user?.name || 'User'}
+                </p>
+                <p className="text-xs text-gray-500 truncate">
+                  {session.user?.email}
+                </p>
+              </div>
             </div>
+            {/* Logout Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+              className="w-full gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="text-xs font-medium">LOGOUT</span>
+            </Button>
           </div>
         )}
       </div>
