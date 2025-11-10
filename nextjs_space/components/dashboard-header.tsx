@@ -3,16 +3,18 @@
 "use client"
 
 import { useState } from "react"
+import { signOut, useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AddBookmarkModal } from "@/components/add-bookmark-modal"
-import { Check, Plus, RefreshCw, Grid3x3, List as ListIcon, LayoutGrid, FolderOpen, MoreVertical } from "lucide-react"
+import { Check, Plus, RefreshCw, Grid3x3, List as ListIcon, LayoutGrid, FolderOpen, MoreVertical, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 
 interface DashboardHeaderProps {
@@ -32,6 +34,7 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   const [showAddModal, setShowAddModal] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
+  const { data: session } = useSession()
 
   const handleSyncAll = async () => {
     setIsSyncing(true)
@@ -132,6 +135,36 @@ export function DashboardHeader({
             <Plus className="h-4 w-4" />
             <span className="text-xs font-medium">ADD BOOKMARK</span>
           </Button>
+
+          {/* User Profile Dropdown - Desktop Only */}
+          {session && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="h-9 gap-2 pl-2 pr-3">
+                  <div className="h-6 w-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-medium">
+                    {session.user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                  </div>
+                  <span className="text-xs font-medium max-w-[100px] truncate">
+                    {session.user?.name || 'User'}
+                  </span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <div className="px-2 py-1.5">
+                  <p className="text-sm font-medium">{session.user?.name || 'User'}</p>
+                  <p className="text-xs text-gray-500 truncate">{session.user?.email}</p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+                  className="text-red-600 focus:text-red-600"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
 
@@ -188,6 +221,14 @@ export function DashboardHeader({
               <DropdownMenuItem>
                 <LayoutGrid className="mr-2 h-4 w-4" />
                 <span>Compact View</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+                className="text-red-600 focus:text-red-600"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
