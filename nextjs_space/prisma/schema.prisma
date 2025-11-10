@@ -114,6 +114,18 @@ model Bookmark {
   taskLists       TaskList[]
   timerQueue      TimerQueue[]
   timerSettings   TimerSettings?
+  
+  // Notification system
+  notificationSchedules NotificationSchedule[]
+  notificationPreference NotificationPreference?
+  notificationTeam NotificationTeam[]
+  
+  // Media system
+  media           Media[]
+  mediaFolders    MediaFolder[]
+  
+  // Comments system
+  comments        BookmarkComment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -635,4 +647,210 @@ model TimerSettings {
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Notification System
+model NotificationSchedule {
+  id          String   @id @default(cuid())
+  bookmarkId  String
+  title       String
+  description String?  @db.Text
+  reminderDate DateTime
+  reminderTime String   // HH:MM format
+  frequency   NotificationFrequency @default(ONCE)
+  isActive    Boolean  @default(true)
+  notifyVia   String[] @default(["app"]) // app, email, sms
+  
+  bookmark    Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  history     NotificationHistory[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NotificationPreference {
+  id          String   @id @default(cuid())
+  bookmarkId  String   @unique
+  
+  // Email preferences
+  emailEnabled       Boolean @default(true)
+  emailDaily         Boolean @default(false)
+  emailWeekly        Boolean @default(true)
+  emailImportant     Boolean @default(true)
+  
+  // App preferences
+  appPush            Boolean @default(true)
+  appReminders       Boolean @default(true)
+  appUpdates         Boolean @default(true)
+  
+  // SMS preferences (premium)
+  smsEnabled         Boolean @default(false)
+  smsImportantOnly   Boolean @default(true)
+  
+  // Quiet hours
+  quietHoursEnabled  Boolean @default(false)
+  quietHoursStart    String? // HH:MM format
+  quietHoursEnd      String? // HH:MM format
+  
+  bookmark    Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NotificationHistory {
+  id          String   @id @default(cuid())
+  scheduleId  String
+  sentAt      DateTime @default(now())
+  status      NotificationStatus @default(SENT)
+  sentVia     String   @default("app") // app, email, sms
+  errorMessage String? @db.Text
+  
+  schedule    NotificationSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+}
+
+model NotificationTeam {
+  id          String   @id @default(cuid())
+  bookmarkId  String
+  memberEmail String
+  memberName  String?
+  role        TeamRole @default(VIEWER)
+  canEdit     Boolean  @default(false)
+  canDelete   Boolean  @default(false)
+  
+  bookmark    Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([bookmarkId, memberEmail])
+}
+
+enum NotificationFrequency {
+  ONCE
+  DAILY
+  WEEKLY
+  MONTHLY
+  CUSTOM
+}
+
+enum NotificationStatus {
+  SENT
+  PENDING
+  FAILED
+  CANCELLED
+}
+
+enum TeamRole {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+// Media System
+model Media {
+  id          String   @id @default(cuid())
+  bookmarkId  String
+  folderId    String?
+  
+  fileName    String
+  originalName String
+  fileType    MediaType
+  fileSize    Int      // in bytes
+  mimeType    String
+  cloudStoragePath String @db.Text // S3 key or cloud storage path
+  thumbnailPath String? @db.Text // For images/videos
+  
+  // Metadata
+  width       Int?     // For images/videos
+  height      Int?     // For images/videos
+  duration    Int?     // For audio/videos (in seconds)
+  
+  // Organization
+  tags        String[] @default([])
+  description String?  @db.Text
+  
+  bookmark    Bookmark      @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  folder      MediaFolder?  @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([bookmarkId, fileType])
+}
+
+model MediaFolder {
+  id          String   @id @default(cuid())
+  bookmarkId  String
+  name        String
+  color       String   @default("#3B82F6")
+  parentId    String?
+  
+  bookmark    Bookmark      @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  parent      MediaFolder?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    MediaFolder[] @relation("FolderHierarchy")
+  media       Media[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([bookmarkId, name])
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+  OTHER
+}
+
+// Comments System
+model BookmarkComment {
+  id          String   @id @default(cuid())
+  bookmarkId  String
+  userId      String   // Author of the comment
+  content     String   @db.Text
+  isResolved  Boolean  @default(false)
+  isPinned    Boolean  @default(false)
+  
+  // Metadata
+  tags        String[] @default([])
+  
+  bookmark    Bookmark          @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  replies     CommentReply[]
+  mentions    CommentMention[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([bookmarkId, createdAt])
+}
+
+model CommentReply {
+  id          String   @id @default(cuid())
+  commentId   String
+  userId      String   // Author of the reply
+  content     String   @db.Text
+  
+  comment     BookmarkComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  mentions    CommentMention[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CommentMention {
+  id          String   @id @default(cuid())
+  commentId   String?
+  replyId     String?
+  mentionedUserId String // User being mentioned
+  
+  comment     BookmarkComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  reply       CommentReply?    @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
 }
