@@ -317,13 +317,13 @@ export function DashboardContent() {
         {/* Inline Breakdown Panel */}
         {breakdownOpen && (
           <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-            {categories.length === 0 ? (
+            {!Array.isArray(categories) || categories.length === 0 ? (
               <div className="py-8 text-center">
                 <p className="text-sm text-gray-500">No categories found</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-x-12 gap-y-0.5">
-                {categories
+                {[...categories]
                   .sort((a, b) => a.name.localeCompare(b.name))
                   .map((category) => (
                     <div
