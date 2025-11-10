@@ -908,18 +908,18 @@ export function BookmarkDetailModal({
             <CommentsTool bookmarkId={bookmark.id} />
           </TabsContent>
 
-          {/* TASK TAB - Only Tasks */}
-          <TabsContent value="task" className="p-0 bg-white mt-0">
+          {/* TASKS TAB - Only Tasks */}
+          <TabsContent value="tasks" className="p-0 bg-white mt-0">
             <TasksTab bookmarkId={bookmark.id} />
           </TabsContent>
 
-          {/* LIST TAB - Only Lists */}
-          <TabsContent value="list" className="p-0 bg-white mt-0">
+          {/* LISTS TAB - Only Lists */}
+          <TabsContent value="lists" className="p-0 bg-white mt-0">
             <ListsTab bookmarkId={bookmark.id} />
           </TabsContent>
 
           {/* TASK + TIMER TAB - Full functionality with sub-tabs */}
-          <TabsContent value="tasktimer" className="p-0 bg-white mt-0">
+          <TabsContent value="task" className="p-0 bg-white mt-0">
             <Tabs defaultValue="tasks" className="w-full">
               <div className="border-b px-6 bg-gray-50">
                 <TabsList className="bg-transparent h-auto p-0 gap-8">
