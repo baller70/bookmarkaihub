@@ -43,6 +43,7 @@ import {
   History,
   Timer,
   ListTodo,
+  ListChecks,
   BarChart3,
   X,
   GripVertical,

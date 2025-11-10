@@ -101,13 +101,13 @@ export function AnalyticsTab({ bookmarkId }: AnalyticsTabProps) {
 
       {/* Completion Progress */}
       <div className="border rounded-lg p-6 bg-white">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2 uppercase">
           <BarChart3 className="w-5 h-5 text-blue-600" />
-          Completion Progress
+          COMPLETION PROGRESS
         </h3>
         <div className="space-y-3">
           <div className="flex items-center justify-between text-sm mb-1">
-            <span className="text-gray-600">Overall Progress</span>
+            <span className="text-gray-600 uppercase">Overall Progress</span>
             <span className="font-semibold text-gray-900">{completionRate}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-3">
@@ -121,7 +121,7 @@ export function AnalyticsTab({ bookmarkId }: AnalyticsTabProps) {
 
       {/* Priority Breakdown */}
       <div className="border rounded-lg p-6 bg-white">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Priority Breakdown</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 uppercase">PRIORITY BREAKDOWN</h3>
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -149,7 +149,7 @@ export function AnalyticsTab({ bookmarkId }: AnalyticsTabProps) {
 
       {/* Lists Overview */}
       <div className="border rounded-lg p-6 bg-white">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Lists Overview</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 uppercase">LISTS OVERVIEW</h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-sm text-gray-600 mb-1">Total Lists</p>
@@ -164,7 +164,7 @@ export function AnalyticsTab({ bookmarkId }: AnalyticsTabProps) {
 
       {/* Recent Activity (Placeholder) */}
       <div className="border rounded-lg p-6 bg-gray-50">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Recent Activity</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2 uppercase">RECENT ACTIVITY</h3>
         <p className="text-sm text-gray-500">Detailed activity tracking coming soon!</p>
       </div>
     </div>

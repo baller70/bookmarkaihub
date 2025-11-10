@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
-import { Settings as SettingsIcon, Save, Timer } from "lucide-react"
+import { Settings as SettingsIcon, Save, Timer, CheckSquare, ListTodo } from "lucide-react"
 import { toast } from "sonner"
 
 interface SettingsTabProps {
@@ -16,7 +16,7 @@ export function SettingsTab({ bookmarkId }: SettingsTabProps) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
-  // Form state
+  // Timer settings
   const [isEnabled, setIsEnabled] = useState(true)
   const [workDuration, setWorkDuration] = useState(25)
   const [shortBreak, setShortBreak] = useState(5)
@@ -24,6 +24,15 @@ export function SettingsTab({ bookmarkId }: SettingsTabProps) {
   const [autoStartBreaks, setAutoStartBreaks] = useState(false)
   const [autoStartPomodoros, setAutoStartPomodoros] = useState(false)
   const [soundEnabled, setSoundEnabled] = useState(true)
+
+  // Task settings
+  const [taskAutoArchive, setTaskAutoArchive] = useState(false)
+  const [taskDefaultPriority, setTaskDefaultPriority] = useState('MEDIUM')
+  const [taskShowCompleted, setTaskShowCompleted] = useState(true)
+
+  // List settings
+  const [listMaxItems, setListMaxItems] = useState(5)
+  const [listAutoColor, setListAutoColor] = useState(true)
 
   useEffect(() => {
     if (bookmarkId) {
@@ -95,116 +104,208 @@ export function SettingsTab({ bookmarkId }: SettingsTabProps) {
 
   return (
     <div className="space-y-6">
-      {/* Timer Enable/Disable */}
-      <div className="border rounded-lg p-6 bg-white">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Timer className="w-6 h-6 text-blue-600" />
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Enable Pomodoro Timer</h3>
-              <p className="text-sm text-gray-500">Turn the timer feature on or off</p>
-            </div>
-          </div>
-          <Switch
-            checked={isEnabled}
-            onCheckedChange={setIsEnabled}
-          />
-        </div>
+      {/* Header */}
+      <div className="border-b pb-4">
+        <h2 className="text-2xl font-bold text-gray-900 uppercase">SETTINGS</h2>
+        <p className="text-sm text-gray-600 mt-1">Configure your timer, tasks, and lists preferences</p>
       </div>
 
-      {/* Timer Durations */}
-      <div className="border rounded-lg p-6 bg-white space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <SettingsIcon className="w-5 h-5 text-blue-600" />
-          Timer Durations (in minutes)
+      {/* ===== TIMER SETTINGS ===== */}
+      <div className="space-y-4">
+        <h3 className="text-xl font-bold text-gray-900 uppercase flex items-center gap-2">
+          <Timer className="w-5 h-5 text-blue-600" />
+          TIMER SETTINGS
         </h3>
 
-        <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">
-            Work Duration
-          </label>
-          <Input
-            type="number"
-            min="1"
-            max="60"
-            value={workDuration}
-            onChange={(e) => setWorkDuration(parseInt(e.target.value) || 25)}
-            className="w-full"
-          />
-          <p className="text-xs text-gray-500 mt-1">Default: 25 minutes</p>
+        {/* Timer Enable/Disable */}
+        <div className="border rounded-lg p-6 bg-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-base font-semibold text-gray-900 uppercase">ENABLE POMODORO TIMER</h4>
+              <p className="text-sm text-gray-500">Turn the timer feature on or off</p>
+            </div>
+            <Switch
+              checked={isEnabled}
+              onCheckedChange={setIsEnabled}
+            />
+          </div>
         </div>
 
-        <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">
-            Short Break
-          </label>
-          <Input
-            type="number"
-            min="1"
-            max="30"
-            value={shortBreak}
-            onChange={(e) => setShortBreak(parseInt(e.target.value) || 5)}
-            className="w-full"
-          />
-          <p className="text-xs text-gray-500 mt-1">Default: 5 minutes</p>
+        {/* Timer Durations */}
+        <div className="border rounded-lg p-6 bg-white space-y-4">
+          <h4 className="text-base font-semibold text-gray-900 mb-4 uppercase">TIMER DURATIONS (IN MINUTES)</h4>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-2 block uppercase">
+              WORK DURATION
+            </label>
+            <Input
+              type="number"
+              min="1"
+              max="60"
+              value={workDuration}
+              onChange={(e) => setWorkDuration(parseInt(e.target.value) || 25)}
+              className="w-full"
+            />
+            <p className="text-xs text-gray-500 mt-1">Default: 25 minutes</p>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-2 block uppercase">
+              SHORT BREAK
+            </label>
+            <Input
+              type="number"
+              min="1"
+              max="30"
+              value={shortBreak}
+              onChange={(e) => setShortBreak(parseInt(e.target.value) || 5)}
+              className="w-full"
+            />
+            <p className="text-xs text-gray-500 mt-1">Default: 5 minutes</p>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-2 block uppercase">
+              LONG BREAK
+            </label>
+            <Input
+              type="number"
+              min="1"
+              max="60"
+              value={longBreak}
+              onChange={(e) => setLongBreak(parseInt(e.target.value) || 15)}
+              className="w-full"
+            />
+            <p className="text-xs text-gray-500 mt-1">Default: 15 minutes</p>
+          </div>
         </div>
 
-        <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">
-            Long Break
-          </label>
-          <Input
-            type="number"
-            min="1"
-            max="60"
-            value={longBreak}
-            onChange={(e) => setLongBreak(parseInt(e.target.value) || 15)}
-            className="w-full"
-          />
-          <p className="text-xs text-gray-500 mt-1">Default: 15 minutes</p>
+        {/* Auto-start Options */}
+        <div className="border rounded-lg p-6 bg-white space-y-4">
+          <h4 className="text-base font-semibold text-gray-900 mb-4 uppercase">AUTO-START OPTIONS</h4>
+
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <p className="text-sm font-medium text-gray-900 uppercase">AUTO-START BREAKS</p>
+              <p className="text-xs text-gray-500">Automatically start break timer after work session</p>
+            </div>
+            <Switch
+              checked={autoStartBreaks}
+              onCheckedChange={setAutoStartBreaks}
+            />
+          </div>
+
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <p className="text-sm font-medium text-gray-900 uppercase">AUTO-START POMODOROS</p>
+              <p className="text-xs text-gray-500">Automatically start next work session after break</p>
+            </div>
+            <Switch
+              checked={autoStartPomodoros}
+              onCheckedChange={setAutoStartPomodoros}
+            />
+          </div>
+
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <p className="text-sm font-medium text-gray-900 uppercase">SOUND NOTIFICATIONS</p>
+              <p className="text-xs text-gray-500">Play sound when timer completes</p>
+            </div>
+            <Switch
+              checked={soundEnabled}
+              onCheckedChange={setSoundEnabled}
+            />
+          </div>
         </div>
       </div>
 
-      {/* Auto-start Options */}
-      <div className="border rounded-lg p-6 bg-white space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Auto-start Options</h3>
+      {/* ===== TASK SETTINGS ===== */}
+      <div className="space-y-4">
+        <h3 className="text-xl font-bold text-gray-900 uppercase flex items-center gap-2">
+          <CheckSquare className="w-5 h-5 text-blue-600" />
+          TASK SETTINGS
+        </h3>
 
-        <div className="flex items-center justify-between py-2">
-          <div>
-            <p className="text-sm font-medium text-gray-900">Auto-start Breaks</p>
-            <p className="text-xs text-gray-500">Automatically start break timer after work session</p>
+        <div className="border rounded-lg p-6 bg-white space-y-4">
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <p className="text-sm font-medium text-gray-900 uppercase">AUTO-ARCHIVE COMPLETED TASKS</p>
+              <p className="text-xs text-gray-500">Automatically hide completed tasks after 7 days</p>
+            </div>
+            <Switch
+              checked={taskAutoArchive}
+              onCheckedChange={setTaskAutoArchive}
+            />
           </div>
-          <Switch
-            checked={autoStartBreaks}
-            onCheckedChange={setAutoStartBreaks}
-          />
+
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <p className="text-sm font-medium text-gray-900 uppercase">SHOW COMPLETED TASKS</p>
+              <p className="text-xs text-gray-500">Display completed tasks in task list</p>
+            </div>
+            <Switch
+              checked={taskShowCompleted}
+              onCheckedChange={setTaskShowCompleted}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-2 block uppercase">
+              DEFAULT TASK PRIORITY
+            </label>
+            <select
+              value={taskDefaultPriority}
+              onChange={(e) => setTaskDefaultPriority(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
+            </select>
+            <p className="text-xs text-gray-500 mt-1">Default priority for new tasks</p>
+          </div>
         </div>
+      </div>
 
-        <div className="flex items-center justify-between py-2">
-          <div>
-            <p className="text-sm font-medium text-gray-900">Auto-start Pomodoros</p>
-            <p className="text-xs text-gray-500">Automatically start next work session after break</p>
-          </div>
-          <Switch
-            checked={autoStartPomodoros}
-            onCheckedChange={setAutoStartPomodoros}
-          />
-        </div>
+      {/* ===== LIST SETTINGS ===== */}
+      <div className="space-y-4">
+        <h3 className="text-xl font-bold text-gray-900 uppercase flex items-center gap-2">
+          <ListTodo className="w-5 h-5 text-blue-600" />
+          LIST SETTINGS
+        </h3>
 
-        <div className="flex items-center justify-between py-2">
+        <div className="border rounded-lg p-6 bg-white space-y-4">
           <div>
-            <p className="text-sm font-medium text-gray-900">Sound Notifications</p>
-            <p className="text-xs text-gray-500">Play sound when timer completes</p>
+            <label className="text-sm font-medium text-gray-700 mb-2 block uppercase">
+              MAXIMUM ITEMS PER LIST
+            </label>
+            <Input
+              type="number"
+              min="3"
+              max="10"
+              value={listMaxItems}
+              onChange={(e) => setListMaxItems(parseInt(e.target.value) || 5)}
+              className="w-full"
+            />
+            <p className="text-xs text-gray-500 mt-1">Recommended: 4-5 tasks for focused sessions</p>
           </div>
-          <Switch
-            checked={soundEnabled}
-            onCheckedChange={setSoundEnabled}
-          />
+
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <p className="text-sm font-medium text-gray-900 uppercase">AUTO-ASSIGN LIST COLORS</p>
+              <p className="text-xs text-gray-500">Automatically assign colors to new lists</p>
+            </div>
+            <Switch
+              checked={listAutoColor}
+              onCheckedChange={setListAutoColor}
+            />
+          </div>
         </div>
       </div>
 
       {/* Save Button */}
-      <div className="flex justify-end">
+      <div className="flex justify-end pt-4 border-t">
         <Button
           onClick={handleSave}
           disabled={saving}
@@ -218,7 +319,7 @@ export function SettingsTab({ bookmarkId }: SettingsTabProps) {
           ) : (
             <>
               <Save className="w-4 h-4 mr-2" />
-              Save Settings
+              Save All Settings
             </>
           )}
         </Button>

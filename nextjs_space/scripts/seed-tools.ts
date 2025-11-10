@@ -31,7 +31,7 @@ async function main() {
     },
     {
       key: 'task',
-      label: 'TASK',
+      label: 'TASK + TIMER',
       icon: 'CheckSquare',
       isDefault: true,
       isSystem: true,
@@ -50,7 +50,29 @@ async function main() {
       isDefault: true,
       isSystem: true,
     },
-    // New tools
+    // Individual task management tools
+    {
+      key: 'tasks',
+      label: 'TASKS',
+      icon: 'ListChecks',
+      isDefault: false,
+      isSystem: false,
+    },
+    {
+      key: 'lists',
+      label: 'LISTS',
+      icon: 'ListTodo',
+      isDefault: false,
+      isSystem: false,
+    },
+    {
+      key: 'timer',
+      label: 'TIMER',
+      icon: 'Timer',
+      isDefault: false,
+      isSystem: false,
+    },
+    // Other custom tools
     {
       key: 'notes',
       label: 'QUICK NOTES',
