@@ -94,6 +94,9 @@ export function BookmarkDetailModal({
   const [showManageTools, setShowManageTools] = useState(false)
   const [toolsLoading, setToolsLoading] = useState(true)
   
+  // TASK tab sub-navigation state
+  const [taskSubTab, setTaskSubTab] = useState("timer")
+  
   const fileInputRef = useRef<HTMLInputElement>(null)
   const logoInputRef = useRef<HTMLInputElement>(null)
   const faviconInputRef = useRef<HTMLInputElement>(null)
@@ -942,25 +945,70 @@ export function BookmarkDetailModal({
             <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] min-h-[400px] lg:h-[600px]">
               <div className="border-b lg:border-r lg:border-b-0 bg-gray-50 p-3 sm:p-4">
                 <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible scrollbar-hide">
-                  <Button className="justify-start bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm whitespace-nowrap">
+                  <Button 
+                    onClick={() => setTaskSubTab("timer")}
+                    className={cn(
+                      "justify-start text-xs sm:text-sm whitespace-nowrap",
+                      taskSubTab === "timer" 
+                        ? "bg-blue-600 text-white hover:bg-blue-700" 
+                        : "bg-transparent hover:bg-gray-100 text-gray-700"
+                    )}
+                    variant={taskSubTab === "timer" ? "default" : "ghost"}
+                  >
                     <Timer className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                     TIMER
                   </Button>
-                  <Button variant="ghost" className="justify-start text-xs sm:text-sm whitespace-nowrap">
+                  <Button 
+                    onClick={() => setTaskSubTab("tasks")}
+                    variant="ghost" 
+                    className={cn(
+                      "justify-start text-xs sm:text-sm whitespace-nowrap",
+                      taskSubTab === "tasks" 
+                        ? "bg-blue-600 text-white hover:bg-blue-700" 
+                        : "bg-transparent hover:bg-gray-100 text-gray-700"
+                    )}
+                  >
                     <ListTodo className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                     TASKS
                     <Badge variant="outline" className="ml-auto text-xs">0</Badge>
                   </Button>
-                  <Button variant="ghost" className="justify-start text-xs sm:text-sm whitespace-nowrap">
+                  <Button 
+                    onClick={() => setTaskSubTab("lists")}
+                    variant="ghost" 
+                    className={cn(
+                      "justify-start text-xs sm:text-sm whitespace-nowrap",
+                      taskSubTab === "lists" 
+                        ? "bg-blue-600 text-white hover:bg-blue-700" 
+                        : "bg-transparent hover:bg-gray-100 text-gray-700"
+                    )}
+                  >
                     <ListTodo className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                     LISTS
                     <Badge variant="outline" className="ml-auto text-xs">0</Badge>
                   </Button>
-                  <Button variant="ghost" className="justify-start text-xs sm:text-sm whitespace-nowrap">
+                  <Button 
+                    onClick={() => setTaskSubTab("analytics")}
+                    variant="ghost" 
+                    className={cn(
+                      "justify-start text-xs sm:text-sm whitespace-nowrap",
+                      taskSubTab === "analytics" 
+                        ? "bg-blue-600 text-white hover:bg-blue-700" 
+                        : "bg-transparent hover:bg-gray-100 text-gray-700"
+                    )}
+                  >
                     <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                     ANALYTICS
                   </Button>
-                  <Button variant="ghost" className="justify-start text-xs sm:text-sm whitespace-nowrap">
+                  <Button 
+                    onClick={() => setTaskSubTab("settings")}
+                    variant="ghost" 
+                    className={cn(
+                      "justify-start text-xs sm:text-sm whitespace-nowrap",
+                      taskSubTab === "settings" 
+                        ? "bg-blue-600 text-white hover:bg-blue-700" 
+                        : "bg-transparent hover:bg-gray-100 text-gray-700"
+                    )}
+                  >
                     <Settings className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                     SETTINGS
                   </Button>
@@ -968,76 +1016,117 @@ export function BookmarkDetailModal({
               </div>
               
               <div className="p-4 sm:p-6 space-y-6">
-                <div className="border rounded-lg p-8 text-center space-y-4">
-                  <div className="inline-flex items-center gap-2 px-4 py-1 bg-red-50 text-red-600 rounded-full text-sm font-medium">
-                    <Activity className="w-4 h-4" />
-                    WORK SESSION
-                  </div>
-                  
-                  <div className="text-6xl font-bold text-red-600">
-                    {formatTime(timerTime)}
-                  </div>
-                  
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-red-600 h-2 rounded-full transition-all"
-                      style={{ width: `${((25 * 60 - timerTime) / (25 * 60)) * 100}%` }}
-                    ></div>
-                  </div>
-                  
-                  <div className="text-sm text-gray-500">
-                    <span className="font-medium">0:00</span>
-                    <span className="mx-2">–</span>
-                    <span className="font-medium">25:00</span>
-                  </div>
-                  
-                  <div className="text-sm text-gray-600">Session 1</div>
-                  
-                  <div className="flex gap-3 justify-center pt-4">
-                    {!isTimerRunning ? (
-                      <Button
-                        onClick={handleStartTimer}
-                        className="bg-green-600 hover:bg-green-700 text-white uppercase px-8"
-                      >
-                        <Play className="w-4 h-4 mr-2" />
-                        Start
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={handleStopTimer}
-                        className="bg-red-600 hover:bg-red-700 text-white uppercase px-8"
-                      >
-                        <Pause className="w-4 h-4 mr-2" />
-                        Stop
-                      </Button>
-                    )}
-                    <Button
-                      onClick={handleResetTimer}
-                      variant="outline"
-                      className="uppercase px-8"
-                    >
-                      <RotateCcw className="w-4 h-4 mr-2" />
-                      Reset
-                    </Button>
-                  </div>
-                </div>
+                {/* TIMER SUB-TAB */}
+                {taskSubTab === "timer" && (
+                  <>
+                    <div className="border rounded-lg p-8 text-center space-y-4">
+                      <div className="inline-flex items-center gap-2 px-4 py-1 bg-red-50 text-red-600 rounded-full text-sm font-medium">
+                        <Activity className="w-4 h-4" />
+                        WORK SESSION
+                      </div>
+                      
+                      <div className="text-6xl font-bold text-red-600">
+                        {formatTime(timerTime)}
+                      </div>
+                      
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-red-600 h-2 rounded-full transition-all"
+                          style={{ width: `${((25 * 60 - timerTime) / (25 * 60)) * 100}%` }}
+                        ></div>
+                      </div>
+                      
+                      <div className="text-sm text-gray-500">
+                        <span className="font-medium">0:00</span>
+                        <span className="mx-2">–</span>
+                        <span className="font-medium">25:00</span>
+                      </div>
+                      
+                      <div className="text-sm text-gray-600">Session 1</div>
+                      
+                      <div className="flex gap-3 justify-center pt-4">
+                        {!isTimerRunning ? (
+                          <Button
+                            onClick={handleStartTimer}
+                            className="bg-green-600 hover:bg-green-700 text-white uppercase px-8"
+                          >
+                            <Play className="w-4 h-4 mr-2" />
+                            Start
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={handleStopTimer}
+                            className="bg-red-600 hover:bg-red-700 text-white uppercase px-8"
+                          >
+                            <Pause className="w-4 h-4 mr-2" />
+                            Stop
+                          </Button>
+                        )}
+                        <Button
+                          onClick={handleResetTimer}
+                          variant="outline"
+                          className="uppercase px-8"
+                        >
+                          <RotateCcw className="w-4 h-4 mr-2" />
+                          Reset
+                        </Button>
+                      </div>
+                    </div>
 
-                <div className="border rounded-lg p-4 sm:p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                    <h4 className="font-medium">CURRENT TASK</h4>
-                  </div>
-                  <p className="text-sm text-gray-500">No task selected</p>
-                </div>
+                    <div className="border rounded-lg p-4 sm:p-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                        <h4 className="font-medium">CURRENT TASK</h4>
+                      </div>
+                      <p className="text-sm text-gray-500">No task selected</p>
+                    </div>
 
-                <div className="border rounded-lg p-4 bg-blue-50 text-center">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-white rounded-full text-sm mb-2">
-                    <Clock className="w-4 h-4 text-blue-600" />
-                    <span className="font-medium">WORK</span>
-                    <span className="font-bold">25:00</span>
+                    <div className="border rounded-lg p-4 bg-blue-50 text-center">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 bg-white rounded-full text-sm mb-2">
+                        <Clock className="w-4 h-4 text-blue-600" />
+                        <span className="font-medium">WORK</span>
+                        <span className="font-bold">25:00</span>
+                      </div>
+                      <p className="text-xs text-gray-600">Session 1</p>
+                    </div>
+                  </>
+                )}
+
+                {/* TASKS SUB-TAB */}
+                {taskSubTab === "tasks" && (
+                  <div className="border rounded-lg p-8 text-center space-y-4">
+                    <ListTodo className="w-16 h-16 text-gray-300 mx-auto" />
+                    <h3 className="text-xl font-semibold text-gray-900">Tasks</h3>
+                    <p className="text-sm text-gray-500">Task management functionality coming soon</p>
                   </div>
-                  <p className="text-xs text-gray-600">Session 1</p>
-                </div>
+                )}
+
+                {/* LISTS SUB-TAB */}
+                {taskSubTab === "lists" && (
+                  <div className="border rounded-lg p-8 text-center space-y-4">
+                    <ListTodo className="w-16 h-16 text-gray-300 mx-auto" />
+                    <h3 className="text-xl font-semibold text-gray-900">Lists</h3>
+                    <p className="text-sm text-gray-500">List management functionality coming soon</p>
+                  </div>
+                )}
+
+                {/* ANALYTICS SUB-TAB */}
+                {taskSubTab === "analytics" && (
+                  <div className="border rounded-lg p-8 text-center space-y-4">
+                    <BarChart3 className="w-16 h-16 text-gray-300 mx-auto" />
+                    <h3 className="text-xl font-semibold text-gray-900">Analytics</h3>
+                    <p className="text-sm text-gray-500">Task analytics functionality coming soon</p>
+                  </div>
+                )}
+
+                {/* SETTINGS SUB-TAB */}
+                {taskSubTab === "settings" && (
+                  <div className="border rounded-lg p-8 text-center space-y-4">
+                    <Settings className="w-16 h-16 text-gray-300 mx-auto" />
+                    <h3 className="text-xl font-semibold text-gray-900">Settings</h3>
+                    <p className="text-sm text-gray-500">Task settings functionality coming soon</p>
+                  </div>
+                )}
               </div>
             </div>
           </TabsContent>
