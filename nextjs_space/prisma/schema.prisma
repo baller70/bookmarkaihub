@@ -111,6 +111,9 @@ model Bookmark {
   todoItems       TodoItem[]
   quickNotes      QuickNote[]
   habits          Habit[]
+  taskLists       TaskList[]
+  timerQueue      TimerQueue[]
+  timerSettings   TimerSettings?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -502,7 +505,9 @@ model TodoItem {
   dueDate     DateTime?
   order       Int      @default(0)
   
-  bookmark    Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  bookmark      Bookmark       @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  listItems     TaskListItem[]
+  timerQueue    TimerQueue[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -565,4 +570,69 @@ enum HabitFrequency {
   DAILY
   WEEKLY
   MONTHLY
+}
+
+// Task Lists System
+model TaskList {
+  id          String   @id @default(cuid())
+  bookmarkId  String
+  name        String
+  description String?  @db.Text
+  color       String   @default("#3B82F6") // Hex color
+  order       Int      @default(0)
+  
+  bookmark    Bookmark         @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  items       TaskListItem[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TaskListItem {
+  id          String   @id @default(cuid())
+  taskListId  String
+  todoItemId  String
+  order       Int      @default(0)
+  
+  taskList    TaskList @relation(fields: [taskListId], references: [id], onDelete: Cascade)
+  todoItem    TodoItem @relation(fields: [todoItemId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([taskListId, todoItemId])
+}
+
+// Timer System
+model TimerQueue {
+  id          String   @id @default(cuid())
+  bookmarkId  String
+  todoItemId  String?  // If null, it's a break/rest period
+  order       Int      @default(0)
+  duration    Int      @default(1500) // Duration in seconds (default 25 min = 1500s)
+  isBreak     Boolean  @default(false)
+  completed   Boolean  @default(false)
+  
+  bookmark    Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  todoItem    TodoItem? @relation(fields: [todoItemId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@index([bookmarkId, order])
+}
+
+model TimerSettings {
+  id                String   @id @default(cuid())
+  bookmarkId        String   @unique
+  isEnabled         Boolean  @default(true)
+  workDuration      Int      @default(1500) // 25 minutes in seconds
+  shortBreak        Int      @default(300)  // 5 minutes
+  longBreak         Int      @default(900)  // 15 minutes
+  autoStartBreaks   Boolean  @default(false)
+  autoStartPomodoros Boolean @default(false)
+  soundEnabled      Boolean  @default(true)
+  
+  bookmark    Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

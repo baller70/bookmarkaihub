@@ -14,6 +14,9 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Calendar } from "@/components/ui/calendar"
 import { Progress } from "@/components/ui/progress"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import { Checkbox } from "@/components/ui/checkbox"
 import { 
   Heart, 
   Share2, 
@@ -41,13 +44,23 @@ import {
   Timer,
   ListTodo,
   BarChart3,
-  X
+  X,
+  GripVertical,
+  Trash2,
+  Flag,
+  Clock4,
+  PlusCircle,
+  Folder
 } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { ManageToolsModal } from "@/components/manage-tools-modal"
 import { QuickNotesTool } from "@/components/quick-notes-tool"
 import { HabitsTool } from "@/components/habits-tool"
+import { TasksTab } from "@/components/task-subtabs/tasks-tab"
+import { ListsTab } from "@/components/task-subtabs/lists-tab"
+import { AnalyticsTab } from "@/components/task-subtabs/analytics-tab"
+import { SettingsTab } from "@/components/task-subtabs/settings-tab"
 
 interface BookmarkDetailModalProps {
   bookmark: any
@@ -1094,38 +1107,22 @@ export function BookmarkDetailModal({
 
                 {/* TASKS SUB-TAB */}
                 {taskSubTab === "tasks" && (
-                  <div className="border rounded-lg p-8 text-center space-y-4">
-                    <ListTodo className="w-16 h-16 text-gray-300 mx-auto" />
-                    <h3 className="text-xl font-semibold text-gray-900">Tasks</h3>
-                    <p className="text-sm text-gray-500">Task management functionality coming soon</p>
-                  </div>
+                  <TasksTab bookmarkId={bookmark?.id} />
                 )}
 
                 {/* LISTS SUB-TAB */}
                 {taskSubTab === "lists" && (
-                  <div className="border rounded-lg p-8 text-center space-y-4">
-                    <ListTodo className="w-16 h-16 text-gray-300 mx-auto" />
-                    <h3 className="text-xl font-semibold text-gray-900">Lists</h3>
-                    <p className="text-sm text-gray-500">List management functionality coming soon</p>
-                  </div>
+                  <ListsTab bookmarkId={bookmark?.id} />
                 )}
 
                 {/* ANALYTICS SUB-TAB */}
                 {taskSubTab === "analytics" && (
-                  <div className="border rounded-lg p-8 text-center space-y-4">
-                    <BarChart3 className="w-16 h-16 text-gray-300 mx-auto" />
-                    <h3 className="text-xl font-semibold text-gray-900">Analytics</h3>
-                    <p className="text-sm text-gray-500">Task analytics functionality coming soon</p>
-                  </div>
+                  <AnalyticsTab bookmarkId={bookmark?.id} />
                 )}
 
                 {/* SETTINGS SUB-TAB */}
                 {taskSubTab === "settings" && (
-                  <div className="border rounded-lg p-8 text-center space-y-4">
-                    <Settings className="w-16 h-16 text-gray-300 mx-auto" />
-                    <h3 className="text-xl font-semibold text-gray-900">Settings</h3>
-                    <p className="text-sm text-gray-500">Task settings functionality coming soon</p>
-                  </div>
+                  <SettingsTab bookmarkId={bookmark?.id} />
                 )}
               </div>
             </div>
