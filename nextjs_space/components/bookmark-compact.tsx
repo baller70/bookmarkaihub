@@ -1,18 +1,15 @@
 "use client"
 
-import { useState } from "react"
-import Image from "next/image"
-import { ExternalLink, Star, MoreVertical, Trash2, Edit } from "lucide-react"
+import { useState, useMemo } from "react"
+import { useSession } from "next-auth/react"
+import { Folder, MoreVertical, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { BookmarkDetailModal } from "./bookmark-detail-modal"
-import { toast } from "sonner"
 
 interface BookmarkCompactProps {
   bookmarks: any[]
@@ -20,43 +17,34 @@ interface BookmarkCompactProps {
 }
 
 export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
-  const [selectedBookmark, setSelectedBookmark] = useState<any | null>(null)
+  const { data: session } = useSession() || {}
+  
+  // Group bookmarks by category
+  const categorizedBookmarks = useMemo(() => {
+    const grouped = new Map<string, { category: any; bookmarks: any[] }>()
 
-  const handleToggleFavorite = async (e: React.MouseEvent, bookmarkId: string, currentFavorite: boolean) => {
-    e.stopPropagation()
-    try {
-      const response = await fetch(`/api/bookmarks/${bookmarkId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isFavorite: !currentFavorite }),
-      })
+    bookmarks?.forEach((bookmark) => {
+      const categoryId = bookmark.category?.id || "uncategorized"
+      const categoryName = bookmark.category?.name || "UNCATEGORIZED"
+      const categoryColor = bookmark.category?.color || "#94A3B8"
+      const categoryIcon = bookmark.category?.icon || "Folder"
 
-      if (response.ok) {
-        toast.success(currentFavorite ? 'Removed from favorites' : 'Added to favorites')
-        onUpdate()
+      if (!grouped.has(categoryId)) {
+        grouped.set(categoryId, {
+          category: {
+            id: categoryId,
+            name: categoryName,
+            color: categoryColor,
+            icon: categoryIcon,
+          },
+          bookmarks: [],
+        })
       }
-    } catch (error) {
-      toast.error('Failed to update favorite')
-    }
-  }
+      grouped.get(categoryId)?.bookmarks.push(bookmark)
+    })
 
-  const handleDelete = async (e: React.MouseEvent, bookmarkId: string) => {
-    e.stopPropagation()
-    if (!confirm('Are you sure you want to delete this bookmark?')) return
-
-    try {
-      const response = await fetch(`/api/bookmarks/${bookmarkId}`, {
-        method: 'DELETE',
-      })
-
-      if (response.ok) {
-        toast.success('Bookmark deleted')
-        onUpdate()
-      }
-    } catch (error) {
-      toast.error('Failed to delete bookmark')
-    }
-  }
+    return Array.from(grouped.values())
+  }, [bookmarks])
 
   if (!bookmarks?.length) {
     return (
@@ -73,140 +61,71 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
   }
 
   return (
-    <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {bookmarks.map((bookmark) => (
-          <div
-            key={bookmark.id}
-            className="group relative bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer"
-            onClick={() => setSelectedBookmark(bookmark)}
-          >
-            {/* Header with Favicon and Actions */}
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-3 min-w-0 flex-1">
-                {/* Favicon */}
-                <div className="w-10 h-10 flex-shrink-0 relative bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
-                  {bookmark.favicon ? (
-                    <Image
-                      src={bookmark.favicon}
-                      alt={bookmark.title}
-                      fill
-                      className="object-contain p-1"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
-                      {bookmark.title.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+      {categorizedBookmarks.map(({ category, bookmarks: categoryBookmarks }) => (
+        <div
+          key={category.id}
+          className="group relative bg-white border border-gray-200 rounded-lg p-5 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer"
+        >
+          {/* Three-dot menu */}
+          <div className="absolute top-3 right-3">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <MoreVertical className="w-4 h-4 text-gray-500" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuItem>View Bookmarks</DropdownMenuItem>
+                <DropdownMenuItem>Edit Category</DropdownMenuItem>
+                <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
 
-                {/* Title */}
-                <h3 className="font-semibold text-sm text-gray-900 line-clamp-2 min-w-0">
-                  {bookmark.title}
-                </h3>
-              </div>
-
-              {/* Actions Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <MoreVertical className="w-4 h-4 text-gray-500" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-40">
-                  <DropdownMenuItem onClick={(e) => {
-                    e.stopPropagation()
-                    window.open(bookmark.url, '_blank')
-                  }}>
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Open Link
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={(e) => {
-                    e.stopPropagation()
-                    setSelectedBookmark(bookmark)
-                  }}>
-                    <Edit className="w-4 h-4 mr-2" />
-                    Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={(e) => handleDelete(e, bookmark.id)}
-                    className="text-red-600"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            {/* Description */}
-            {bookmark.description && (
-              <p className="text-xs text-gray-600 line-clamp-2 mb-3 leading-relaxed">
-                {bookmark.description}
-              </p>
-            )}
-
-            {/* Category Badge */}
-            {bookmark.category && (
-              <Badge 
-                className="mb-3 text-xs"
-                style={{
-                  backgroundColor: `${bookmark.category.color}15`,
-                  color: bookmark.category.color,
-                  borderLeft: `3px solid ${bookmark.category.color}`
-                }}
-              >
-                {bookmark.category.name}
-              </Badge>
-            )}
-
-            {/* Footer with URL and Favorite */}
-            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-              <a
-                href={bookmark.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="text-xs text-gray-500 hover:text-blue-600 truncate flex-1 mr-2"
-              >
-                {bookmark.url.replace(/^https?:\/\//, '').replace(/\/$/, '').substring(0, 30)}...
-              </a>
-
-              <button
-                onClick={(e) => handleToggleFavorite(e, bookmark.id, bookmark.isFavorite)}
-                className="flex-shrink-0"
-              >
-                <Star
-                  className={`w-4 h-4 transition-colors ${
-                    bookmark.isFavorite
-                      ? 'fill-yellow-400 text-yellow-400'
-                      : 'text-gray-300 hover:text-yellow-400'
-                  }`}
-                />
-              </button>
+          {/* Folder icon */}
+          <div className="flex justify-center mb-4 pt-2">
+            <div className="w-20 h-20 flex items-center justify-center">
+              <Folder
+                className="w-20 h-20"
+                style={{ color: category.color }}
+                fill={category.color}
+                fillOpacity={0.15}
+              />
             </div>
           </div>
-        ))}
-      </div>
 
-      {/* Bookmark Detail Modal */}
-      {selectedBookmark && (
-        <BookmarkDetailModal
-          bookmark={selectedBookmark}
-          open={!!selectedBookmark}
-          onOpenChange={(open) => {
-            if (!open) setSelectedBookmark(null)
-          }}
-          onUpdate={() => {
-            onUpdate()
-            setSelectedBookmark(null)
-          }}
-        />
-      )}
-    </>
+          {/* Category name */}
+          <h3 className="text-center font-bold text-sm text-gray-900 mb-4 uppercase">
+            {category.name}
+          </h3>
+
+          {/* Footer with bookmark count and user avatar */}
+          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+            <div className="flex items-center gap-1 text-xs text-gray-600">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+              </svg>
+              <span>{categoryBookmarks.length} BOOKMARK{categoryBookmarks.length !== 1 ? 'S' : ''}</span>
+            </div>
+
+            {/* User avatar */}
+            <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
+              {session?.user?.name ? (
+                <span className="text-xs font-semibold text-gray-600">
+                  {session.user.name.charAt(0).toUpperCase()}
+                </span>
+              ) : (
+                <User className="w-3.5 h-3.5 text-gray-500" />
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
   )
 }
