@@ -441,9 +441,9 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                   </p>
 
                   {/* Visit count */}
-                  <div className="flex items-center gap-2 text-xs text-gray-600">
-                    <Eye className="w-4 h-4" />
-                    <span>{bookmark.analytics?.[0]?.totalVisits || 0} VISITS</span>
+                  <div className="flex items-center gap-2 text-base text-gray-600">
+                    <Eye className="w-6 h-6" />
+                    <span className="font-bold font-russo">{bookmark.analytics?.[0]?.totalVisits || 0} VISITS</span>
                     {bookmark.analytics?.[0]?.totalVisits > 0 && (
                       <div className="w-2 h-2 rounded-full bg-green-500"></div>
                     )}
