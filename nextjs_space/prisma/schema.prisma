@@ -142,8 +142,8 @@ model Category {
   id              String    @id @default(cuid())
   name            String
   description     String?
-  color           String    @default("#3B82F6") // Blue default (folder outline)
-  backgroundColor String    @default("#DBEAFE") // Light blue default (folder background)
+  color           String?   // Optional folder outline color
+  backgroundColor String?   // Optional folder background color
   icon            String    @default("folder")
   
   userId      String
