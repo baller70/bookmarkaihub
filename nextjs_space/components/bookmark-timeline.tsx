@@ -318,15 +318,14 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
                           draggedBookmarkId === bookmark.id ? 'opacity-50 border-blue-500' : 'border-gray-200'
                         } bg-gradient-to-br from-pink-50/30 via-purple-50/20 to-blue-50/30`}
                       >
-                        {/* Full Background Faded Logo */}
+                        {/* Full Background Faded Logo - Stretched to Cover Every Inch */}
                         {bookmark.favicon && (
-                          <div className="absolute inset-0 flex items-center justify-center opacity-[0.08] pointer-events-none overflow-hidden">
+                          <div className="absolute inset-0 opacity-[0.08] pointer-events-none overflow-hidden">
                             <Image
                               src={bookmark.favicon}
                               alt=""
-                              width={400}
-                              height={400}
-                              className="object-contain"
+                              fill
+                              className="object-cover"
                             />
                           </div>
                         )}
