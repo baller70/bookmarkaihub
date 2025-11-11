@@ -307,6 +307,25 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
               key={bookmark.id}
               className="relative bg-gradient-to-br from-pink-50/30 via-purple-50/20 to-blue-50/30 border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-all group"
             >
+              {/* Large faded watermark logo on the right */}
+              <div className="absolute right-0 top-0 bottom-0 w-64 flex items-center justify-center pointer-events-none overflow-hidden">
+                {bookmark.favicon ? (
+                  <div className="relative w-48 h-48 opacity-10">
+                    <Image
+                      src={bookmark.favicon}
+                      alt=""
+                      fill
+                      className="object-contain"
+                      unoptimized
+                    />
+                  </div>
+                ) : (
+                  <div className="text-9xl font-bold text-gray-300 opacity-20">
+                    {bookmark.title?.charAt(0) || "?"}
+                  </div>
+                )}
+              </div>
+
               {/* Three-dot menu */}
               <div className="absolute top-3 right-3 z-10">
                 <DropdownMenu>
@@ -336,7 +355,7 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                 </div>
               </div>
 
-              <div className="flex items-start gap-6 p-6 cursor-pointer" onClick={() => setSelectedBookmark(bookmark)}>
+              <div className="relative flex items-start gap-6 p-6 cursor-pointer z-0" onClick={() => setSelectedBookmark(bookmark)}>
                 {/* Left: Logo/Favicon */}
                 <div className="flex-shrink-0">
                   <div className="relative w-14 h-14 bg-black rounded-lg flex items-center justify-center overflow-hidden">
@@ -406,27 +425,6 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                     <span>{bookmark.analytics?.[0]?.totalVisits || 0} VISITS</span>
                     {bookmark.analytics?.[0]?.totalVisits > 0 && (
                       <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Right: Large logo - NOW ALWAYS VISIBLE */}
-                <div className="flex-shrink-0 w-32 h-32 flex items-center justify-center">
-                  <div className="relative w-28 h-28">
-                    {bookmark.favicon ? (
-                      <Image
-                        src={bookmark.favicon}
-                        alt={bookmark.title || "Bookmark"}
-                        fill
-                        className="object-contain"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 rounded-2xl flex items-center justify-center">
-                        <span className="text-5xl font-bold text-gray-400">
-                          {bookmark.title?.charAt(0) || "?"}
-                        </span>
-                      </div>
                     )}
                   </div>
                 </div>
