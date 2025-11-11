@@ -35,7 +35,7 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
   const [editedName, setEditedName] = useState('');
   const [colorPickerOpen, setColorPickerOpen] = useState<string | null>(null);
   const [tempBackgroundColor, setTempBackgroundColor] = useState('#FFFFFF');
-  const [tempOutlineColor, setTempOutlineColor] = useState('#D1D5DB');
+  const [tempOutlineColor, setTempOutlineColor] = useState('#000000');
 
   // Group bookmarks by category
   const categorizedBookmarks = useMemo(() => {
@@ -101,7 +101,7 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
   const handleOpenColorPicker = (category: any) => {
     setColorPickerOpen(category.id);
     setTempBackgroundColor(category.backgroundColor || '#FFFFFF');
-    setTempOutlineColor(category.color || '#D1D5DB');
+    setTempOutlineColor(category.color || '#000000');
   };
 
   const handleSaveColors = async (categoryId: string) => {
@@ -149,7 +149,7 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
         {categorizedBookmarks.map(({ category, bookmarks: categoryBookmarks }) => (
           <div
             key={category.id}
-            className="group relative bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer"
+            className="group relative bg-white border border-black rounded-lg p-6 hover:shadow-md hover:border-gray-900 transition-all cursor-pointer"
             style={{
               ...(category.backgroundColor && { backgroundColor: category.backgroundColor }),
               ...(category.color && { borderColor: category.color, borderWidth: '2px' }),
@@ -280,7 +280,7 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
                         value={tempOutlineColor}
                         onChange={(e) => setTempOutlineColor(e.target.value)}
                         className="h-9 flex-1 text-xs"
-                        placeholder="#D1D5DB"
+                        placeholder="#000000"
                       />
                     </div>
                   </div>
