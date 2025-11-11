@@ -378,8 +378,8 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
           </div>
         </div>
 
-        {/* Bookmarks as square cards - PIXEL PERFECT CLONE */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {/* Bookmarks as square cards - EXACT CLONE OF ORIGINAL */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
           {currentCategoryBookmarks.map((bookmark: any) => {
             const usagePercentage = bookmark.usagePercentage || 0
             const visitCount = bookmark.analytics?.[0]?.totalVisits || 0
@@ -388,103 +388,125 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
             return (
               <div
                 key={bookmark.id}
-                className="relative bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:shadow-xl transition-all cursor-pointer group"
+                className="relative bg-white border-2 border-black rounded-xl overflow-hidden hover:shadow-2xl transition-all cursor-pointer group"
                 onClick={() => setSelectedBookmark(bookmark)}
               >
-                {/* Square card content */}
-                <div className="aspect-square flex flex-col p-5">
+                {/* Square card content with exact spacing */}
+                <div className="aspect-square flex flex-col p-4 relative">
                   
-                  {/* TOP LEFT - Circular Logo/Favicon */}
-                  <div className="absolute top-4 left-4">
-                    <div className="relative w-12 h-12 bg-black rounded-xl flex items-center justify-center overflow-hidden shadow-md">
+                  {/* Background watermark pattern (faded logo) */}
+                  {bookmark.favicon && (
+                    <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none overflow-hidden">
+                      <div className="relative w-full h-full">
+                        <Image
+                          src={bookmark.favicon}
+                          alt=""
+                          fill
+                          className="object-contain scale-150"
+                          unoptimized
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TOP LEFT - Black square logo container */}
+                  <div className="relative z-10 mb-3">
+                    <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center overflow-hidden">
                       {bookmark.favicon ? (
                         <Image
                           src={bookmark.favicon}
                           alt={bookmark.title || "Bookmark"}
-                          fill
-                          className="object-contain p-2"
+                          width={32}
+                          height={32}
+                          className="object-contain"
                           unoptimized
                         />
                       ) : (
-                        <span className="text-lg font-bold text-white">
+                        <span className="text-xl font-bold text-white">
                           {bookmark.title?.charAt(0)?.toUpperCase() || "?"}
                         </span>
                       )}
                     </div>
                   </div>
 
-                  {/* TOP RIGHT - Hexagonal percentage badge */}
-                  <div className="absolute top-4 right-4">
+                  {/* TOP RIGHT - Red hexagonal percentage badge */}
+                  <div className="absolute top-4 right-4 z-10">
                     <div 
-                      className="relative w-12 h-14 flex items-center justify-center"
+                      className="relative flex items-center justify-center"
                       style={{
-                        clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                        width: '44px',
+                        height: '52px',
+                        clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
+                        backgroundColor: '#FEE2E2'
                       }}
                     >
-                      <div className="absolute inset-0 bg-red-100 border-2 border-red-400"></div>
+                      <div 
+                        className="absolute inset-0"
+                        style={{
+                          clipPath: 'polygon(50% 2%, 98% 26%, 98% 74%, 50% 98%, 2% 74%, 2% 26%)',
+                          backgroundColor: '#FFFFFF'
+                        }}
+                      ></div>
                       <span className="relative text-xs font-black text-red-600 z-10">
                         {Math.round(usagePercentage)}%
                       </span>
                     </div>
                   </div>
 
-                  {/* TITLE - Below icon, uppercase bold */}
-                  <div className="mt-[72px] mb-2">
-                    <h3 className="font-black text-base text-gray-900 uppercase tracking-tight leading-tight line-clamp-2">
+                  {/* TITLE - Bold uppercase, 2 lines max */}
+                  <div className="relative z-10 mb-1.5">
+                    <h3 className="font-black text-sm text-gray-900 uppercase tracking-tight leading-tight line-clamp-2">
                       {bookmark.title || "Untitled"}
                     </h3>
                   </div>
 
-                  {/* URL - Yellow/Gold background pill */}
-                  <div className="mb-2">
-                    <div className="inline-block bg-yellow-100 px-3 py-1 rounded-md">
-                      <p className="text-xs text-gray-700 font-medium truncate">
-                        {cleanUrl}
-                      </p>
-                    </div>
+                  {/* URL - Blue link text */}
+                  <div className="relative z-10 mb-2">
+                    <p className="text-xs text-blue-600 truncate">
+                      {cleanUrl}
+                    </p>
                   </div>
 
-                  {/* Priority/Tag - Plain text */}
+                  {/* Priority Tag - Yellow pill badge */}
                   {bookmark.priority && (
-                    <div className="mb-4">
-                      <span className="text-xs text-gray-600 font-medium lowercase">
+                    <div className="relative z-10 mb-3">
+                      <span className="inline-block bg-yellow-100 text-gray-800 text-xs px-2.5 py-0.5 rounded-md font-medium lowercase">
                         {bookmark.priority.toLowerCase()}
                       </span>
                     </div>
                   )}
 
-                  {/* Spacer to push bottom content down */}
+                  {/* Spacer to push bottom section down */}
                   <div className="flex-1"></div>
 
-                  {/* BOTTOM SECTION */}
-                  <div className="flex items-center justify-between mt-auto">
+                  {/* BOTTOM SECTION - Fixed at bottom */}
+                  <div className="relative z-10 flex items-center justify-between mt-auto">
                     {/* BOTTOM LEFT - Visit count with green dot */}
                     <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1.5">
-                        <Eye className="w-4 h-4 text-gray-500" />
-                        <span className="text-xs font-bold text-gray-700 uppercase">
+                      <div className="flex items-center gap-1">
+                        <Eye className="w-3.5 h-3.5 text-gray-500" />
+                        <span className="text-[10px] font-semibold text-gray-600 uppercase tracking-wide">
                           {visitCount} VISITS
                         </span>
                       </div>
                       {visitCount > 0 && (
-                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
                       )}
                     </div>
 
-                    {/* BOTTOM RIGHT - Circular decorative icon */}
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-orange-400 via-pink-400 to-purple-500 flex items-center justify-center shadow-md">
+                    {/* BOTTOM RIGHT - Large circular decorative badge */}
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 via-pink-400 to-orange-400 flex items-center justify-center shadow-md">
                       {bookmark.favicon ? (
-                        <div className="relative w-7 h-7">
-                          <Image
-                            src={bookmark.favicon}
-                            alt=""
-                            fill
-                            className="object-contain"
-                            unoptimized
-                          />
-                        </div>
+                        <Image
+                          src={bookmark.favicon}
+                          alt=""
+                          width={24}
+                          height={24}
+                          className="object-contain"
+                          unoptimized
+                        />
                       ) : (
-                        <span className="text-sm font-black text-white">
+                        <span className="text-lg font-black text-white">
                           {bookmark.title?.charAt(0)?.toUpperCase() || "?"}
                         </span>
                       )}
