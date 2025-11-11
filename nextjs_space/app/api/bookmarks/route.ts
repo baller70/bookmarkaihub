@@ -85,8 +85,12 @@ export async function GET(request: Request) {
         ? (bookmark.totalVisits / totalVisitsAcrossAll) * 100 
         : 0
       
+      // Flatten the category data structure for easier frontend access
+      const primaryCategory = bookmark.categories?.[0]?.category || null
+      
       return {
         ...bookmark,
+        category: primaryCategory, // Flatten: categories[0].category -> category
         visitCount: bookmark.totalVisits, // Map totalVisits to visitCount for frontend consistency
         usagePercentage
       }

@@ -37,6 +37,8 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
   const [editingCategory, setEditingCategory] = useState<any>(null)
   const [folderColor, setFolderColor] = useState('#22c55e')
   const [backgroundColor, setBackgroundColor] = useState('#dcfce7')
+  const [draggedCategoryId, setDraggedCategoryId] = useState<string | null>(null)
+  const [categories, setCategories] = useState<any[]>([])
   
   // Save category colors
   const handleSaveColors = async () => {
@@ -72,6 +74,7 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
       const categoryId = bookmark.category?.id || "uncategorized"
       const categoryName = bookmark.category?.name || "UNCATEGORIZED"
       const categoryColor = bookmark.category?.color || "#94A3B8"
+      const categoryBgColor = bookmark.category?.backgroundColor || "#DBEAFE"
       const categoryIcon = bookmark.category?.icon || "Folder"
 
       if (!grouped.has(categoryId)) {
@@ -80,6 +83,7 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
             id: categoryId,
             name: categoryName,
             color: categoryColor,
+            backgroundColor: categoryBgColor,
             icon: categoryIcon,
           },
           bookmarks: [],
@@ -88,7 +92,9 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
       grouped.get(categoryId)?.bookmarks.push(bookmark)
     })
 
-    return Array.from(grouped.values())
+    const result = Array.from(grouped.values())
+    setCategories(result.map(item => item.category))
+    return result
   }, [bookmarks])
 
   // Get bookmarks for selected category
@@ -113,6 +119,44 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
     } catch (error) {
       toast.error("Failed to update bookmark")
     }
+  }
+
+  // Drag and drop handlers for folders
+  const handleDragStart = (e: React.DragEvent, categoryId: string) => {
+    setDraggedCategoryId(categoryId)
+    e.dataTransfer.effectAllowed = "move"
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = "move"
+  }
+
+  const handleDrop = (e: React.DragEvent, targetCategoryId: string) => {
+    e.preventDefault()
+    
+    if (!draggedCategoryId || draggedCategoryId === targetCategoryId) {
+      setDraggedCategoryId(null)
+      return
+    }
+
+    // Reorder categories in state
+    const sourceIndex = categories.findIndex(c => c.id === draggedCategoryId)
+    const targetIndex = categories.findIndex(c => c.id === targetCategoryId)
+    
+    if (sourceIndex !== -1 && targetIndex !== -1) {
+      const newCategories = [...categories]
+      const [removed] = newCategories.splice(sourceIndex, 1)
+      newCategories.splice(targetIndex, 0, removed)
+      setCategories(newCategories)
+      toast.success("Folder reordered")
+    }
+    
+    setDraggedCategoryId(null)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedCategoryId(null)
   }
 
   if (!bookmarks?.length) {
@@ -263,8 +307,15 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
       {categorizedBookmarks.map(({ category, bookmarks: categoryBookmarks }) => (
         <div
           key={category.id}
+          draggable
+          onDragStart={(e) => handleDragStart(e, category.id)}
+          onDragOver={handleDragOver}
+          onDrop={(e) => handleDrop(e, category.id)}
+          onDragEnd={handleDragEnd}
           onClick={() => setSelectedCategory(category)}
-          className="group relative bg-white border-2 border-gray-200 rounded-xl hover:shadow-lg transition-all cursor-pointer overflow-hidden"
+          className={`group relative bg-white border-2 rounded-xl hover:shadow-lg transition-all cursor-move overflow-hidden ${
+            draggedCategoryId === category.id ? 'opacity-50 border-blue-500' : 'border-gray-200'
+          }`}
         >
           {/* EXACT SQUARE ASPECT RATIO */}
           <div className="aspect-square relative p-4 flex flex-col">

@@ -44,7 +44,7 @@ interface TimelineGroup {
   bookmarks: Bookmark[];
 }
 
-export function BookmarkTimeline({ bookmarks }: BookmarkTimelineProps) {
+export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [timeGrouping, setTimeGrouping] = useState('day');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -52,6 +52,50 @@ export function BookmarkTimeline({ bookmarks }: BookmarkTimelineProps) {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['JUST NOW']));
   const [selectedBookmark, setSelectedBookmark] = useState<Bookmark | null>(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
+  const [draggedBookmarkId, setDraggedBookmarkId] = useState<string | null>(null);
+  const [orderedBookmarks, setOrderedBookmarks] = useState<Bookmark[]>(bookmarks);
+
+  // Update ordered bookmarks when bookmarks prop changes
+  React.useEffect(() => {
+    setOrderedBookmarks(bookmarks);
+  }, [bookmarks]);
+
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, bookmarkId: string) => {
+    setDraggedBookmarkId(bookmarkId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, targetBookmarkId: string) => {
+    e.preventDefault();
+    
+    if (!draggedBookmarkId || draggedBookmarkId === targetBookmarkId) {
+      setDraggedBookmarkId(null);
+      return;
+    }
+
+    // Reorder bookmarks in state
+    const sourceIndex = orderedBookmarks.findIndex(b => b.id === draggedBookmarkId);
+    const targetIndex = orderedBookmarks.findIndex(b => b.id === targetBookmarkId);
+    
+    if (sourceIndex !== -1 && targetIndex !== -1) {
+      const newBookmarks = [...orderedBookmarks];
+      const [removed] = newBookmarks.splice(sourceIndex, 1);
+      newBookmarks.splice(targetIndex, 0, removed);
+      setOrderedBookmarks(newBookmarks);
+    }
+    
+    setDraggedBookmarkId(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedBookmarkId(null);
+  };
 
   // Group bookmarks by time
   const groupBookmarks = (): TimelineGroup[] => {
@@ -66,7 +110,7 @@ export function BookmarkTimeline({ bookmarks }: BookmarkTimelineProps) {
   };
 
   // Filter bookmarks
-  const filteredBookmarks = bookmarks.filter((bookmark) => {
+  const filteredBookmarks = orderedBookmarks.filter((bookmark) => {
     const matchesSearch =
       searchQuery === '' ||
       bookmark.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -256,7 +300,15 @@ export function BookmarkTimeline({ bookmarks }: BookmarkTimelineProps) {
                       : bookmark.description;
 
                   return (
-                    <div key={bookmark.id} className="relative mb-6">
+                    <div 
+                      key={bookmark.id} 
+                      className="relative mb-6"
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, bookmark.id)}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, bookmark.id)}
+                      onDragEnd={handleDragEnd}
+                    >
                       {/* Timeline Dot */}
                       <div className="absolute left-[-12px] top-6 w-5 h-5 bg-indigo-600 rounded-full border-4 border-white" />
 
@@ -264,7 +316,9 @@ export function BookmarkTimeline({ bookmarks }: BookmarkTimelineProps) {
                       <div
                         className={`${getCardBackground(
                           index
-                        )} rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all cursor-pointer group`}
+                        )} rounded-xl p-6 border hover:shadow-lg transition-all cursor-move group ${
+                          draggedBookmarkId === bookmark.id ? 'opacity-50 border-blue-500' : 'border-gray-200'
+                        }`}
                       >
                         <div className="flex gap-4">
                           {/* Logo */}
