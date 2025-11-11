@@ -1038,6 +1038,16 @@ export function BookmarkDetailModal({
               </div>
             </div>
           </TabsContent>
+
+          {/* QUICK NOTES TAB */}
+          <TabsContent value="notes" className="p-4 sm:p-6 bg-white mt-0">
+            <QuickNotesTool bookmarkId={bookmark.id} />
+          </TabsContent>
+
+          {/* HABITS TAB */}
+          <TabsContent value="habits" className="p-4 sm:p-6 bg-white mt-0">
+            <HabitsTool bookmarkId={bookmark.id} />
+          </TabsContent>
         </Tabs>
       </DialogContent>
 
