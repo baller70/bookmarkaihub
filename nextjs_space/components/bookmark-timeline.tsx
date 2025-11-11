@@ -314,7 +314,7 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
 
                       {/* Bookmark Card */}
                       <div
-                        className={`relative rounded-xl p-6 border hover:shadow-lg transition-all cursor-move group overflow-hidden ${
+                        className={`relative rounded-xl p-6 border transition-all duration-300 cursor-move group overflow-hidden hover:scale-[1.02] hover:shadow-2xl hover:border-indigo-400 ${
                           draggedBookmarkId === bookmark.id ? 'opacity-50 border-blue-500' : 'border-gray-200'
                         } bg-gradient-to-br from-pink-50/30 via-purple-50/20 to-blue-50/30`}
                       >
