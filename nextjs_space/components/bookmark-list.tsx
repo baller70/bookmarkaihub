@@ -307,10 +307,10 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
               key={bookmark.id}
               className="relative bg-gradient-to-br from-pink-50/30 via-purple-50/20 to-blue-50/30 border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-all group"
             >
-              {/* Large faded watermark logo on the right */}
-              <div className="absolute right-0 top-0 bottom-0 w-64 flex items-center justify-center pointer-events-none overflow-hidden">
+              {/* Full card faded watermark background */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden opacity-5">
                 {bookmark.favicon ? (
-                  <div className="relative w-48 h-48 opacity-10">
+                  <div className="relative w-64 h-64">
                     <Image
                       src={bookmark.favicon}
                       alt=""
@@ -320,7 +320,7 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                     />
                   </div>
                 ) : (
-                  <div className="text-9xl font-bold text-gray-300 opacity-20">
+                  <div className="text-[200px] font-bold text-gray-400">
                     {bookmark.title?.charAt(0) || "?"}
                   </div>
                 )}
@@ -346,10 +346,31 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                 </DropdownMenu>
               </div>
 
-              {/* Circular percentage indicator */}
+              {/* Large visible logo - TOP RIGHT */}
+              <div className="absolute top-4 right-16 z-10">
+                <div className="relative w-32 h-32">
+                  {bookmark.favicon ? (
+                    <Image
+                      src={bookmark.favicon}
+                      alt={bookmark.title || "Bookmark"}
+                      fill
+                      className="object-contain"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 rounded-2xl flex items-center justify-center">
+                      <span className="text-6xl font-bold text-gray-400">
+                        {bookmark.title?.charAt(0) || "?"}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Circular percentage indicator - BOTTOM RIGHT */}
               <div className="absolute bottom-4 right-4 z-10">
-                <div className="w-14 h-14 bg-red-50 border-2 border-red-400 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-bold text-red-600">
+                <div className="w-16 h-16 bg-red-50 border-2 border-red-400 rounded-full flex items-center justify-center">
+                  <span className="text-base font-bold text-red-600">
                     {bookmark.analytics?.[0]?.engagementScore || 0}%
                   </span>
                 </div>
