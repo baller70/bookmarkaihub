@@ -320,8 +320,8 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
           {/* EXACT SQUARE ASPECT RATIO */}
           <div className="aspect-square relative p-4 flex flex-col">
             
-            {/* Three-dot menu in TOP LEFT */}
-            <div className="absolute top-3 left-3 z-10">
+            {/* Three-dot menu in TOP RIGHT */}
+            <div className="absolute top-3 right-3 z-10">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                   <Button
@@ -355,46 +355,45 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
               </DropdownMenu>
             </div>
 
-            {/* Square Folder icon in TOP RIGHT with customizable background */}
+            {/* Folder icon in TOP LEFT with customizable background */}
             <div 
-              className="absolute top-4 right-4 w-16 h-16 rounded-lg flex items-center justify-center"
+              className="absolute top-4 left-4 w-12 h-12 rounded flex items-center justify-center"
               style={{ backgroundColor: category.backgroundColor || '#dcfce7' }}
             >
               <Folder
-                className="w-12 h-12"
+                className="w-10 h-10"
                 style={{ color: category.color || '#22c55e' }}
                 fill="none"
                 strokeWidth={2.5}
               />
             </div>
 
-            {/* Spacer to push footer to bottom */}
-            <div className="flex-1"></div>
+            {/* Category title - LEFT ALIGNED */}
+            <div className="flex-1 flex items-center">
+              <h3 className="text-left font-black text-base text-gray-900 uppercase tracking-tight leading-tight px-2">
+                {category.name}
+              </h3>
+            </div>
 
             {/* Footer section at BOTTOM */}
-            <div className="flex items-center gap-3">
-              {/* User avatar - BOTTOM LEFT (BIGGER) */}
-              <div className="w-16 h-16 bg-gray-500 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+            <div className="flex items-center justify-between">
+              {/* Bookmark count - BOTTOM LEFT */}
+              <div className="flex items-center gap-1.5 text-[11px] text-gray-500 font-medium">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                </svg>
+                <span>{categoryBookmarks.length} BOOKMARKS</span>
+              </div>
+
+              {/* User avatar - BOTTOM RIGHT (MADE BIGGER) */}
+              <div className="w-14 h-14 bg-gray-500 rounded-lg flex items-center justify-center shadow-sm">
                 {session?.user?.name ? (
-                  <span className="text-2xl font-bold text-white">
+                  <span className="text-xl font-bold text-white">
                     {session.user.name.charAt(0).toUpperCase()}
                   </span>
                 ) : (
-                  <User className="w-8 h-8 text-gray-300" />
+                  <User className="w-7 h-7 text-gray-300" />
                 )}
-              </div>
-
-              {/* Category title and bookmark count - TO THE RIGHT OF USER LOGO */}
-              <div className="flex-1 flex flex-col gap-1 min-w-0">
-                <h3 className="font-black text-sm text-gray-900 uppercase tracking-tight leading-tight truncate">
-                  {category.name}
-                </h3>
-                <div className="flex items-center gap-1.5 text-[11px] text-gray-500 font-medium">
-                  <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                  </svg>
-                  <span className="truncate">{categoryBookmarks.length}</span>
-                </div>
               </div>
             </div>
           </div>
