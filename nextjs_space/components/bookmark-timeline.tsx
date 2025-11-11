@@ -314,13 +314,24 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
 
                       {/* Bookmark Card */}
                       <div
-                        className={`${getCardBackground(
-                          index
-                        )} rounded-xl p-6 border hover:shadow-lg transition-all cursor-move group ${
+                        className={`relative rounded-xl p-6 border hover:shadow-lg transition-all cursor-move group overflow-hidden ${
                           draggedBookmarkId === bookmark.id ? 'opacity-50 border-blue-500' : 'border-gray-200'
-                        }`}
+                        } bg-gradient-to-br from-pink-50/30 via-purple-50/20 to-blue-50/30`}
                       >
-                        <div className="flex gap-4">
+                        {/* Full Background Faded Logo */}
+                        {bookmark.favicon && (
+                          <div className="absolute inset-0 flex items-center justify-center opacity-[0.08] pointer-events-none overflow-hidden">
+                            <Image
+                              src={bookmark.favicon}
+                              alt=""
+                              width={400}
+                              height={400}
+                              className="object-contain"
+                            />
+                          </div>
+                        )}
+
+                        <div className="flex gap-4 relative z-10">
                           {/* Logo */}
                           <div className="flex-shrink-0">
                             <div className="relative w-16 h-16 bg-white rounded-xl flex items-center justify-center overflow-hidden shadow-sm">
@@ -362,16 +373,6 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
                                   {bookmark.isFavorite && (
                                     <Heart className="w-4 h-4 text-red-500 fill-red-500" />
                                   )}
-                                  <span className="text-sm text-gray-500">
-                                    {new Date(bookmark.createdAt).toLocaleDateString('en-US', {
-                                      weekday: 'long',
-                                      year: 'numeric',
-                                      month: 'long',
-                                      day: 'numeric',
-                                      hour: '2-digit',
-                                      minute: '2-digit',
-                                    })}
-                                  </span>
                                 </div>
                               </div>
 
@@ -410,20 +411,17 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
                               </p>
                             )}
 
-                            {/* URL */}
-                            <div className="flex items-center gap-2 mb-3">
-                              <div className="w-4 h-4 bg-gray-300 rounded-full flex items-center justify-center">
-                                <div className="w-2 h-2 bg-gray-500 rounded-full" />
-                              </div>
-                              <a
-                                href={bookmark.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-sm text-gray-500 hover:text-indigo-600 truncate"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                {bookmark.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-                              </a>
+                            {/* Footer with Date */}
+                            <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
+                              <ClockIcon className="w-4 h-4" />
+                              <span>
+                                Added{' '}
+                                {new Date(bookmark.createdAt).toLocaleDateString('en-US', {
+                                  month: '2-digit',
+                                  day: '2-digit',
+                                  year: 'numeric',
+                                })}
+                              </span>
                             </div>
 
                             {/* Tags */}
@@ -441,17 +439,20 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
                               </div>
                             )}
 
-                            {/* Footer */}
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
-                              <ClockIcon className="w-4 h-4" />
-                              <span>
-                                Added{' '}
-                                {new Date(bookmark.createdAt).toLocaleDateString('en-US', {
-                                  month: '2-digit',
-                                  day: '2-digit',
-                                  year: 'numeric',
-                                })}
-                              </span>
+                            {/* URL */}
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 bg-gray-300 rounded-full flex items-center justify-center">
+                                <div className="w-2 h-2 bg-gray-500 rounded-full" />
+                              </div>
+                              <a
+                                href={bookmark.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-gray-500 hover:text-indigo-600 truncate"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {bookmark.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                              </a>
                             </div>
                           </div>
                         </div>
