@@ -1,241 +1,212 @@
-
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Folder, Bookmark } from "lucide-react"
+import { useState } from "react"
+import Image from "next/image"
+import { ExternalLink, Star, MoreVertical, Trash2, Edit } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { cn } from "@/lib/utils"
-
-interface Category {
-  id: string
-  name: string
-  color: string
-  icon: string
-  _count: {
-    bookmarks: number
-  }
-  createdBy?: {
-    name?: string | null
-    email?: string | null
-    image?: string | null
-  }
-}
+import { BookmarkDetailModal } from "./bookmark-detail-modal"
+import { toast } from "sonner"
 
 interface BookmarkCompactProps {
   bookmarks: any[]
   onUpdate: () => void
 }
 
-// Folder icon colors mapping (matches original site)
-const folderColors: Record<string, string> = {
-  "accounting": "#f59e0b",
-  "ai automation": "#14b8a6",
-  "ai chatbot": "#ef4444",
-  "ai technology": "#3b82f6",
-  "ai vibe coding": "#10b981",
-  "basketball": "#3b82f6",
-  "bills": "#3b82f6",
-  "blanks": "#3b82f6",
-  "blog & newsletter": "#6b7280",
-  "business": "#3b82f6",
-  "content curation": "#3b82f6",
-  "design": "#3b82f6",
-  "development": "#3b82f6",
-  "download": "#3b82f6",
-  "e-commerce": "#3b82f6",
-  "email": "#3b82f6",
-  "food shopping": "#3b82f6",
-  "freelance": "#a855f7",
-  "general": "#3b82f6",
-  "general information": "#3b82f6",
-  "houston essentials": "#10b981",
-  "lifestyle": "#3b82f6",
-  "llms": "#f59e0b",
-  "marketing": "#3b82f6",
-  "payment gateway": "#3b82f6",
-  "phone": "#3b82f6",
-  "print on demand": "#3b82f6",
-  "shipping": "#3b82f6",
-  "social media": "#84cc16",
-  "sports": "#ec4899",
-  "tbf podcast": "#a855f7",
-  "technology": "#3b82f6",
-  "video & design": "#3b82f6",
-  "web hosting": "#3b82f6",
-  "website": "#3b82f6",
-}
-
-const getFolderColor = (categoryName: string): string => {
-  const normalizedName = categoryName.toLowerCase()
-  return folderColors[normalizedName] || "#3b82f6"
-}
-
 export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
-  const router = useRouter()
-  const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(true)
+  const [selectedBookmark, setSelectedBookmark] = useState<any | null>(null)
 
-  useEffect(() => {
-    fetchCategories()
-  }, [])
-
-  const fetchCategories = async () => {
+  const handleToggleFavorite = async (e: React.MouseEvent, bookmarkId: string, currentFavorite: boolean) => {
+    e.stopPropagation()
     try {
-      const response = await fetch("/api/categories")
+      const response = await fetch(`/api/bookmarks/${bookmarkId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isFavorite: !currentFavorite }),
+      })
+
       if (response.ok) {
-        const data = await response.json()
-        setCategories(data)
+        toast.success(currentFavorite ? 'Removed from favorites' : 'Added to favorites')
+        onUpdate()
       }
     } catch (error) {
-      console.error("Error fetching categories:", error)
-    } finally {
-      setLoading(false)
+      toast.error('Failed to update favorite')
     }
   }
 
-  const handleCategoryClick = (categoryId: string) => {
-    router.push(`/bookmarkai-addons/categories/${categoryId}/compact`)
+  const handleDelete = async (e: React.MouseEvent, bookmarkId: string) => {
+    e.stopPropagation()
+    if (!confirm('Are you sure you want to delete this bookmark?')) return
+
+    try {
+      const response = await fetch(`/api/bookmarks/${bookmarkId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        toast.success('Bookmark deleted')
+        onUpdate()
+      }
+    } catch (error) {
+      toast.error('Failed to delete bookmark')
+    }
   }
 
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {[...Array(12)].map((_, i) => (
-          <div key={i} className="h-56 bg-gray-100 animate-pulse rounded-lg" />
-        ))}
-      </div>
-    )
-  }
-
-  if (!categories?.length) {
+  if (!bookmarks?.length) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-          <Folder className="w-8 h-8 text-gray-400" />
+          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+          </svg>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No folders found</h3>
-        <p className="text-gray-500">Create categories to organize your bookmarks</p>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No bookmarks found</h3>
+        <p className="text-gray-500">Create your first bookmark to get started</p>
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {categories.map((category) => {
-        const folderColor = getFolderColor(category.name)
-        const bookmarkCount = category._count?.bookmarks || 0
-
-        return (
+    <>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {bookmarks.map((bookmark) => (
           <div
-            key={category.id}
-            className="relative bg-white border border-gray-200 rounded-xl p-7 cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-gray-300 group aspect-square flex flex-col"
-            onClick={() => handleCategoryClick(category.id)}
+            key={bookmark.id}
+            className="group relative bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer"
+            onClick={() => setSelectedBookmark(bookmark)}
           >
-            {/* Top Section */}
-            <div className="flex items-start justify-between mb-5">
-              {/* Folder Icon with colored background */}
-              <div 
-                className="w-20 h-20 rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: `${folderColor}15` }}
+            {/* Header with Favicon and Actions */}
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                {/* Favicon */}
+                <div className="w-10 h-10 flex-shrink-0 relative bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
+                  {bookmark.favicon ? (
+                    <Image
+                      src={bookmark.favicon}
+                      alt={bookmark.title}
+                      fill
+                      className="object-contain p-1"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                      {bookmark.title.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+
+                {/* Title */}
+                <h3 className="font-semibold text-sm text-gray-900 line-clamp-2 min-w-0">
+                  {bookmark.title}
+                </h3>
+              </div>
+
+              {/* Actions Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <MoreVertical className="w-4 h-4 text-gray-500" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation()
+                    window.open(bookmark.url, '_blank')
+                  }}>
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Open Link
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation()
+                    setSelectedBookmark(bookmark)
+                  }}>
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={(e) => handleDelete(e, bookmark.id)}
+                    className="text-red-600"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Description */}
+            {bookmark.description && (
+              <p className="text-xs text-gray-600 line-clamp-2 mb-3 leading-relaxed">
+                {bookmark.description}
+              </p>
+            )}
+
+            {/* Category Badge */}
+            {bookmark.category && (
+              <Badge 
+                className="mb-3 text-xs"
+                style={{
+                  backgroundColor: `${bookmark.category.color}15`,
+                  color: bookmark.category.color,
+                  borderLeft: `3px solid ${bookmark.category.color}`
+                }}
               >
-                <Folder 
-                  className="w-12 h-12" 
-                  style={{ color: folderColor }}
-                  strokeWidth={2.5}
+                {bookmark.category.name}
+              </Badge>
+            )}
+
+            {/* Footer with URL and Favorite */}
+            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+              <a
+                href={bookmark.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="text-xs text-gray-500 hover:text-blue-600 truncate flex-1 mr-2"
+              >
+                {bookmark.url.replace(/^https?:\/\//, '').replace(/\/$/, '').substring(0, 30)}...
+              </a>
+
+              <button
+                onClick={(e) => handleToggleFavorite(e, bookmark.id, bookmark.isFavorite)}
+                className="flex-shrink-0"
+              >
+                <Star
+                  className={`w-4 h-4 transition-colors ${
+                    bookmark.isFavorite
+                      ? 'fill-yellow-400 text-yellow-400'
+                      : 'text-gray-300 hover:text-yellow-400'
+                  }`}
                 />
-              </div>
-
-              {/* Grid dots menu */}
-              <div className="z-10">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0 hover:bg-gray-100"
-                    >
-                      <svg
-                        className="w-5 h-5 text-gray-400"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <circle cx="5" cy="5" r="1.5" />
-                        <circle cx="12" cy="5" r="1.5" />
-                        <circle cx="5" cy="12" r="1.5" />
-                        <circle cx="12" cy="12" r="1.5" />
-                        <circle cx="5" cy="19" r="1.5" />
-                        <circle cx="12" cy="19" r="1.5" />
-                      </svg>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={(e) => {
-                      e.stopPropagation()
-                      router.push(`/bookmarkai-addons/categories/${category.id}/compact`)
-                    }}>
-                      Open Folder
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={(e) => {
-                      e.stopPropagation()
-                      // Add edit functionality
-                    }}>
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        // Add delete functionality
-                      }}
-                      className="text-red-600"
-                    >
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-
-            {/* Category Name */}
-            <div className="mb-auto">
-              <h3 className="text-lg font-bold text-gray-900 uppercase tracking-wide line-clamp-2 leading-tight">
-                {category.name}
-              </h3>
-            </div>
-
-            {/* Bottom Section */}
-            <div className="flex items-center justify-between mt-auto pt-4">
-              {/* Bookmark Count - Left */}
-              <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                <Bookmark className="w-4 h-4" />
-                <span className="font-medium uppercase tracking-wide whitespace-nowrap">
-                  {bookmarkCount} BOOKMARK{bookmarkCount !== 1 ? 'S' : ''}
-                </span>
-              </div>
-
-              {/* User Avatar - Right */}
-              <Avatar className="h-11 w-11 border-2 border-gray-200 shadow-sm bg-gray-600 flex-shrink-0">
-                <AvatarImage 
-                  src={category.createdBy?.image || undefined} 
-                  alt={category.createdBy?.name || "User"} 
-                />
-                <AvatarFallback className="bg-gray-600 text-white text-sm">
-                  {category.createdBy?.name?.[0]?.toUpperCase() || 
-                   category.createdBy?.email?.[0]?.toUpperCase() || 
-                   'U'}
-                </AvatarFallback>
-              </Avatar>
+              </button>
             </div>
           </div>
-        )
-      })}
-    </div>
+        ))}
+      </div>
+
+      {/* Bookmark Detail Modal */}
+      {selectedBookmark && (
+        <BookmarkDetailModal
+          bookmark={selectedBookmark}
+          open={!!selectedBookmark}
+          onOpenChange={(open) => {
+            if (!open) setSelectedBookmark(null)
+          }}
+          onUpdate={() => {
+            onUpdate()
+            setSelectedBookmark(null)
+          }}
+        />
+      )}
+    </>
   )
 }
