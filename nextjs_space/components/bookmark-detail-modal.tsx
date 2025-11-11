@@ -51,7 +51,8 @@ import {
   Flag,
   Clock4,
   PlusCircle,
-  Folder
+  Folder,
+  Target
 } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -65,6 +66,8 @@ import { SettingsTab } from "@/components/task-subtabs/settings-tab"
 import { NotificationTool } from "@/components/notification-tool"
 import { MediaTool } from "@/components/media-tool"
 import { CommentsTool } from "@/components/comments-tool"
+import { AddRelatedBookmarksModal } from "@/components/add-related-bookmarks-modal"
+import { AddGoalsModal } from "@/components/add-goals-modal"
 
 interface BookmarkDetailModalProps {
   bookmark: any
@@ -114,6 +117,14 @@ export function BookmarkDetailModal({
   // TASK tab sub-navigation state
   const [taskSubTab, setTaskSubTab] = useState("timer")
   
+  // Related Bookmarks and Goals state
+  const [relatedBookmarks, setRelatedBookmarks] = useState<any[]>([])
+  const [linkedGoals, setLinkedGoals] = useState<any[]>([])
+  const [showAddRelatedBookmarks, setShowAddRelatedBookmarks] = useState(false)
+  const [showAddGoals, setShowAddGoals] = useState(false)
+  const [relatedBookmarksLoading, setRelatedBookmarksLoading] = useState(false)
+  const [goalsLoading, setGoalsLoading] = useState(false)
+  
   const fileInputRef = useRef<HTMLInputElement>(null)
   const logoInputRef = useRef<HTMLInputElement>(null)
   const faviconInputRef = useRef<HTMLInputElement>(null)
@@ -129,8 +140,10 @@ export function BookmarkDetailModal({
       // Update analytics state
       setCurrentVisits(bookmark.totalVisits || 0)
       setCurrentTimeSpent(bookmark.timeSpent || 0)
-      // Fetch tools
+      // Fetch tools and related data
       fetchTools()
+      fetchRelatedBookmarks()
+      fetchLinkedGoals()
     }
   }, [bookmark])
 
@@ -148,6 +161,74 @@ export function BookmarkDetailModal({
       console.error('Error fetching tools:', error)
     } finally {
       setToolsLoading(false)
+    }
+  }
+
+  // Fetch related bookmarks
+  const fetchRelatedBookmarks = async () => {
+    if (!bookmark?.id) return
+    try {
+      setRelatedBookmarksLoading(true)
+      const response = await fetch(`/api/bookmarks/${bookmark.id}/related`)
+      if (response.ok) {
+        const data = await response.json()
+        setRelatedBookmarks(data)
+      }
+    } catch (error) {
+      console.error('Error fetching related bookmarks:', error)
+    } finally {
+      setRelatedBookmarksLoading(false)
+    }
+  }
+
+  // Fetch linked goals
+  const fetchLinkedGoals = async () => {
+    if (!bookmark?.id) return
+    try {
+      setGoalsLoading(true)
+      const response = await fetch(`/api/bookmarks/${bookmark.id}/goals`)
+      if (response.ok) {
+        const data = await response.json()
+        setLinkedGoals(data)
+      }
+    } catch (error) {
+      console.error('Error fetching linked goals:', error)
+    } finally {
+      setGoalsLoading(false)
+    }
+  }
+
+  // Remove related bookmark
+  const removeRelatedBookmark = async (relatedBookmarkId: string) => {
+    try {
+      const response = await fetch(
+        `/api/bookmarks/${bookmark.id}/related?relatedBookmarkId=${relatedBookmarkId}`,
+        { method: 'DELETE' }
+      )
+      if (response.ok) {
+        toast.success('Related bookmark removed')
+        fetchRelatedBookmarks()
+      }
+    } catch (error) {
+      console.error('Error removing related bookmark:', error)
+      toast.error('Failed to remove related bookmark')
+    }
+  }
+
+  // Remove goal link
+  const removeGoalLink = async (goalId: string) => {
+    try {
+      const response = await fetch(
+        `/api/bookmarks/${bookmark.id}/goals?goalId=${goalId}`,
+        { method: 'DELETE' }
+      )
+      if (response.ok) {
+        toast.success('Goal unlinked')
+        fetchLinkedGoals()
+      }
+    } catch (error) {
+      console.error('Error unlinking goal:', error)
+      toast.error('Failed to unlink goal')
     }
   }
 
@@ -760,32 +841,93 @@ export function BookmarkDetailModal({
                 <Button
                   variant="outline"
                   className="text-sm uppercase !text-gray-900 !bg-white border-gray-300 hover:!bg-gray-50"
-                  onClick={() => {
-                    toast.info("Feature to browse and add related bookmarks")
-                  }}
+                  onClick={() => setShowAddRelatedBookmarks(true)}
                 >
                   + Browse All Bookmarks To Add More
                 </Button>
               </div>
               
-              <div className="text-center py-12">
-                <p className="text-gray-500 mb-2">No related bookmarks yet.</p>
-                <p className="text-sm text-gray-400">
-                  Click &quot;Browse All Bookmarks to add more&quot; to add related bookmarks.
-                </p>
-              </div>
-              
-              <div className="flex justify-center">
-                <Button
-                  variant="outline"
-                  className="uppercase !text-gray-900 !bg-white border-gray-300 hover:!bg-gray-50"
-                  onClick={() => {
-                    toast.info("Feature to browse and add related bookmarks")
-                  }}
-                >
-                  + Browse All Bookmarks To Add More
-                </Button>
-              </div>
+              {relatedBookmarksLoading ? (
+                <div className="text-center py-12 text-gray-500">Loading...</div>
+              ) : relatedBookmarks.length === 0 ? (
+                <>
+                  <div className="text-center py-12">
+                    <p className="text-gray-500 mb-2">No related bookmarks yet.</p>
+                    <p className="text-sm text-gray-400">
+                      Click &quot;Browse All Bookmarks to add more&quot; to add related bookmarks.
+                    </p>
+                  </div>
+                  
+                  <div className="flex justify-center">
+                    <Button
+                      variant="outline"
+                      className="uppercase !text-gray-900 !bg-white border-gray-300 hover:!bg-gray-50"
+                      onClick={() => setShowAddRelatedBookmarks(true)}
+                    >
+                      + Browse All Bookmarks To Add More
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {relatedBookmarks.map((rel) => (
+                    <div
+                      key={rel.id}
+                      className="border rounded-lg p-4 hover:shadow-md transition-shadow group"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0">
+                          {rel.relatedBookmark.favicon ? (
+                            <img
+                              src={rel.relatedBookmark.favicon}
+                              alt=""
+                              className="w-10 h-10 rounded"
+                              onError={(e) => {
+                                e.currentTarget.style.display = "none"
+                              }}
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded bg-blue-100 flex items-center justify-center">
+                              <span className="text-blue-600 font-bold">
+                                {rel.relatedBookmark.title.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-sm mb-1 truncate">
+                            {rel.relatedBookmark.title}
+                          </h4>
+                          {rel.relatedBookmark.description && (
+                            <p className="text-xs text-gray-600 line-clamp-2 mb-2">
+                              {rel.relatedBookmark.description}
+                            </p>
+                          )}
+                          <div className="flex items-center justify-between">
+                            <a
+                              href={rel.relatedBookmark.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-600 hover:underline"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              Visit
+                            </a>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 px-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => removeRelatedBookmark(rel.relatedBookmarkId)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Goals Section */}
@@ -795,20 +937,73 @@ export function BookmarkDetailModal({
                 <Button
                   variant="outline"
                   className="text-sm uppercase !text-gray-900 !bg-white border-gray-300 hover:!bg-gray-50"
-                  onClick={() => {
-                    toast.info("Feature to add or link goals to this bookmark")
-                  }}
+                  onClick={() => setShowAddGoals(true)}
                 >
                   + Add Goal
                 </Button>
               </div>
               
-              <div className="text-center py-12">
-                <p className="text-gray-500 mb-2">No goals linked yet.</p>
-                <p className="text-sm text-gray-400">
-                  Click &quot;ADD GOAL&quot; to link existing goals to this bookmark.
-                </p>
-              </div>
+              {goalsLoading ? (
+                <div className="text-center py-12 text-gray-500">Loading...</div>
+              ) : linkedGoals.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-500 mb-2">No goals linked yet.</p>
+                  <p className="text-sm text-gray-400">
+                    Click &quot;ADD GOAL&quot; to link existing goals to this bookmark.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {linkedGoals.map((goalLink) => (
+                    <div
+                      key={goalLink.id}
+                      className="border rounded-lg p-4 hover:shadow-md transition-shadow group"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className="flex-shrink-0 w-10 h-10 rounded flex items-center justify-center"
+                          style={{ backgroundColor: goalLink.goal.color }}
+                        >
+                          <Target className="h-5 w-5 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">
+                                {goalLink.goal.title}
+                              </h4>
+                              {goalLink.goal.description && (
+                                <p className="text-xs text-gray-600 line-clamp-2 mb-2">
+                                  {goalLink.goal.description}
+                                </p>
+                              )}
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Badge variant="outline" className="text-xs">
+                                  {goalLink.goal.goalType}
+                                </Badge>
+                                <Badge variant="outline" className="text-xs">
+                                  {goalLink.goal.status}
+                                </Badge>
+                                <span className="text-xs text-gray-500">
+                                  {Math.round(goalLink.goal.progress)}% complete
+                                </span>
+                              </div>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 px-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => removeGoalLink(goalLink.goalId)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </TabsContent>
 
@@ -1057,6 +1252,23 @@ export function BookmarkDetailModal({
         open={showManageTools}
         onOpenChange={setShowManageTools}
         onToolsUpdated={fetchTools}
+      />
+
+      {/* Add Related Bookmarks Modal */}
+      <AddRelatedBookmarksModal
+        bookmarkId={bookmark?.id}
+        currentBookmarkTitle={bookmark?.title || ""}
+        open={showAddRelatedBookmarks}
+        onOpenChange={setShowAddRelatedBookmarks}
+        onBookmarksAdded={fetchRelatedBookmarks}
+      />
+
+      {/* Add Goals Modal */}
+      <AddGoalsModal
+        bookmarkId={bookmark?.id}
+        open={showAddGoals}
+        onOpenChange={setShowAddGoals}
+        onGoalsAdded={fetchLinkedGoals}
       />
     </Dialog>
   )

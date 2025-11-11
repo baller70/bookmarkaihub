@@ -126,6 +126,10 @@ model Bookmark {
   
   // Comments system
   comments        BookmarkComment[]
+  
+  // Related bookmarks
+  relatedFrom     RelatedBookmark[] @relation("BookmarkRelations")
+  relatedTo       RelatedBookmark[] @relation("RelatedBookmarks")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -318,6 +322,21 @@ model GoalBookmark {
   bookmark   Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
 
   @@unique([goalId, bookmarkId])
+}
+
+model RelatedBookmark {
+  id                  String   @id @default(cuid())
+  bookmarkId          String
+  relatedBookmarkId   String
+  
+  bookmark            Bookmark @relation("BookmarkRelations", fields: [bookmarkId], references: [id], onDelete: Cascade)
+  relatedBookmark     Bookmark @relation("RelatedBookmarks", fields: [relatedBookmarkId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([bookmarkId, relatedBookmarkId])
+  @@index([bookmarkId])
+  @@index([relatedBookmarkId])
 }
 
 // Enums
