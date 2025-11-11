@@ -24,7 +24,7 @@ import {
   Gamepad, Dumbbell, Truck, Bus, Car,
   Pizza, Utensils, Wine, Beer, IceCream, Cookie,
   Shirt, Award, Medal, Gem, Sparkles, Feather,
-  FileAudio, FileVideo, Inbox, Edit2
+  FileAudio, FileVideo, Inbox, Edit2, Palette
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -33,7 +33,17 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { BookmarkDetailModal } from "@/components/bookmark-detail-modal"
 import { toast } from "sonner"
 
@@ -162,8 +172,12 @@ interface BookmarkListProps {
 
 export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
   const { data: session } = useSession() || {}
-  const [selectedCategory, setSelectedCategory] = useState<{id: string; name: string; color: string} | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<{id: string; name: string; color: string; backgroundColor?: string} | null>(null)
   const [selectedBookmark, setSelectedBookmark] = useState<any>(null)
+  const [showColorPicker, setShowColorPicker] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<any>(null)
+  const [folderColor, setFolderColor] = useState("#22c55e")
+  const [backgroundColor, setBackgroundColor] = useState("#dcfce7")
   
   // Group bookmarks by category
   const categorizedBookmarks = useMemo(() => {
@@ -174,6 +188,7 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
       const categoryId = bookmark.category?.id || "uncategorized"
       const categoryName = bookmark.category?.name || "UNCATEGORIZED"
       const categoryColor = bookmark.category?.color || "#94A3B8"
+      const categoryBgColor = bookmark.category?.backgroundColor || "#e2e8f0"
       const categoryIcon = bookmark.category?.icon || "folder"
 
       if (!(categoryId in indexMap)) {
@@ -183,6 +198,7 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
             id: categoryId,
             name: categoryName,
             color: categoryColor,
+            backgroundColor: categoryBgColor,
             icon: categoryIcon,
           },
           bookmarks: [],
@@ -194,6 +210,30 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
 
     return grouped
   }, [bookmarks])
+
+  // Save folder colors
+  const handleSaveFolderColors = async () => {
+    if (!editingCategory) return
+
+    try {
+      const response = await fetch(`/api/categories/${editingCategory.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          color: folderColor,
+          backgroundColor: backgroundColor
+        }),
+      })
+
+      if (!response.ok) throw new Error("Failed to update colors")
+
+      toast.success("Folder colors updated!")
+      setShowColorPicker(false)
+      onUpdate()
+    } catch (error) {
+      toast.error("Failed to update colors")
+    }
+  }
 
   // Get bookmarks for selected category
   const currentCategoryBookmarks = useMemo(() => {
@@ -412,16 +452,21 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
           className="group relative bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm hover:border-gray-300 transition-all cursor-pointer"
         >
           <div className="flex items-center justify-between gap-4">
-            {/* Left: Folder icon + Category info */}
+            {/* Left: Folder icon with background square + Category info */}
             <div className="flex items-center gap-4 min-w-0 flex-1">
-              {/* Regular Folder Icon */}
+              {/* Folder Icon with Background Square */}
               <div className="flex-shrink-0">
-                <Folder
-                  className="w-12 h-12"
-                  style={{ color: category.color }}
-                  fill={category.color}
-                  fillOpacity={0.15}
-                />
+                <div 
+                  className="w-14 h-14 rounded flex items-center justify-center"
+                  style={{ backgroundColor: category.backgroundColor || '#e2e8f0' }}
+                >
+                  <Folder
+                    className="w-12 h-12"
+                    style={{ color: category.color || '#94A3B8' }}
+                    fill="none"
+                    strokeWidth={2.5}
+                  />
+                </div>
               </div>
 
               {/* Category name and bookmark count */}
@@ -440,8 +485,11 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
 
             {/* Right: Category icon in circle + Three-dot menu */}
             <div className="flex items-center gap-3 flex-shrink-0">
-              {/* Category icon in circle */}
-              <div className="w-12 h-12 bg-gray-500 rounded-full flex items-center justify-center shadow-sm">
+              {/* Category icon in circle - color matches folder outline */}
+              <div 
+                className="w-12 h-12 rounded-full flex items-center justify-center shadow-sm"
+                style={{ backgroundColor: category.color || '#94A3B8' }}
+              >
                 {(() => {
                   const IconComponent = iconMap[category.icon || 'folder'] || Folder
                   return (
@@ -461,13 +509,24 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                     <MoreVertical className="w-4 h-4 text-gray-500" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem onClick={(e) => {
                     e.stopPropagation()
                     setSelectedCategory(category)
                   }}>
                     View Bookmarks
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation()
+                    setEditingCategory(category)
+                    setFolderColor(category.color || '#94A3B8')
+                    setBackgroundColor(category.backgroundColor || '#e2e8f0')
+                    setShowColorPicker(true)
+                  }}>
+                    <Palette className="w-4 h-4 mr-2" />
+                    Change Colors
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={(e) => e.stopPropagation()}>Edit Category</DropdownMenuItem>
                   <DropdownMenuItem onClick={(e) => e.stopPropagation()} className="text-red-600">Delete</DropdownMenuItem>
                 </DropdownMenuContent>
@@ -476,6 +535,103 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
           </div>
         </div>
       ))}
+
+      {/* Color Picker Modal */}
+      <Dialog open={showColorPicker} onOpenChange={setShowColorPicker}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Change Folder Colors</DialogTitle>
+            <DialogDescription>
+              Customize the folder outline and background colors
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            {/* Folder Outline Color */}
+            <div className="space-y-2">
+              <Label htmlFor="folderColor">Folder Outline Color</Label>
+              <div className="flex gap-3 items-center">
+                <Input
+                  id="folderColor"
+                  type="color"
+                  value={folderColor}
+                  onChange={(e) => setFolderColor(e.target.value)}
+                  className="w-20 h-10 cursor-pointer"
+                />
+                <Input
+                  type="text"
+                  value={folderColor}
+                  onChange={(e) => setFolderColor(e.target.value)}
+                  className="flex-1"
+                  placeholder="#22c55e"
+                />
+              </div>
+            </div>
+
+            {/* Background Color */}
+            <div className="space-y-2">
+              <Label htmlFor="backgroundColor">Background Color</Label>
+              <div className="flex gap-3 items-center">
+                <Input
+                  id="backgroundColor"
+                  type="color"
+                  value={backgroundColor}
+                  onChange={(e) => setBackgroundColor(e.target.value)}
+                  className="w-20 h-10 cursor-pointer"
+                />
+                <Input
+                  type="text"
+                  value={backgroundColor}
+                  onChange={(e) => setBackgroundColor(e.target.value)}
+                  className="flex-1"
+                  placeholder="#dcfce7"
+                />
+              </div>
+            </div>
+
+            {/* Preview */}
+            <div className="space-y-2">
+              <Label>Preview</Label>
+              <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg">
+                <div 
+                  className="w-20 h-20 rounded flex items-center justify-center"
+                  style={{ backgroundColor: backgroundColor }}
+                >
+                  <Folder
+                    className="w-16 h-16"
+                    style={{ color: folderColor }}
+                    fill="none"
+                    strokeWidth={2.5}
+                  />
+                </div>
+                <div 
+                  className="w-16 h-16 rounded-full flex items-center justify-center shadow-sm ml-4"
+                  style={{ backgroundColor: folderColor }}
+                >
+                  {editingCategory && (() => {
+                    const IconComponent = iconMap[editingCategory.icon || 'folder'] || Folder
+                    return (
+                      <IconComponent className="w-8 h-8 text-white" />
+                    )
+                  })()}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowColorPicker(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSaveFolderColors}>
+              Save Colors
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
