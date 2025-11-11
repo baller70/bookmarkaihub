@@ -378,91 +378,122 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
           </div>
         </div>
 
-        {/* Bookmarks as square cards */}
+        {/* Bookmarks as square cards - PIXEL PERFECT CLONE */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {currentCategoryBookmarks.map((bookmark: any) => (
-            <div
-              key={bookmark.id}
-              className="relative bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-all cursor-pointer group"
-              onClick={() => setSelectedBookmark(bookmark)}
-            >
-              {/* Percentage indicator */}
-              <div className="absolute top-3 right-3 z-10">
-                <div className="w-10 h-10 bg-red-100 border-2 border-red-400 rounded-full flex items-center justify-center">
-                  <span className="text-xs font-bold text-red-600">0%</span>
-                </div>
-              </div>
-
-              {/* Square card content */}
-              <div className="aspect-square flex flex-col p-6">
-                {/* Logo/Favicon */}
-                <div className="flex justify-center mb-4">
-                  <div className="relative w-20 h-20 bg-black rounded-2xl flex items-center justify-center overflow-hidden">
-                    {bookmark.favicon ? (
-                      <Image
-                        src={bookmark.favicon}
-                        alt={bookmark.title || "Bookmark"}
-                        fill
-                        className="object-contain p-2"
-                        unoptimized
-                      />
-                    ) : (
-                      <span className="text-2xl font-bold text-white">
-                        {bookmark.title?.charAt(0) || "?"}
-                      </span>
-                    )}
+          {currentCategoryBookmarks.map((bookmark: any) => {
+            const usagePercentage = bookmark.usagePercentage || 0
+            const visitCount = bookmark.analytics?.[0]?.totalVisits || 0
+            const cleanUrl = bookmark.url?.replace(/^https?:\/\/(www\.)?/, "") || ""
+            
+            return (
+              <div
+                key={bookmark.id}
+                className="relative bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:shadow-xl transition-all cursor-pointer group"
+                onClick={() => setSelectedBookmark(bookmark)}
+              >
+                {/* Square card content */}
+                <div className="aspect-square flex flex-col p-5">
+                  
+                  {/* TOP LEFT - Circular Logo/Favicon */}
+                  <div className="absolute top-4 left-4">
+                    <div className="relative w-12 h-12 bg-black rounded-xl flex items-center justify-center overflow-hidden shadow-md">
+                      {bookmark.favicon ? (
+                        <Image
+                          src={bookmark.favicon}
+                          alt={bookmark.title || "Bookmark"}
+                          fill
+                          className="object-contain p-2"
+                          unoptimized
+                        />
+                      ) : (
+                        <span className="text-lg font-bold text-white">
+                          {bookmark.title?.charAt(0)?.toUpperCase() || "?"}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {/* Title */}
-                <h3 className="text-center font-bold text-sm text-gray-900 mb-2 uppercase line-clamp-2">
-                  {bookmark.title || "Untitled"}
-                </h3>
-
-                {/* URL */}
-                <p className="text-center text-xs text-blue-600 mb-3 truncate">
-                  {bookmark.url?.replace(/^https?:\/\/(www\.)?/, "")}
-                </p>
-
-                {/* Priority badge */}
-                {bookmark.priority && (
-                  <div className="flex justify-center mb-auto">
-                    <Badge
-                      variant="secondary"
-                      className={`
-                        text-xs px-2 py-0.5
-                        ${bookmark.priority === "HIGH" ? "bg-yellow-100 text-yellow-800" : ""}
-                        ${bookmark.priority === "MEDIUM" ? "bg-yellow-100 text-yellow-800" : ""}
-                        ${bookmark.priority === "LOW" ? "bg-gray-100 text-gray-600" : ""}
-                      `}
+                  {/* TOP RIGHT - Hexagonal percentage badge */}
+                  <div className="absolute top-4 right-4">
+                    <div 
+                      className="relative w-12 h-14 flex items-center justify-center"
+                      style={{
+                        clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                      }}
                     >
-                      {bookmark.priority?.toLowerCase()}
-                    </Badge>
+                      <div className="absolute inset-0 bg-red-100 border-2 border-red-400"></div>
+                      <span className="relative text-xs font-black text-red-600 z-10">
+                        {Math.round(usagePercentage)}%
+                      </span>
+                    </div>
                   </div>
-                )}
 
-                {/* Decorative graphic space (bottom area) */}
-                <div className="mt-auto pt-4">
-                  <div className="h-16 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg flex items-center justify-center opacity-60">
-                    <div className="text-4xl font-bold text-blue-200">
-                      {bookmark.title?.charAt(0) || ""}
+                  {/* TITLE - Below icon, uppercase bold */}
+                  <div className="mt-[72px] mb-2">
+                    <h3 className="font-black text-base text-gray-900 uppercase tracking-tight leading-tight line-clamp-2">
+                      {bookmark.title || "Untitled"}
+                    </h3>
+                  </div>
+
+                  {/* URL - Yellow/Gold background pill */}
+                  <div className="mb-2">
+                    <div className="inline-block bg-yellow-100 px-3 py-1 rounded-md">
+                      <p className="text-xs text-gray-700 font-medium truncate">
+                        {cleanUrl}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Priority/Tag - Plain text */}
+                  {bookmark.priority && (
+                    <div className="mb-4">
+                      <span className="text-xs text-gray-600 font-medium lowercase">
+                        {bookmark.priority.toLowerCase()}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Spacer to push bottom content down */}
+                  <div className="flex-1"></div>
+
+                  {/* BOTTOM SECTION */}
+                  <div className="flex items-center justify-between mt-auto">
+                    {/* BOTTOM LEFT - Visit count with green dot */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <Eye className="w-4 h-4 text-gray-500" />
+                        <span className="text-xs font-bold text-gray-700 uppercase">
+                          {visitCount} VISITS
+                        </span>
+                      </div>
+                      {visitCount > 0 && (
+                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      )}
+                    </div>
+
+                    {/* BOTTOM RIGHT - Circular decorative icon */}
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-orange-400 via-pink-400 to-purple-500 flex items-center justify-center shadow-md">
+                      {bookmark.favicon ? (
+                        <div className="relative w-7 h-7">
+                          <Image
+                            src={bookmark.favicon}
+                            alt=""
+                            fill
+                            className="object-contain"
+                            unoptimized
+                          />
+                        </div>
+                      ) : (
+                        <span className="text-sm font-black text-white">
+                          {bookmark.title?.charAt(0)?.toUpperCase() || "?"}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
-
-              {/* Visit count footer */}
-              <div className="border-t border-gray-100 px-4 py-2 bg-gray-50">
-                <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                  <Eye className="w-3.5 h-3.5" />
-                  <span>{bookmark.analytics?.[0]?.totalVisits || 0} VISITS</span>
-                  {bookmark.analytics?.[0]?.totalVisits > 0 && (
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 ml-auto"></div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Bookmark Detail Modal */}
