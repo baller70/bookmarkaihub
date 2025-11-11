@@ -305,7 +305,7 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
           {currentCategoryBookmarks.map((bookmark: any) => (
             <div
               key={bookmark.id}
-              className="relative bg-gradient-to-br from-pink-50/30 via-purple-50/20 to-blue-50/30 border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-all group"
+              className="relative bg-gradient-to-br from-pink-50/30 via-purple-50/20 to-blue-50/30 border border-black rounded-lg overflow-hidden hover:shadow-md transition-all group"
             >
               {/* Full card faded watermark background */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden opacity-5">
