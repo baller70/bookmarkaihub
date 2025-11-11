@@ -3,7 +3,29 @@
 import { useState, useMemo } from "react"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
-import { Folder, MoreVertical, User, ArrowLeft, ExternalLink, Star, Eye, Palette } from "lucide-react"
+import {
+  Folder, MoreVertical, User, ArrowLeft, ExternalLink, Star, Eye, Palette,
+  Briefcase, Code, Music, Camera, Book, Heart,
+  Rocket, Trophy, Target, Zap, Crown, Gift, Coffee,
+  Home, Settings, Users, Bell, Mail, MessageSquare, Phone,
+  Calendar, Clock, TrendingUp, BarChart, PieChart, Activity,
+  ShoppingBag, ShoppingCart, CreditCard, DollarSign, Percent,
+  Globe, MapPin, Navigation, Compass, Map, Plane,
+  Film, Tv, Headphones, Radio, Mic, Volume2,
+  Package, Box, Send, Download,
+  FileText, Clipboard, File, FileCheck,
+  Video, Monitor, Smartphone, Tablet, Laptop, Watch, Bluetooth,
+  Wifi, Cloud, Database, Server, HardDrive, Cpu,
+  Lock, Unlock, Key, Shield,
+  Check, X, Plus, Minus, AlertCircle, AlertTriangle,
+  Info, HelpCircle, Flag, Bookmark, Tag, Hash,
+  Sun, Moon, CloudRain, CloudSnow, Wind, Umbrella,
+  Smile, Frown, Meh, ThumbsUp, ThumbsDown,
+  Gamepad, Dumbbell, Truck, Bus, Car,
+  Pizza, Utensils, Wine, Beer, IceCream, Cookie,
+  Shirt, Award, Medal, Gem, Sparkles, Feather,
+  FileAudio, FileVideo, Inbox, Edit2
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -11,6 +33,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import {
   Dialog,
@@ -22,6 +45,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { BookmarkDetailModal } from "@/components/bookmark-detail-modal"
+import { IconPickerModal } from "@/components/icon-picker-modal"
 import { toast } from "sonner"
 
 interface BookmarkCompactProps {
@@ -29,11 +53,132 @@ interface BookmarkCompactProps {
   onUpdate: () => void
 }
 
+// Icon mapping for all available icons
+const iconMap: Record<string, any> = {
+  folder: Folder,
+  briefcase: Briefcase,
+  code: Code,
+  music: Music,
+  camera: Camera,
+  book: Book,
+  heart: Heart,
+  rocket: Rocket,
+  trophy: Trophy,
+  target: Target,
+  zap: Zap,
+  crown: Crown,
+  gift: Gift,
+  coffee: Coffee,
+  home: Home,
+  settings: Settings,
+  users: Users,
+  user: User,
+  bell: Bell,
+  mail: Mail,
+  'message-square': MessageSquare,
+  phone: Phone,
+  calendar: Calendar,
+  clock: Clock,
+  'trending-up': TrendingUp,
+  'bar-chart': BarChart,
+  'pie-chart': PieChart,
+  activity: Activity,
+  'shopping-bag': ShoppingBag,
+  'shopping-cart': ShoppingCart,
+  'credit-card': CreditCard,
+  'dollar-sign': DollarSign,
+  percent: Percent,
+  globe: Globe,
+  'map-pin': MapPin,
+  navigation: Navigation,
+  compass: Compass,
+  map: Map,
+  plane: Plane,
+  film: Film,
+  tv: Tv,
+  headphones: Headphones,
+  radio: Radio,
+  mic: Mic,
+  'volume-2': Volume2,
+  package: Package,
+  box: Box,
+  send: Send,
+  download: Download,
+  'file-text': FileText,
+  clipboard: Clipboard,
+  file: File,
+  'file-check': FileCheck,
+  image: Camera,
+  video: Video,
+  monitor: Monitor,
+  smartphone: Smartphone,
+  tablet: Tablet,
+  laptop: Laptop,
+  watch: Watch,
+  bluetooth: Bluetooth,
+  wifi: Wifi,
+  cloud: Cloud,
+  database: Database,
+  server: Server,
+  'hard-drive': HardDrive,
+  cpu: Cpu,
+  lock: Lock,
+  unlock: Unlock,
+  key: Key,
+  shield: Shield,
+  eye: Eye,
+  check: Check,
+  x: X,
+  plus: Plus,
+  minus: Minus,
+  'alert-circle': AlertCircle,
+  'alert-triangle': AlertTriangle,
+  info: Info,
+  'help-circle': HelpCircle,
+  flag: Flag,
+  bookmark: Bookmark,
+  tag: Tag,
+  hash: Hash,
+  sun: Sun,
+  moon: Moon,
+  'cloud-rain': CloudRain,
+  'cloud-snow': CloudSnow,
+  wind: Wind,
+  umbrella: Umbrella,
+  smile: Smile,
+  frown: Frown,
+  meh: Meh,
+  'thumbs-up': ThumbsUp,
+  'thumbs-down': ThumbsDown,
+  gamepad: Gamepad,
+  dumbbell: Dumbbell,
+  truck: Truck,
+  bus: Bus,
+  car: Car,
+  pizza: Pizza,
+  utensils: Utensils,
+  wine: Wine,
+  beer: Beer,
+  'ice-cream': IceCream,
+  cookie: Cookie,
+  shirt: Shirt,
+  award: Award,
+  medal: Medal,
+  gem: Gem,
+  sparkles: Sparkles,
+  feather: Feather,
+  'file-audio': FileAudio,
+  'file-video': FileVideo,
+  inbox: Inbox,
+  palette: Palette,
+}
+
 export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
   const { data: session } = useSession() || {}
   const [selectedCategory, setSelectedCategory] = useState<{id: string; name: string; color: string} | null>(null)
   const [selectedBookmark, setSelectedBookmark] = useState<any>(null)
   const [showColorPicker, setShowColorPicker] = useState(false)
+  const [showIconPicker, setShowIconPicker] = useState(false)
   const [editingCategory, setEditingCategory] = useState<any>(null)
   const [folderColor, setFolderColor] = useState('#22c55e')
   const [backgroundColor, setBackgroundColor] = useState('#dcfce7')
@@ -68,17 +213,19 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
   
   // Group bookmarks by category
   const categorizedBookmarks = useMemo(() => {
-    const grouped = new Map<string, { category: any; bookmarks: any[] }>()
+    const grouped: { category: any; bookmarks: any[] }[] = []
+    const indexMap: Record<string, number> = {}
 
     bookmarks?.forEach((bookmark) => {
       const categoryId = bookmark.category?.id || "uncategorized"
       const categoryName = bookmark.category?.name || "UNCATEGORIZED"
       const categoryColor = bookmark.category?.color || "#94A3B8"
       const categoryBgColor = bookmark.category?.backgroundColor || "#DBEAFE"
-      const categoryIcon = bookmark.category?.icon || "Folder"
+      const categoryIcon = bookmark.category?.icon || "folder"
 
-      if (!grouped.has(categoryId)) {
-        grouped.set(categoryId, {
+      if (!(categoryId in indexMap)) {
+        indexMap[categoryId] = grouped.length
+        grouped.push({
           category: {
             id: categoryId,
             name: categoryName,
@@ -89,12 +236,12 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
           bookmarks: [],
         })
       }
-      grouped.get(categoryId)?.bookmarks.push(bookmark)
+      const index = indexMap[categoryId]
+      grouped[index].bookmarks.push(bookmark)
     })
 
-    const result = Array.from(grouped.values())
-    setCategories(result.map(item => item.category))
-    return result
+    setCategories(grouped.map((item: { category: any; bookmarks: any[] }) => item.category))
+    return grouped
   }, [bookmarks])
 
   // Get bookmarks for selected category
@@ -349,23 +496,37 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
                     <Palette className="w-4 h-4 mr-2" />
                     Change Colors
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation()
+                    setEditingCategory(category)
+                    setShowIconPicker(true)
+                  }}>
+                    <Edit2 className="w-4 h-4 mr-2" />
+                    Edit Icon
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={(e) => e.stopPropagation()}>Edit Category</DropdownMenuItem>
                   <DropdownMenuItem onClick={(e) => e.stopPropagation()} className="text-red-600">Delete</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
 
-            {/* Folder icon in TOP LEFT with customizable background */}
+            {/* Custom icon in TOP LEFT with customizable background */}
             <div 
               className="absolute top-4 left-4 w-12 h-12 rounded flex items-center justify-center"
               style={{ backgroundColor: category.backgroundColor || '#dcfce7' }}
             >
-              <Folder
-                className="w-10 h-10"
-                style={{ color: category.color || '#22c55e' }}
-                fill="none"
-                strokeWidth={2.5}
-              />
+              {(() => {
+                const IconComponent = iconMap[category.icon || 'folder'] || Folder
+                return (
+                  <IconComponent
+                    className="w-10 h-10"
+                    style={{ color: category.color || '#22c55e' }}
+                    fill="none"
+                    strokeWidth={2.5}
+                  />
+                )
+              })()}
             </div>
 
             {/* Category title - LEFT ALIGNED */}
@@ -484,6 +645,27 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    {/* Icon Picker Modal */}
+    {editingCategory && (
+      <IconPickerModal
+        isOpen={showIconPicker}
+        onClose={() => {
+          setShowIconPicker(false)
+          setEditingCategory(null)
+        }}
+        categoryId={editingCategory.id}
+        currentIcon={editingCategory.icon || 'folder'}
+        onIconSelected={(newIcon) => {
+          // Update the category in the local state
+          const updatedCategories = categories.map(cat =>
+            cat.id === editingCategory.id ? { ...cat, icon: newIcon } : cat
+          )
+          setCategories(updatedCategories)
+          onUpdate()
+        }}
+      />
+    )}
     </>
   )
 }
