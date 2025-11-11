@@ -305,7 +305,7 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
           {currentCategoryBookmarks.map((bookmark: any) => (
             <div
               key={bookmark.id}
-              className="relative bg-gradient-to-br from-white via-gray-50/30 to-purple-50/20 border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-all group"
+              className="relative bg-gradient-to-br from-pink-50/30 via-purple-50/20 to-blue-50/30 border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-all group"
             >
               {/* Three-dot menu */}
               <div className="absolute top-3 right-3 z-10">
@@ -327,14 +327,10 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                 </DropdownMenu>
               </div>
 
-              {/* Hexagonal percentage indicator */}
+              {/* Circular percentage indicator */}
               <div className="absolute bottom-4 right-4 z-10">
-                <div className="relative w-14 h-14 flex items-center justify-center">
-                  {/* Hexagon shape using clip-path */}
-                  <div className="absolute inset-0 bg-red-50 border-2 border-red-400" style={{
-                    clipPath: "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)"
-                  }}></div>
-                  <span className="relative text-sm font-bold text-red-600 z-10">
+                <div className="w-14 h-14 bg-red-50 border-2 border-red-400 rounded-full flex items-center justify-center">
+                  <span className="text-sm font-bold text-red-600">
                     {bookmark.analytics?.[0]?.engagementScore || 0}%
                   </span>
                 </div>
@@ -414,9 +410,9 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                   </div>
                 </div>
 
-                {/* Right: Large logo */}
-                <div className="flex-shrink-0 w-24 h-24 hidden lg:flex items-center justify-center">
-                  <div className="relative w-20 h-20">
+                {/* Right: Large logo - NOW ALWAYS VISIBLE */}
+                <div className="flex-shrink-0 w-32 h-32 flex items-center justify-center">
+                  <div className="relative w-28 h-28">
                     {bookmark.favicon ? (
                       <Image
                         src={bookmark.favicon}
@@ -427,7 +423,7 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 rounded-2xl flex items-center justify-center">
-                        <span className="text-4xl font-bold text-gray-400">
+                        <span className="text-5xl font-bold text-gray-400">
                           {bookmark.title?.charAt(0) || "?"}
                         </span>
                       </div>
