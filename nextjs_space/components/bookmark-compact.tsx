@@ -217,28 +217,30 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
     )
   }
 
-  // First level: Show category folders as VERY COMPACT SQUARE cards
+  // First level: Show category folders as COMPACT SQUARE cards with REDESIGNED LAYOUT
   return (
-    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-2">
-      {categorizedBookmarks.map(({ category, bookmarks: categoryBookmarks }) => (
-        <div
-          key={category.id}
-          onClick={() => setSelectedCategory(category)}
-          className="group relative bg-white border border-gray-200 rounded-md hover:shadow-md hover:border-gray-300 transition-all cursor-pointer overflow-hidden"
-        >
-          {/* Square aspect ratio container - VERY SMALL padding */}
-          <div className="aspect-square relative p-2 flex flex-col">
-            
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4">
+      {categorizedBookmarks.map(({ category, bookmarks: categoryBookmarks }) => {
+        // Generate lighter background and darker border from category color
+        const lighterBg = category.color + '15' // 15% opacity
+        const darkerBorder = category.color
+        
+        return (
+          <div
+            key={category.id}
+            onClick={() => setSelectedCategory(category)}
+            className="group relative bg-white rounded-lg hover:shadow-xl transition-all cursor-pointer p-4"
+          >
             {/* Three-dot menu in top right */}
-            <div className="absolute top-1 right-1 z-10">
+            <div className="absolute top-2 right-2 z-10">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-sm hover:bg-gray-100"
+                    className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-md hover:bg-gray-100"
                   >
-                    <MoreVertical className="w-3 h-3 text-gray-500" />
+                    <MoreVertical className="w-4 h-4 text-gray-500" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-40">
@@ -254,48 +256,53 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
               </DropdownMenu>
             </div>
 
-            {/* BIGGER Colored Folder icon in UPPER LEFT corner */}
-            <div className="absolute top-1.5 left-1.5">
+            {/* Square background box with subtle category color */}
+            <div 
+              className="aspect-square rounded-lg flex items-center justify-center mb-3 border-2"
+              style={{ 
+                backgroundColor: lighterBg,
+                borderColor: darkerBorder
+              }}
+            >
+              {/* BIGGER Folder icon on top of the square */}
               <Folder
-                className="w-10 h-10"
-                style={{ color: category.color }}
+                className="w-16 h-16"
+                style={{ color: darkerBorder }}
                 fill={category.color}
-                fillOpacity={0.25}
-                strokeWidth={1.5}
+                fillOpacity={0.3}
+                strokeWidth={2}
               />
             </div>
 
-            {/* Category name - centered vertically and horizontally */}
-            <div className="flex-1 flex items-center justify-center px-1">
-              <h3 className="text-center font-black text-[10px] text-gray-900 uppercase tracking-tight leading-tight line-clamp-2">
-                {category.name}
-              </h3>
-            </div>
+            {/* Category name underneath the square - BIGGER TEXT */}
+            <h3 className="text-center font-black text-sm text-gray-900 uppercase tracking-tight leading-tight mb-2 line-clamp-2">
+              {category.name}
+            </h3>
 
             {/* Footer section at bottom */}
-            <div className="flex items-center justify-between mt-auto pt-1">
+            <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100">
               {/* Bookmark count - bottom left */}
-              <div className="flex items-center gap-0.5 text-[8px] text-gray-600 font-medium">
-                <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center gap-1 text-xs text-gray-600 font-medium">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                 </svg>
                 <span>{categoryBookmarks.length}</span>
               </div>
 
-              {/* BIGGER User profile/logo - bottom right */}
-              <div className="w-8 h-8 bg-gray-400 rounded-sm flex items-center justify-center border border-gray-500 shadow-sm">
+              {/* User profile/logo - bottom right */}
+              <div className="w-7 h-7 bg-gray-400 rounded-md flex items-center justify-center border border-gray-500 shadow-sm">
                 {session?.user?.name ? (
                   <span className="text-xs font-bold text-white">
                     {session.user.name.charAt(0).toUpperCase()}
                   </span>
                 ) : (
-                  <User className="w-4 h-4 text-white" />
+                  <User className="w-3.5 h-3.5 text-white" />
                 )}
               </div>
             </div>
           </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
