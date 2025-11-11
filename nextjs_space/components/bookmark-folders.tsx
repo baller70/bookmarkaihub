@@ -34,8 +34,8 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [editedName, setEditedName] = useState('');
   const [colorPickerOpen, setColorPickerOpen] = useState<string | null>(null);
-  const [tempBackgroundColor, setTempBackgroundColor] = useState('#DBEAFE');
-  const [tempOutlineColor, setTempOutlineColor] = useState('#3B82F6');
+  const [tempBackgroundColor, setTempBackgroundColor] = useState('#FFFFFF');
+  const [tempOutlineColor, setTempOutlineColor] = useState('#D1D5DB');
 
   // Group bookmarks by category
   const categorizedBookmarks = useMemo(() => {
@@ -44,8 +44,8 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
     bookmarks?.forEach((bookmark) => {
       const categoryId = bookmark.category?.id || "uncategorized";
       const categoryName = bookmark.category?.name || "UNCATEGORIZED";
-      const categoryColor = bookmark.category?.color || "#94A3B8";
-      const categoryBackgroundColor = bookmark.category?.backgroundColor || "#F1F5F9";
+      const categoryColor = bookmark.category?.color;
+      const categoryBackgroundColor = bookmark.category?.backgroundColor;
 
       if (!grouped.has(categoryId)) {
         grouped.set(categoryId, {
@@ -100,8 +100,8 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
 
   const handleOpenColorPicker = (category: any) => {
     setColorPickerOpen(category.id);
-    setTempBackgroundColor(category.backgroundColor || '#DBEAFE');
-    setTempOutlineColor(category.color || '#3B82F6');
+    setTempBackgroundColor(category.backgroundColor || '#FFFFFF');
+    setTempOutlineColor(category.color || '#D1D5DB');
   };
 
   const handleSaveColors = async (categoryId: string) => {
@@ -149,12 +149,10 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
         {categorizedBookmarks.map(({ category, bookmarks: categoryBookmarks }) => (
           <div
             key={category.id}
-            className="group relative bg-white rounded-lg p-6 hover:shadow-md transition-all"
+            className="group relative bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer"
             style={{
-              backgroundColor: category.backgroundColor || '#F1F5F9',
-              borderWidth: '2px',
-              borderStyle: 'solid',
-              borderColor: category.color || '#94A3B8',
+              ...(category.backgroundColor && { backgroundColor: category.backgroundColor }),
+              ...(category.color && { borderColor: category.color, borderWidth: '2px' }),
             }}
           >
             {/* Three Dot Menu - Top Right */}
@@ -261,7 +259,7 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
                         value={tempBackgroundColor}
                         onChange={(e) => setTempBackgroundColor(e.target.value)}
                         className="h-9 flex-1 text-xs"
-                        placeholder="#DBEAFE"
+                        placeholder="#FFFFFF"
                       />
                     </div>
                   </div>
@@ -282,7 +280,7 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
                         value={tempOutlineColor}
                         onChange={(e) => setTempOutlineColor(e.target.value)}
                         className="h-9 flex-1 text-xs"
-                        placeholder="#3B82F6"
+                        placeholder="#D1D5DB"
                       />
                     </div>
                   </div>
