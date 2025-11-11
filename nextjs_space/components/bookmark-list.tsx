@@ -305,7 +305,7 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
           {currentCategoryBookmarks.map((bookmark: any) => (
             <div
               key={bookmark.id}
-              className="relative bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-all group"
+              className="relative bg-gradient-to-br from-white via-gray-50/30 to-purple-50/20 border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-all group"
             >
               {/* Three-dot menu */}
               <div className="absolute top-3 right-3 z-10">
@@ -327,10 +327,14 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                 </DropdownMenu>
               </div>
 
-              {/* Percentage indicator */}
+              {/* Hexagonal percentage indicator */}
               <div className="absolute bottom-4 right-4 z-10">
-                <div className="w-12 h-12 bg-red-100 border-2 border-red-400 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-bold text-red-600">
+                <div className="relative w-14 h-14 flex items-center justify-center">
+                  {/* Hexagon shape using clip-path */}
+                  <div className="absolute inset-0 bg-red-50 border-2 border-red-400" style={{
+                    clipPath: "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)"
+                  }}></div>
+                  <span className="relative text-sm font-bold text-red-600 z-10">
                     {bookmark.analytics?.[0]?.engagementScore || 0}%
                   </span>
                 </div>
@@ -339,7 +343,7 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
               <div className="flex items-start gap-6 p-6 cursor-pointer" onClick={() => setSelectedBookmark(bookmark)}>
                 {/* Left: Logo/Favicon */}
                 <div className="flex-shrink-0">
-                  <div className="relative w-16 h-16 bg-black rounded-2xl flex items-center justify-center overflow-hidden">
+                  <div className="relative w-14 h-14 bg-black rounded-lg flex items-center justify-center overflow-hidden">
                     {bookmark.favicon ? (
                       <Image
                         src={bookmark.favicon}
@@ -357,31 +361,31 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                 </div>
 
                 {/* Middle: Content */}
-                <div className="flex-1 min-w-0 space-y-3">
-                  {/* Title and badges */}
-                  <div className="space-y-2">
-                    <h3 className="font-bold text-lg text-gray-900 uppercase">
+                <div className="flex-1 min-w-0 space-y-2.5">
+                  {/* Title and priority badge */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-bold text-base text-gray-900 uppercase">
                       {bookmark.title || "Untitled"}
                     </h3>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {bookmark.priority && (
-                        <Badge
-                          variant="secondary"
-                          className={`
-                            text-xs px-2 py-0.5
-                            ${bookmark.priority === "HIGH" ? "bg-yellow-100 text-yellow-800" : ""}
-                            ${bookmark.priority === "MEDIUM" ? "bg-yellow-100 text-yellow-800" : ""}
-                            ${bookmark.priority === "LOW" ? "bg-gray-100 text-gray-600" : ""}
-                          `}
-                        >
-                          {bookmark.priority?.toLowerCase()}
-                        </Badge>
-                      )}
-                      <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                        <Folder className="w-3.5 h-3.5" />
-                        <span>{bookmark.category?.name || "UNCATEGORIZED"}</span>
-                      </div>
-                    </div>
+                    {bookmark.priority && (
+                      <Badge
+                        variant="secondary"
+                        className={`
+                          text-xs px-2 py-0.5
+                          ${bookmark.priority === "HIGH" ? "bg-yellow-100 text-yellow-800" : ""}
+                          ${bookmark.priority === "MEDIUM" ? "bg-yellow-100 text-yellow-800" : ""}
+                          ${bookmark.priority === "LOW" ? "bg-gray-100 text-gray-600" : ""}
+                        `}
+                      >
+                        {bookmark.priority?.toLowerCase()}
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Category label */}
+                  <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                    <Folder className="w-3.5 h-3.5" />
+                    <span className="uppercase">{bookmark.category?.name || "UNCATEGORIZED"}</span>
                   </div>
 
                   {/* URL */}
@@ -393,7 +397,6 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                     onClick={(e) => e.stopPropagation()}
                   >
                     {bookmark.url?.replace(/^https?:\/\/(www\.)?/, "")}
-                    <ExternalLink className="w-3 h-3" />
                   </a>
 
                   {/* Description */}
@@ -411,18 +414,30 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                   </div>
                 </div>
 
-                {/* Right: Decorative graphic */}
-                <div className="flex-shrink-0 w-32 h-32 hidden lg:flex items-center justify-center">
-                  <div className="w-full h-full bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-lg flex items-center justify-center opacity-60">
-                    <div className="text-6xl font-bold text-blue-200">
-                      {bookmark.title?.charAt(0) || ""}
-                    </div>
+                {/* Right: Large logo */}
+                <div className="flex-shrink-0 w-24 h-24 hidden lg:flex items-center justify-center">
+                  <div className="relative w-20 h-20">
+                    {bookmark.favicon ? (
+                      <Image
+                        src={bookmark.favicon}
+                        alt={bookmark.title || "Bookmark"}
+                        fill
+                        className="object-contain"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 rounded-2xl flex items-center justify-center">
+                        <span className="text-4xl font-bold text-gray-400">
+                          {bookmark.title?.charAt(0) || "?"}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
 
               {/* Drag handle at bottom center */}
-              <div className="flex justify-center py-1 border-t border-gray-100 bg-gray-50">
+              <div className="flex justify-center py-1 border-t border-gray-100 bg-white/50">
                 <MoreHorizontal className="w-4 h-4 text-gray-400" />
               </div>
             </div>
