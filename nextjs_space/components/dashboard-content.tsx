@@ -224,9 +224,9 @@ export function DashboardContent() {
       case "HIERARCHY":
         return <BookmarkHierarchy bookmarks={currentBookmarks} onUpdate={fetchBookmarks} />
       case "FOLDER":
-        return <BookmarkFolders bookmarks={bookmarks} />
+        return <BookmarkFolders bookmarks={currentBookmarks} onUpdate={fetchBookmarks} />
       case "GOAL":
-        return <BookmarkGoals />
+        return <BookmarkGoals bookmarks={currentBookmarks} onUpdate={fetchBookmarks} />
       case "KANBAN":
         return <BookmarkKanban bookmarks={currentBookmarks} onUpdate={fetchBookmarks} />
       default:

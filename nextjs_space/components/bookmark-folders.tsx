@@ -1,20 +1,12 @@
-
 'use client';
 
-import { useState, useEffect } from 'react';
-import { FolderIcon, ArrowLeftIcon, BookmarkIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { toast } from 'sonner';
+import { useState } from 'react';
 import Image from 'next/image';
-
-interface Category {
-  id: string;
-  name: string;
-  description: string | null;
-  color: string;
-  bookmarkCount: number;
-}
+import { FolderIcon, ExternalLink, Star } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { BookmarkDetailModal } from './bookmark-detail-modal';
+import { toast } from 'sonner';
 
 interface Bookmark {
   id: string;
@@ -22,224 +14,162 @@ interface Bookmark {
   url: string;
   description: string | null;
   favicon: string | null;
-  imageUrl: string | null;
   category: {
     id: string;
     name: string;
     color: string;
   } | null;
+  isFavorite: boolean;
+  priority: string | null;
 }
 
-export default function BookmarkFolders({ bookmarks }: { bookmarks: any[] }) {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedFolder, setSelectedFolder] = useState<Category | null>(null);
-  const [folderBookmarks, setFolderBookmarks] = useState<Bookmark[]>([]);
-  const [loading, setLoading] = useState(false);
+export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bookmark[], onUpdate: () => void }) {
+  const [selectedBookmark, setSelectedBookmark] = useState<Bookmark | null>(null);
 
-  useEffect(() => {
-    // Group bookmarks by category
-    const categoryMap = new Map<string, Category>();
+  // Group bookmarks by category
+  const groupedBookmarks = bookmarks.reduce((acc: any, bookmark) => {
+    const categoryName = bookmark.category?.name || 'Uncategorized';
+    if (!acc[categoryName]) {
+      acc[categoryName] = {
+        category: bookmark.category || { name: 'Uncategorized', color: '#6b7280', id: 'uncategorized' },
+        bookmarks: []
+      };
+    }
+    acc[categoryName].bookmarks.push(bookmark);
+    return acc;
+  }, {});
 
-    bookmarks.forEach((bookmark) => {
-      // Handle both direct category and categories array
-      const categories = bookmark.categories || [];
-      
-      categories.forEach((catRel: any) => {
-        const cat = catRel.category;
-        if (cat) {
-          const catId = cat.id;
-          if (categoryMap.has(catId)) {
-            const existingCat = categoryMap.get(catId)!;
-            existingCat.bookmarkCount += 1;
-          } else {
-            categoryMap.set(catId, {
-              id: cat.id,
-              name: cat.name,
-              description: `${cat.name} related bookmarks`,
-              color: cat.color || '#3b82f6',
-              bookmarkCount: 1,
-            });
-          }
-        }
+  const handleToggleFavorite = async (e: React.MouseEvent, bookmarkId: string, currentFavorite: boolean) => {
+    e.stopPropagation();
+    try {
+      const response = await fetch(`/api/bookmarks/${bookmarkId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isFavorite: !currentFavorite }),
       });
-    });
-
-    // Convert to array and sort by name
-    const categoriesArray = Array.from(categoryMap.values()).sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
-
-    setCategories(categoriesArray);
-  }, [bookmarks]);
-
-  const handleFolderClick = (folder: Category) => {
-    setSelectedFolder(folder);
-    
-    // Filter bookmarks for this folder
-    const filtered = bookmarks.filter((bookmark) => {
-      const categories = bookmark.categories || [];
-      return categories.some((catRel: any) => catRel.category?.id === folder.id);
-    });
-    setFolderBookmarks(filtered);
-    
-    toast.success(`Opened folder: ${folder.name}`);
+      if (response.ok) {
+        toast.success(currentFavorite ? 'Removed from favorites' : 'Added to favorites');
+        onUpdate();
+      }
+    } catch (error) {
+      toast.error('Failed to update favorite');
+    }
   };
 
-  const handleBackToFolders = () => {
-    setSelectedFolder(null);
-    setFolderBookmarks([]);
-  };
-
-  const getIconColor = (color: string) => {
-    return color || '#3b82f6';
-  };
-
-  if (selectedFolder) {
+  if (!bookmarks?.length) {
     return (
-      <div className="space-y-6">
-        {/* Back to Folders Button */}
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            onClick={handleBackToFolders}
-            className="gap-2"
-          >
-            <ArrowLeftIcon className="w-4 h-4" />
-            Back to Folders
-          </Button>
-          <div className="flex items-center gap-3">
-            <div
-              className="w-10 h-10 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: selectedFolder.color }}
-            >
-              <FolderIcon className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold">{selectedFolder.name}</h2>
-              <p className="text-sm text-muted-foreground">
-                {selectedFolder.description}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Bookmarks Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {folderBookmarks.map((bookmark) => (
-            <Card
-              key={bookmark.id}
-              className="hover:shadow-lg transition-shadow cursor-pointer group"
-            >
-              <CardContent className="p-4">
-                <div className="space-y-3">
-                  {/* Logo/Image */}
-                  <div className="relative w-full aspect-square bg-white rounded-lg overflow-hidden">
-                    {bookmark.favicon ? (
-                      <div className="relative w-full h-full p-4">
-                        <Image
-                          src={bookmark.favicon}
-                          alt={bookmark.title}
-                          fill
-                          className="object-contain p-2"
-                        />
-                      </div>
-                    ) : bookmark.imageUrl ? (
-                      <Image
-                        src={bookmark.imageUrl}
-                        alt={bookmark.title}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-muted">
-                        <BookmarkIcon className="w-12 h-12 text-muted-foreground" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Title and URL */}
-                  <div className="space-y-1">
-                    <h3 className="font-semibold text-sm line-clamp-2">
-                      {bookmark.title}
-                    </h3>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {bookmark.url}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {folderBookmarks.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">
-            <FolderIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>No bookmarks in this folder</p>
-          </div>
-        )}
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <FolderIcon className="w-16 h-16 text-gray-300 mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No bookmarks found</h3>
+        <p className="text-gray-500">Create your first bookmark to get started</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">Folder 2.0</h1>
-        <p className="text-muted-foreground">
-          Advanced folder management with drag-and-drop functionality.
-        </p>
-      </div>
+    <>
+      <div className="space-y-8">
+        {Object.entries(groupedBookmarks).map(([categoryName, data]: [string, any]) => {
+          const cat = data.category;
+          const categoryBookmarks = data.bookmarks;
 
-      {/* Folders Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {categories.map((category) => (
-          <Card
-            key={category.id}
-            className="hover:shadow-lg transition-all cursor-pointer group hover:scale-105"
-            onClick={() => handleFolderClick(category)}
-          >
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                {/* Folder Icon */}
-                <div
-                  className="w-16 h-16 rounded-xl flex items-center justify-center"
-                  style={{ backgroundColor: getIconColor(category.color) }}
-                >
-                  <FolderIcon className="w-8 h-8 text-white" />
-                </div>
-
-                {/* Folder Name */}
-                <div>
-                  <h3 className="font-bold text-base uppercase mb-1">
-                    {category.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {category.description}
-                  </p>
-                </div>
-
-                {/* Bookmark Count */}
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <BookmarkIcon className="w-4 h-4" />
-                  <span>
-                    {category.bookmarkCount}{' '}
-                    {category.bookmarkCount === 1 ? 'bookmark' : 'bookmarks'}
-                  </span>
-                </div>
+          return (
+            <div key={cat.id} className="space-y-4">
+              {/* Category Header */}
+              <div className="flex items-center gap-3 border-b pb-3">
+                <FolderIcon className="w-5 h-5" style={{ color: cat.color }} />
+                <h2 className="text-lg font-bold text-gray-900">{cat.name}</h2>
+                <Badge variant="secondary">{categoryBookmarks.length} bookmarks</Badge>
               </div>
-            </CardContent>
-          </Card>
-        ))}
+
+              {/* Bookmarks Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {categoryBookmarks.map((bookmark: Bookmark) => (
+                  <div
+                    key={bookmark.id}
+                    className="group relative bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer"
+                    onClick={() => setSelectedBookmark(bookmark)}
+                  >
+                    {/* Header */}
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        {/* Favicon */}
+                        <div className="w-10 h-10 flex-shrink-0 relative bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
+                          {bookmark.favicon ? (
+                            <Image
+                              src={bookmark.favicon}
+                              alt={bookmark.title}
+                              fill
+                              className="object-contain p-1"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                              {bookmark.title.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Title */}
+                        <h3 className="font-semibold text-sm text-gray-900 line-clamp-2 min-w-0">
+                          {bookmark.title}
+                        </h3>
+                      </div>
+
+                      {/* Favorite Star */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => handleToggleFavorite(e, bookmark.id, bookmark.isFavorite)}
+                      >
+                        <Star
+                          className={`w-4 h-4 ${bookmark.isFavorite ? 'fill-yellow-400 text-yellow-400' : 'text-gray-400'}`}
+                        />
+                      </Button>
+                    </div>
+
+                    {/* Description */}
+                    {bookmark.description && (
+                      <p className="text-xs text-gray-600 line-clamp-2 mb-3">
+                        {bookmark.description}
+                      </p>
+                    )}
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-between">
+                      {bookmark.priority && (
+                        <Badge variant="secondary" className="text-xs">
+                          {bookmark.priority}
+                        </Badge>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 ml-auto"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(bookmark.url, '_blank');
+                        }}
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      {categories.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
-          <FolderIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p>No folders found. Create categories to organize your bookmarks.</p>
-        </div>
+      {selectedBookmark && (
+        <BookmarkDetailModal
+          bookmark={selectedBookmark}
+          open={!!selectedBookmark}
+          onOpenChange={(open) => !open && setSelectedBookmark(null)}
+          onUpdate={onUpdate}
+        />
       )}
-    </div>
+    </>
   );
 }

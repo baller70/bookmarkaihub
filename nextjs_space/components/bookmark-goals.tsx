@@ -1,389 +1,174 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import Image from 'next/image';
+import { Target, ExternalLink, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Folder, Plus, Search, FileText, ArrowLeft, Target, Edit2, Trash2 } from 'lucide-react';
-import { CreateGoalFolderModal } from '@/components/create-goal-folder-modal';
-import { CreateGoalModal } from '@/components/create-goal-modal';
 import { Badge } from '@/components/ui/badge';
+import { BookmarkDetailModal } from './bookmark-detail-modal';
 import { toast } from 'sonner';
 
-interface GoalFolder {
-  id: string;
-  name: string;
-  description?: string;
-  color: string;
-  goals: Goal[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface Goal {
+interface Bookmark {
   id: string;
   title: string;
-  description?: string;
-  goalType: string;
-  color: string;
-  priority: string;
-  status: string;
-  deadline?: string;
-  progress: number;
-  tags: string[];
-  notes?: string;
-  folderId?: string;
-  bookmarks: Array<{
+  url: string;
+  description: string | null;
+  favicon: string | null;
+  category: {
     id: string;
-    bookmark: {
-      id: string;
-      title: string;
-      url: string;
-    };
-  }>;
+    name: string;
+    color: string;
+  } | null;
+  isFavorite: boolean;
+  priority: string | null;
 }
 
-export function BookmarkGoals() {
-  const [folders, setFolders] = useState<GoalFolder[]>([]);
-  const [selectedFolder, setSelectedFolder] = useState<GoalFolder | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isCreateFolderModalOpen, setIsCreateFolderModalOpen] = useState(false);
-  const [isCreateGoalModalOpen, setIsCreateGoalModalOpen] = useState(false);
-  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export function BookmarkGoals({ bookmarks, onUpdate }: { bookmarks: Bookmark[], onUpdate: () => void }) {
+  const [selectedBookmark, setSelectedBookmark] = useState<Bookmark | null>(null);
 
-  useEffect(() => {
-    fetchFolders();
-  }, []);
-
-  const fetchFolders = async () => {
+  const handleToggleFavorite = async (e: React.MouseEvent, bookmarkId: string, currentFavorite: boolean) => {
+    e.stopPropagation();
     try {
-      setIsLoading(true);
-      const response = await fetch('/api/goal-folders');
-      if (response.ok) {
-        const data = await response.json();
-        setFolders(data);
-        
-        // If a folder is selected, refresh its data
-        if (selectedFolder) {
-          const updatedFolder = data.find((f: GoalFolder) => f.id === selectedFolder.id);
-          if (updatedFolder) {
-            setSelectedFolder(updatedFolder);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching goal folders:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleFolderCreated = () => {
-    fetchFolders();
-  };
-
-  const handleGoalCreated = () => {
-    fetchFolders();
-    setEditingGoal(null);
-  };
-
-  const handleFolderClick = (folder: GoalFolder) => {
-    setSelectedFolder(folder);
-  };
-
-  const handleBackToFolders = () => {
-    setSelectedFolder(null);
-  };
-
-  const handleEditGoal = (goal: Goal) => {
-    setEditingGoal(goal);
-    setIsCreateGoalModalOpen(true);
-  };
-
-  const handleDeleteGoal = async (goalId: string) => {
-    if (!confirm('Are you sure you want to delete this goal?')) return;
-
-    try {
-      const response = await fetch(`/api/goals/${goalId}`, {
-        method: 'DELETE',
+      const response = await fetch(`/api/bookmarks/${bookmarkId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isFavorite: !currentFavorite }),
       });
-
       if (response.ok) {
-        toast.success('Goal deleted successfully');
-        fetchFolders();
-      } else {
-        toast.error('Failed to delete goal');
+        toast.success(currentFavorite ? 'Removed from favorites' : 'Added to favorites');
+        onUpdate();
       }
     } catch (error) {
-      console.error('Error deleting goal:', error);
-      toast.error('Failed to delete goal');
+      toast.error('Failed to update favorite');
     }
   };
 
-  // If a folder is selected, show the folder detail view
-  if (selectedFolder) {
+  if (!bookmarks?.length) {
     return (
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold">Goal 2.0</h1>
-          <p className="text-muted-foreground">
-            Advanced goal management with folders, deadline tracking and progress monitoring
-          </p>
-        </div>
-
-        {/* Breadcrumb Navigation */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              onClick={handleBackToFolders}
-              className="gap-2 hover:bg-gray-100 px-3"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Folders
-            </Button>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center">
-                <Folder className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold">{selectedFolder.name}</span>
-              <Badge variant="secondary" className="bg-blue-500 hover:bg-blue-600 text-white">
-                {selectedFolder.goals.length} goals
-              </Badge>
-            </div>
-          </div>
-          <Button onClick={() => setIsCreateGoalModalOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Create Goal
-          </Button>
-        </div>
-
-        {/* Goals List */}
-        {selectedFolder.goals.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 space-y-4">
-            <Target className="w-16 h-16 text-muted-foreground" strokeWidth={1.5} />
-            <div className="text-center space-y-2">
-              <h3 className="text-lg font-semibold">No goals in this folder</h3>
-              <p className="text-sm text-muted-foreground">
-                Create your first goal to get started
-              </p>
-            </div>
-            <Button onClick={() => setIsCreateGoalModalOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Create Goal
-            </Button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {selectedFolder.goals.map((goal) => (
-              <div
-                key={goal.id}
-                className="border rounded-lg p-6 bg-white dark:bg-gray-950 space-y-4"
-              >
-                {/* Goal Header */}
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-12 h-12 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: goal.color }}
-                    >
-                      <Target className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="font-bold text-lg">{goal.title}</h3>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEditGoal(goal)}
-                      className="h-8 w-8"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteGoal(goal.id)}
-                      className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Progress</span>
-                    <span className="font-semibold">{goal.progress}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="h-2 rounded-full transition-all"
-                      style={{
-                        backgroundColor: goal.color,
-                        width: `${goal.progress}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Goal Details */}
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Deadline</span>
-                    <span className="font-medium">
-                      {goal.deadline
-                        ? new Date(goal.deadline).toLocaleDateString()
-                        : 'No deadline'}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Priority</span>
-                    <span className="font-medium capitalize">{goal.priority.toLowerCase()}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Status</span>
-                    <span className="font-medium">
-                      {goal.status.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Bookmarks</span>
-                    <span className="font-medium">{goal.bookmarks.length}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Modals */}
-        <CreateGoalModal
-          isOpen={isCreateGoalModalOpen}
-          onClose={() => {
-            setIsCreateGoalModalOpen(false);
-            setEditingGoal(null);
-          }}
-          onGoalCreated={handleGoalCreated}
-          editGoal={editingGoal}
-        />
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <Target className="w-16 h-16 text-gray-300 mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No bookmarks found</h3>
+        <p className="text-gray-500">Create your first bookmark to get started</p>
       </div>
     );
   }
 
-  // Default view: Show all folders
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">Goal 2.0</h1>
-        <p className="text-muted-foreground">
-          Advanced goal management with folders, deadline tracking and progress monitoring
-        </p>
-      </div>
-
-      {/* Actions Bar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Folder className="w-6 h-6 text-blue-500" />
-          <span className="text-xl font-bold">All Folders</span>
-          <Badge variant="secondary" className="bg-blue-500 hover:bg-blue-600 text-white">
-            {folders.length} folders
-          </Badge>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setIsCreateFolderModalOpen(true)}
+    <>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {bookmarks.map((bookmark) => (
+          <div
+            key={bookmark.id}
+            className="group relative bg-white border-2 border-gray-200 rounded-xl p-5 hover:shadow-xl hover:border-blue-300 transition-all cursor-pointer"
+            onClick={() => setSelectedBookmark(bookmark)}
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Create Folder
-          </Button>
-          <Button onClick={() => setIsCreateGoalModalOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Create Goal
-          </Button>
-        </div>
-      </div>
-
-      {/* Goal Folders Section */}
-      {!isLoading && folders.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-bold">Goal Folders</h2>
-        </div>
-      )}
-
-      {/* Content */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center space-y-2">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-            <p className="text-sm text-muted-foreground">Loading folders...</p>
-          </div>
-        </div>
-      ) : folders.length === 0 ? (
-        /* Empty State */
-        <div className="flex flex-col items-center justify-center py-12 space-y-4">
-          <Folder className="w-16 h-16 text-muted-foreground" strokeWidth={1.5} />
-          <div className="text-center space-y-2">
-            <h3 className="text-lg font-semibold">No goal folders yet</h3>
-            <p className="text-sm text-muted-foreground">
-              Create your first folder to organize your goals
-            </p>
-          </div>
-          <Button onClick={() => setIsCreateFolderModalOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Create Your First Folder
-          </Button>
-        </div>
-      ) : (
-        /* Folders Grid */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {folders.map((folder) => (
-            <div
-              key={folder.id}
-              onClick={() => handleFolderClick(folder)}
-              className="border rounded-2xl p-6 hover:shadow-md transition-shadow bg-white dark:bg-gray-950 cursor-pointer"
-            >
-              <div className="space-y-4">
-                {/* Blue rounded square icon with folder - Top Left */}
-                <div className="w-16 h-16 rounded-xl bg-blue-500 flex items-center justify-center">
-                  <Folder className="w-8 h-8 text-white" />
-                </div>
-                
-                {/* Folder Name - Left Aligned */}
-                <h3 className="font-bold text-lg break-words">
-                  {folder.name}
-                </h3>
-                
-                {/* Goal Count - Left Aligned */}
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <FileText className="w-4 h-4" />
-                  <span className="text-sm">{folder.goals.length} goal{folder.goals.length === 1 ? '' : 's'}</span>
-                </div>
+            {/* Target Icon Badge */}
+            <div className="absolute -top-3 -right-3">
+              <div className="bg-blue-500 rounded-full p-2 shadow-lg">
+                <Target className="w-4 h-4 text-white" />
               </div>
             </div>
-          ))}
-        </div>
-      )}
 
-      {/* Modals */}
-      <CreateGoalFolderModal
-        isOpen={isCreateFolderModalOpen}
-        onClose={() => setIsCreateFolderModalOpen(false)}
-        onFolderCreated={handleFolderCreated}
-      />
-      <CreateGoalModal
-        isOpen={isCreateGoalModalOpen}
-        onClose={() => {
-          setIsCreateGoalModalOpen(false);
-          setEditingGoal(null);
-        }}
-        onGoalCreated={handleGoalCreated}
-        editGoal={editingGoal}
-      />
-    </div>
+            {/* Header */}
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                {/* Favicon */}
+                <div className="w-12 h-12 flex-shrink-0 relative bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
+                  {bookmark.favicon ? (
+                    <Image
+                      src={bookmark.favicon}
+                      alt={bookmark.title}
+                      fill
+                      className="object-contain p-1"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
+                      {bookmark.title.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+
+                {/* Favorite Star */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 ml-auto opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={(e) => handleToggleFavorite(e, bookmark.id, bookmark.isFavorite)}
+                >
+                  <Star
+                    className={`w-5 h-5 ${bookmark.isFavorite ? 'fill-yellow-400 text-yellow-400' : 'text-gray-400'}`}
+                  />
+                </Button>
+              </div>
+            </div>
+
+            {/* Title */}
+            <h3 className="font-bold text-base text-gray-900 mb-2 line-clamp-2">
+              {bookmark.title}
+            </h3>
+
+            {/* Description */}
+            {bookmark.description && (
+              <p className="text-sm text-gray-600 line-clamp-3 mb-4">
+                {bookmark.description}
+              </p>
+            )}
+
+            {/* Footer */}
+            <div className="flex items-center justify-between pt-3 border-t">
+              {bookmark.priority && (
+                <Badge 
+                  variant="secondary" 
+                  className="text-xs font-semibold"
+                  style={{ 
+                    backgroundColor: bookmark.category?.color ? `${bookmark.category.color}20` : undefined,
+                    color: bookmark.category?.color || undefined
+                  }}
+                >
+                  {bookmark.priority}
+                </Badge>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-3 ml-auto"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.open(bookmark.url, '_blank');
+                }}
+              >
+                <ExternalLink className="w-4 h-4 mr-1" />
+                <span className="text-xs">Visit</span>
+              </Button>
+            </div>
+
+            {/* Category Badge */}
+            {bookmark.category && (
+              <div className="mt-3 pt-3 border-t">
+                <Badge 
+                  variant="outline" 
+                  className="text-xs"
+                  style={{ 
+                    borderColor: bookmark.category.color,
+                    color: bookmark.category.color
+                  }}
+                >
+                  {bookmark.category.name}
+                </Badge>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {selectedBookmark && (
+        <BookmarkDetailModal
+          bookmark={selectedBookmark}
+          open={!!selectedBookmark}
+          onOpenChange={(open) => !open && setSelectedBookmark(null)}
+          onUpdate={onUpdate}
+        />
+      )}
+    </>
   );
 }
