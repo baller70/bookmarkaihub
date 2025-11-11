@@ -69,28 +69,28 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
             key={category.id}
             className="group relative bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer"
           >
-            {/* Large Folder Icon */}
-            <div className="flex justify-center mb-5">
-              <Folder
-                className="w-24 h-24"
-                style={{ color: category.color }}
-                fill={category.color}
-                fillOpacity={0.15}
-              />
+            {/* Large Folder Icon with Dark Square Background */}
+            <div className="flex justify-start mb-5">
+              <div className="bg-gray-900 rounded-md p-3 flex items-center justify-center">
+                <Folder
+                  className="w-16 h-16 text-white"
+                  strokeWidth={1.5}
+                />
+              </div>
             </div>
 
             {/* Category Name */}
-            <h3 className="text-center font-bold text-base text-gray-900 mb-2 uppercase tracking-wide">
+            <h3 className="text-left font-bold text-base text-gray-900 mb-2 uppercase tracking-wide">
               {category.name}
             </h3>
 
             {/* Description */}
-            <p className="text-center text-sm text-gray-600 mb-4">
+            <p className="text-left text-sm text-gray-600 mb-4">
               {category.name} related bookmarks
             </p>
 
             {/* Bookmark Count */}
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+            <div className="flex items-center justify-start gap-2 text-sm text-gray-500">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
               </svg>
