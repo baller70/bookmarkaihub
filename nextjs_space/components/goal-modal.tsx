@@ -328,12 +328,12 @@ export function GoalModal({ open, onClose, onSuccess, goal, folders }: GoalModal
               {/* Folder */}
               <div>
                 <label className="block text-sm font-medium mb-2">Folder (Optional)</label>
-                <Select value={folderId} onValueChange={setFolderId}>
+                <Select value={folderId || "no-folder"} onValueChange={(value) => setFolderId(value === "no-folder" ? "" : value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="No folder (unassigned)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No folder (unassigned)</SelectItem>
+                    <SelectItem value="no-folder">No folder (unassigned)</SelectItem>
                     {folders.map((folder) => (
                       <SelectItem key={folder.id} value={folder.id}>
                         {folder.name}
