@@ -139,11 +139,12 @@ model Bookmark {
 }
 
 model Category {
-  id          String    @id @default(cuid())
-  name        String
-  description String?
-  color       String    @default("#3B82F6") // Blue default
-  icon        String    @default("folder")
+  id              String    @id @default(cuid())
+  name            String
+  description     String?
+  color           String    @default("#3B82F6") // Blue default (folder outline)
+  backgroundColor String    @default("#DBEAFE") // Light blue default (folder background)
+  icon            String    @default("folder")
   
   userId      String
   user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)

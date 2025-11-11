@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
-import { Folder, MoreVertical, User, ArrowLeft, ExternalLink, Star, Eye } from "lucide-react"
+import { Folder, MoreVertical, User, ArrowLeft, ExternalLink, Star, Eye, Palette } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -12,6 +12,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { BookmarkDetailModal } from "@/components/bookmark-detail-modal"
 import { toast } from "sonner"
 
@@ -24,6 +33,36 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
   const { data: session } = useSession() || {}
   const [selectedCategory, setSelectedCategory] = useState<{id: string; name: string; color: string} | null>(null)
   const [selectedBookmark, setSelectedBookmark] = useState<any>(null)
+  const [showColorPicker, setShowColorPicker] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<any>(null)
+  const [folderColor, setFolderColor] = useState('#22c55e')
+  const [backgroundColor, setBackgroundColor] = useState('#dcfce7')
+  
+  // Save category colors
+  const handleSaveColors = async () => {
+    if (!editingCategory) return
+    
+    try {
+      const response = await fetch(`/api/categories/${editingCategory.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          color: folderColor,
+          backgroundColor: backgroundColor,
+        }),
+      })
+
+      if (!response.ok) throw new Error('Failed to update colors')
+
+      toast.success('Colors updated successfully!')
+      setShowColorPicker(false)
+      setEditingCategory(null)
+      onUpdate() // Refresh the bookmarks to show new colors
+    } catch (error) {
+      console.error('Error updating colors:', error)
+      toast.error('Failed to update colors')
+    }
+  }
   
   // Group bookmarks by category
   const categorizedBookmarks = useMemo(() => {
@@ -219,6 +258,7 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
 
   // First level: Show category folders EXACTLY like the screenshot
   return (
+    <>
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4">
       {categorizedBookmarks.map(({ category, bookmarks: categoryBookmarks }) => (
         <div
@@ -241,12 +281,22 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
                     <MoreVertical className="w-4 h-4 text-gray-400" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem onClick={(e) => {
                     e.stopPropagation()
                     setSelectedCategory(category)
                   }}>
                     View Bookmarks
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation()
+                    setEditingCategory(category)
+                    setFolderColor(category.color || '#22c55e')
+                    setBackgroundColor(category.backgroundColor || '#dcfce7')
+                    setShowColorPicker(true)
+                  }}>
+                    <Palette className="w-4 h-4 mr-2" />
+                    Change Colors
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={(e) => e.stopPropagation()}>Edit Category</DropdownMenuItem>
                   <DropdownMenuItem onClick={(e) => e.stopPropagation()} className="text-red-600">Delete</DropdownMenuItem>
@@ -254,11 +304,14 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
               </DropdownMenu>
             </div>
 
-            {/* Folder icon in TOP LEFT with light green background */}
-            <div className="absolute top-4 left-4 w-12 h-12 bg-green-100 rounded flex items-center justify-center">
+            {/* Folder icon in TOP LEFT with customizable background */}
+            <div 
+              className="absolute top-4 left-4 w-12 h-12 rounded flex items-center justify-center"
+              style={{ backgroundColor: category.backgroundColor || '#dcfce7' }}
+            >
               <Folder
                 className="w-10 h-10"
-                style={{ color: '#22c55e' }}
+                style={{ color: category.color || '#22c55e' }}
                 fill="none"
                 strokeWidth={2.5}
               />
@@ -296,5 +349,90 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
         </div>
       ))}
     </div>
+
+    {/* Color Picker Modal */}
+    <Dialog open={showColorPicker} onOpenChange={setShowColorPicker}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Change Folder Colors</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-6 py-4">
+          {/* Folder Outline Color */}
+          <div className="space-y-2">
+            <Label htmlFor="folderColor">Folder Outline Color</Label>
+            <div className="flex items-center gap-3">
+              <Input
+                id="folderColor"
+                type="color"
+                value={folderColor}
+                onChange={(e) => setFolderColor(e.target.value)}
+                className="w-20 h-10 cursor-pointer"
+              />
+              <Input
+                type="text"
+                value={folderColor}
+                onChange={(e) => setFolderColor(e.target.value)}
+                placeholder="#22c55e"
+                className="flex-1"
+              />
+            </div>
+          </div>
+
+          {/* Background Color */}
+          <div className="space-y-2">
+            <Label htmlFor="backgroundColor">Background Color</Label>
+            <div className="flex items-center gap-3">
+              <Input
+                id="backgroundColor"
+                type="color"
+                value={backgroundColor}
+                onChange={(e) => setBackgroundColor(e.target.value)}
+                className="w-20 h-10 cursor-pointer"
+              />
+              <Input
+                type="text"
+                value={backgroundColor}
+                onChange={(e) => setBackgroundColor(e.target.value)}
+                placeholder="#dcfce7"
+                className="flex-1"
+              />
+            </div>
+          </div>
+
+          {/* Preview */}
+          <div className="space-y-2">
+            <Label>Preview</Label>
+            <div className="border-2 border-gray-200 rounded-lg p-4 bg-white">
+              <div 
+                className="w-12 h-12 rounded flex items-center justify-center mx-auto"
+                style={{ backgroundColor }}
+              >
+                <Folder
+                  className="w-10 h-10"
+                  style={{ color: folderColor }}
+                  fill="none"
+                  strokeWidth={2.5}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setShowColorPicker(false)
+              setEditingCategory(null)
+            }}
+          >
+            Cancel
+          </Button>
+          <Button onClick={handleSaveColors}>
+            Save Colors
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   )
 }
