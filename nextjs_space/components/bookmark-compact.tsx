@@ -409,20 +409,20 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
                     </div>
                   )}
 
-                  {/* TOP LEFT - BIGGER Black square logo container */}
+                  {/* TOP LEFT - BIGGER Black square logo container FILLING SPACE */}
                   <div className="relative z-10 mb-2">
                     <div className="w-14 h-14 bg-black rounded-lg flex items-center justify-center overflow-hidden">
                       {bookmark.favicon ? (
                         <Image
                           src={bookmark.favicon}
                           alt={bookmark.title || "Bookmark"}
-                          width={36}
-                          height={36}
+                          width={44}
+                          height={44}
                           className="object-contain"
                           unoptimized
                         />
                       ) : (
-                        <span className="text-xl font-bold text-white">
+                        <span className="text-3xl font-black text-white">
                           {bookmark.title?.charAt(0)?.toUpperCase() || "?"}
                         </span>
                       )}
