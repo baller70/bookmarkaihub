@@ -414,16 +414,14 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
           <div className="flex items-center justify-between gap-4">
             {/* Left: Folder icon + Category info */}
             <div className="flex items-center gap-4 min-w-0 flex-1">
-              {/* Custom Category Icon in Circle - BIGGER */}
+              {/* Regular Folder Icon */}
               <div className="flex-shrink-0">
-                <div className="w-16 h-16 bg-gray-500 rounded-full flex items-center justify-center shadow-sm">
-                  {(() => {
-                    const IconComponent = iconMap[category.icon || 'folder'] || Folder
-                    return (
-                      <IconComponent className="w-10 h-10 text-white" />
-                    )
-                  })()}
-                </div>
+                <Folder
+                  className="w-12 h-12"
+                  style={{ color: category.color }}
+                  fill={category.color}
+                  fillOpacity={0.15}
+                />
               </div>
 
               {/* Category name and bookmark count */}
@@ -440,17 +438,16 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
               </div>
             </div>
 
-            {/* Right: User avatar + Three-dot menu */}
+            {/* Right: Category icon in circle + Three-dot menu */}
             <div className="flex items-center gap-3 flex-shrink-0">
-              {/* User avatar */}
-              <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                {session?.user?.name ? (
-                  <span className="text-xs font-semibold text-gray-600">
-                    {session.user.name.charAt(0).toUpperCase()}
-                  </span>
-                ) : (
-                  <User className="w-4 h-4 text-gray-500" />
-                )}
+              {/* Category icon in circle */}
+              <div className="w-12 h-12 bg-gray-500 rounded-full flex items-center justify-center shadow-sm">
+                {(() => {
+                  const IconComponent = iconMap[category.icon || 'folder'] || Folder
+                  return (
+                    <IconComponent className="w-6 h-6 text-white" />
+                  )
+                })()}
               </div>
 
               {/* Three-dot menu */}
