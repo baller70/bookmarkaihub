@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Folder, MoreVertical, Palette, Type, Check, X } from 'lucide-react';
 import {
   DropdownMenu,
@@ -31,6 +32,7 @@ interface Bookmark {
 }
 
 export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bookmark[], onUpdate: () => void }) {
+  const router = useRouter();
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [editedName, setEditedName] = useState('');
   const [colorPickerOpen, setColorPickerOpen] = useState<string | null>(null);
@@ -126,6 +128,13 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
     }
   };
 
+  const handleFolderClick = (categoryId: string) => {
+    // Don't navigate for uncategorized
+    if (categoryId === 'uncategorized') return;
+    
+    router.push(`/categories/${categoryId}`);
+  };
+
   if (!bookmarks?.length) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -149,6 +158,7 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
         {categorizedBookmarks.map(({ category, bookmarks: categoryBookmarks }) => (
           <div
             key={category.id}
+            onClick={() => handleFolderClick(category.id)}
             className="group relative bg-white border border-black rounded-lg p-6 hover:shadow-md hover:border-gray-900 transition-all cursor-pointer"
             style={{
               ...(category.backgroundColor && { backgroundColor: category.backgroundColor }),
