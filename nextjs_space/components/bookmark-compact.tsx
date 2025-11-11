@@ -254,11 +254,11 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
               </DropdownMenu>
             </div>
 
-            {/* Folder icon in TOP LEFT */}
-            <div className="absolute top-4 left-4">
+            {/* Folder icon in TOP LEFT with light green background */}
+            <div className="absolute top-4 left-4 w-12 h-12 bg-green-100 rounded flex items-center justify-center">
               <Folder
-                className="w-12 h-12"
-                style={{ color: category.color }}
+                className="w-10 h-10"
+                style={{ color: '#22c55e' }}
                 fill="none"
                 strokeWidth={2.5}
               />
