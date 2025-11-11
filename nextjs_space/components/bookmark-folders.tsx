@@ -1,7 +1,18 @@
 'use client';
 
-import { useMemo } from 'react';
-import { Folder } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Folder, MoreVertical, Palette, Type, Check, X } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 interface Bookmark {
   id: string;
@@ -13,12 +24,19 @@ interface Bookmark {
     id: string;
     name: string;
     color: string;
+    backgroundColor?: string;
   } | null;
   isFavorite: boolean;
   priority: string | null;
 }
 
 export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bookmark[], onUpdate: () => void }) {
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [editedName, setEditedName] = useState('');
+  const [colorPickerOpen, setColorPickerOpen] = useState<string | null>(null);
+  const [tempBackgroundColor, setTempBackgroundColor] = useState('#DBEAFE');
+  const [tempOutlineColor, setTempOutlineColor] = useState('#3B82F6');
+
   // Group bookmarks by category
   const categorizedBookmarks = useMemo(() => {
     const grouped = new Map<string, { category: any; bookmarks: any[] }>();
@@ -27,6 +45,7 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
       const categoryId = bookmark.category?.id || "uncategorized";
       const categoryName = bookmark.category?.name || "UNCATEGORIZED";
       const categoryColor = bookmark.category?.color || "#94A3B8";
+      const categoryBackgroundColor = bookmark.category?.backgroundColor || "#F1F5F9";
 
       if (!grouped.has(categoryId)) {
         grouped.set(categoryId, {
@@ -34,6 +53,7 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
             id: categoryId,
             name: categoryName,
             color: categoryColor,
+            backgroundColor: categoryBackgroundColor,
           },
           bookmarks: [],
         });
@@ -43,6 +63,68 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
 
     return Array.from(grouped.values());
   }, [bookmarks]);
+
+  const handleEditName = (category: any) => {
+    setEditingCategoryId(category.id);
+    setEditedName(category.name);
+  };
+
+  const handleSaveName = async (categoryId: string) => {
+    if (!editedName.trim()) {
+      toast.error('Category name cannot be empty');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/categories/${categoryId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editedName.trim() }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update category name');
+
+      toast.success('Category name updated');
+      setEditingCategoryId(null);
+      onUpdate();
+    } catch (error) {
+      console.error('Error updating category name:', error);
+      toast.error('Failed to update category name');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCategoryId(null);
+    setEditedName('');
+  };
+
+  const handleOpenColorPicker = (category: any) => {
+    setColorPickerOpen(category.id);
+    setTempBackgroundColor(category.backgroundColor || '#DBEAFE');
+    setTempOutlineColor(category.color || '#3B82F6');
+  };
+
+  const handleSaveColors = async (categoryId: string) => {
+    try {
+      const response = await fetch(`/api/categories/${categoryId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          backgroundColor: tempBackgroundColor,
+          color: tempOutlineColor,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update colors');
+
+      toast.success('Folder colors updated');
+      setColorPickerOpen(null);
+      onUpdate();
+    } catch (error) {
+      console.error('Error updating colors:', error);
+      toast.error('Failed to update colors');
+    }
+  };
 
   if (!bookmarks?.length) {
     return (
@@ -67,8 +149,48 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
         {categorizedBookmarks.map(({ category, bookmarks: categoryBookmarks }) => (
           <div
             key={category.id}
-            className="group relative bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer"
+            className="group relative bg-white rounded-lg p-6 hover:shadow-md transition-all"
+            style={{
+              backgroundColor: category.backgroundColor || '#F1F5F9',
+              borderWidth: '2px',
+              borderStyle: 'solid',
+              borderColor: category.color || '#94A3B8',
+            }}
           >
+            {/* Three Dot Menu - Top Right */}
+            {category.id !== 'uncategorized' && (
+              <div className="absolute top-3 right-3" onClick={(e) => e.stopPropagation()}>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 hover:bg-white/80"
+                    >
+                      <MoreVertical className="h-4 w-4 text-gray-700" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem
+                      onClick={() => handleEditName(category)}
+                      className="cursor-pointer"
+                    >
+                      <Type className="mr-2 h-4 w-4" />
+                      Edit Category Name
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => handleOpenColorPicker(category)}
+                      className="cursor-pointer"
+                    >
+                      <Palette className="mr-2 h-4 w-4" />
+                      Change Colors
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
+
             {/* Large Folder Icon with Dark Square Background */}
             <div className="flex justify-start mb-5">
               <div className="bg-gray-900 rounded-md p-3 flex items-center justify-center">
@@ -79,10 +201,113 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
               </div>
             </div>
 
-            {/* Category Name */}
-            <h3 className="text-left font-bold text-base text-gray-900 mb-2 uppercase tracking-wide">
-              {category.name}
-            </h3>
+            {/* Category Name - Editable */}
+            {editingCategoryId === category.id ? (
+              <div className="mb-3">
+                <Input
+                  value={editedName}
+                  onChange={(e) => setEditedName(e.target.value)}
+                  className="text-left font-bold text-base uppercase tracking-wide mb-2"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSaveName(category.id);
+                    if (e.key === 'Escape') handleCancelEdit();
+                  }}
+                />
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => handleSaveName(category.id)}
+                    className="flex-1"
+                  >
+                    <Check className="h-4 w-4 mr-1" />
+                    Save
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCancelEdit}
+                    className="flex-1"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <h3 className="text-left font-bold text-base text-gray-900 mb-2 uppercase tracking-wide">
+                {category.name}
+              </h3>
+            )}
+
+            {/* Color Picker Panel */}
+            {colorPickerOpen === category.id && (
+              <div className="mb-4 p-3 bg-white rounded-md border border-gray-200">
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="bg-color" className="text-xs font-medium text-gray-700">
+                      Background Color
+                    </Label>
+                    <div className="flex gap-2 mt-1">
+                      <Input
+                        id="bg-color"
+                        type="color"
+                        value={tempBackgroundColor}
+                        onChange={(e) => setTempBackgroundColor(e.target.value)}
+                        className="h-9 w-16 p-1 cursor-pointer"
+                      />
+                      <Input
+                        type="text"
+                        value={tempBackgroundColor}
+                        onChange={(e) => setTempBackgroundColor(e.target.value)}
+                        className="h-9 flex-1 text-xs"
+                        placeholder="#DBEAFE"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="outline-color" className="text-xs font-medium text-gray-700">
+                      Outline Color
+                    </Label>
+                    <div className="flex gap-2 mt-1">
+                      <Input
+                        id="outline-color"
+                        type="color"
+                        value={tempOutlineColor}
+                        onChange={(e) => setTempOutlineColor(e.target.value)}
+                        className="h-9 w-16 p-1 cursor-pointer"
+                      />
+                      <Input
+                        type="text"
+                        value={tempOutlineColor}
+                        onChange={(e) => setTempOutlineColor(e.target.value)}
+                        className="h-9 flex-1 text-xs"
+                        placeholder="#3B82F6"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      size="sm"
+                      onClick={() => handleSaveColors(category.id)}
+                      className="flex-1"
+                    >
+                      <Check className="h-4 w-4 mr-1" />
+                      Apply
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setColorPickerOpen(null)}
+                      className="flex-1"
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Description */}
             <p className="text-left text-sm text-gray-600 mb-4">
