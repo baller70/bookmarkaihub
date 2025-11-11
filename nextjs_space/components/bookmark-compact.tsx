@@ -184,6 +184,8 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
   const [backgroundColor, setBackgroundColor] = useState('#dcfce7')
   const [draggedCategoryId, setDraggedCategoryId] = useState<string | null>(null)
   const [categories, setCategories] = useState<any[]>([])
+  const [showEditCategory, setShowEditCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
   
   // Save category colors
   const handleSaveColors = async () => {
@@ -208,6 +210,35 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
     } catch (error) {
       console.error('Error updating colors:', error)
       toast.error('Failed to update colors')
+    }
+  }
+
+  // Save category name
+  const handleSaveCategoryName = async () => {
+    if (!editingCategory || !newCategoryName.trim()) {
+      toast.error('Category name cannot be empty')
+      return
+    }
+    
+    try {
+      const response = await fetch(`/api/categories/${editingCategory.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newCategoryName.trim(),
+        }),
+      })
+
+      if (!response.ok) throw new Error('Failed to update category name')
+
+      toast.success('Category name updated successfully!')
+      setShowEditCategory(false)
+      setEditingCategory(null)
+      setNewCategoryName('')
+      onUpdate() // Refresh the bookmarks to show new name
+    } catch (error) {
+      console.error('Error updating category name:', error)
+      toast.error('Failed to update category name')
     }
   }
   
@@ -461,7 +492,7 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
           onDragEnd={handleDragEnd}
           onClick={() => setSelectedCategory(category)}
           className={`group relative bg-white border-2 rounded-xl hover:shadow-lg transition-all cursor-move overflow-hidden ${
-            draggedCategoryId === category.id ? 'opacity-50 border-blue-500' : 'border-gray-200'
+            draggedCategoryId === category.id ? 'opacity-50 border-blue-500' : 'border-black'
           }`}
         >
           {/* EXACT SQUARE ASPECT RATIO */}
@@ -505,7 +536,12 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
                     Edit Icon
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={(e) => e.stopPropagation()}>Edit Category</DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation()
+                    setEditingCategory(category)
+                    setNewCategoryName(category.name)
+                    setShowEditCategory(true)
+                  }}>Edit Category</DropdownMenuItem>
                   <DropdownMenuItem onClick={(e) => e.stopPropagation()} className="text-red-600">Delete</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -513,19 +549,19 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
 
             {/* FOLDER OUTLINE in TOP LEFT WITH BACKGROUND */}
             <div 
-              className="absolute top-4 left-4 w-12 h-12 rounded flex items-center justify-center"
+              className="absolute top-4 left-4 w-16 h-16 rounded flex items-center justify-center"
               style={{ backgroundColor: category.backgroundColor || '#dcfce7' }}
             >
               <Folder
-                className="w-10 h-10"
+                className="w-14 h-14"
                 style={{ color: category.color || '#22c55e' }}
                 fill="none"
                 strokeWidth={2.5}
               />
             </div>
 
-            {/* Category title - LEFT ALIGNED */}
-            <div className="flex-1 flex items-center">
+            {/* Category title - LEFT ALIGNED WITH SPACING */}
+            <div className="flex-1 flex items-center mt-6">
               <h3 className="text-left font-black text-base text-gray-900 uppercase tracking-tight leading-tight px-2">
                 {category.name}
               </h3>
@@ -660,6 +696,43 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
         }}
       />
     )}
+
+    {/* Edit Category Name Modal */}
+    <Dialog open={showEditCategory} onOpenChange={setShowEditCategory}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Edit Category Name</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="categoryName">Category Name</Label>
+            <Input
+              id="categoryName"
+              type="text"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              placeholder="Enter category name"
+              className="w-full"
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setShowEditCategory(false)
+              setEditingCategory(null)
+              setNewCategoryName('')
+            }}
+          >
+            Cancel
+          </Button>
+          <Button onClick={handleSaveCategoryName}>
+            Save
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     </>
   )
 }
