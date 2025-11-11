@@ -542,11 +542,11 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
               </div>
 
               {/* Custom Category Icon - BOTTOM RIGHT */}
-              <div className="w-14 h-14 bg-gray-500 rounded-lg flex items-center justify-center shadow-sm">
+              <div className="w-14 h-14 bg-gray-500 rounded-full flex items-center justify-center shadow-sm">
                 {(() => {
                   const IconComponent = iconMap[category.icon || 'folder'] || Folder
                   return (
-                    <IconComponent className="w-7 h-7 text-white" />
+                    <IconComponent className="w-9 h-9 text-white" />
                   )
                 })()}
               </div>
