@@ -511,22 +511,14 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
               </DropdownMenu>
             </div>
 
-            {/* Custom icon in TOP LEFT with customizable background */}
-            <div 
-              className="absolute top-4 left-4 w-12 h-12 rounded flex items-center justify-center"
-              style={{ backgroundColor: category.backgroundColor || '#dcfce7' }}
-            >
-              {(() => {
-                const IconComponent = iconMap[category.icon || 'folder'] || Folder
-                return (
-                  <IconComponent
-                    className="w-10 h-10"
-                    style={{ color: category.color || '#22c55e' }}
-                    fill="none"
-                    strokeWidth={2.5}
-                  />
-                )
-              })()}
+            {/* FOLDER OUTLINE in TOP LEFT */}
+            <div className="absolute top-4 left-4">
+              <Folder
+                className="w-10 h-10"
+                style={{ color: category.color || '#22c55e' }}
+                fill="none"
+                strokeWidth={2.5}
+              />
             </div>
 
             {/* Category title - LEFT ALIGNED */}
