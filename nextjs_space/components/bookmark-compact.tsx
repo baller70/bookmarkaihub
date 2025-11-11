@@ -511,8 +511,11 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
               </DropdownMenu>
             </div>
 
-            {/* FOLDER OUTLINE in TOP LEFT */}
-            <div className="absolute top-4 left-4">
+            {/* FOLDER OUTLINE in TOP LEFT WITH BACKGROUND */}
+            <div 
+              className="absolute top-4 left-4 w-12 h-12 rounded flex items-center justify-center"
+              style={{ backgroundColor: category.backgroundColor || '#dcfce7' }}
+            >
               <Folder
                 className="w-10 h-10"
                 style={{ color: category.color || '#22c55e' }}
@@ -538,15 +541,14 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
                 <span>{categoryBookmarks.length} BOOKMARKS</span>
               </div>
 
-              {/* User avatar - BOTTOM RIGHT (MADE BIGGER) */}
+              {/* Custom Category Icon - BOTTOM RIGHT */}
               <div className="w-14 h-14 bg-gray-500 rounded-lg flex items-center justify-center shadow-sm">
-                {session?.user?.name ? (
-                  <span className="text-xl font-bold text-white">
-                    {session.user.name.charAt(0).toUpperCase()}
-                  </span>
-                ) : (
-                  <User className="w-7 h-7 text-gray-300" />
-                )}
+                {(() => {
+                  const IconComponent = iconMap[category.icon || 'folder'] || Folder
+                  return (
+                    <IconComponent className="w-7 h-7 text-white" />
+                  )
+                })()}
               </div>
             </div>
           </div>
