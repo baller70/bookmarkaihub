@@ -429,33 +429,33 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
                     </div>
                   </div>
 
-                  {/* TOP RIGHT - BIGGER Red hexagonal percentage badge */}
+                  {/* TOP RIGHT - MUCH BIGGER Red hexagonal percentage badge with DARKER outline */}
                   <div className="absolute top-3 right-3 z-10">
                     <div 
                       className="relative flex items-center justify-center"
                       style={{
-                        width: '36px',
-                        height: '42px',
+                        width: '44px',
+                        height: '52px',
                         clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
-                        backgroundColor: '#FEE2E2'
+                        backgroundColor: '#DC2626'
                       }}
                     >
                       <div 
                         className="absolute inset-0"
                         style={{
-                          clipPath: 'polygon(50% 3%, 97% 27%, 97% 73%, 50% 97%, 3% 73%, 3% 27%)',
+                          clipPath: 'polygon(50% 4%, 96% 28%, 96% 72%, 50% 96%, 4% 72%, 4% 28%)',
                           backgroundColor: '#FFFFFF'
                         }}
                       ></div>
-                      <span className="relative text-[11px] font-black text-red-600 z-10">
+                      <span className="relative text-xs font-black text-red-600 z-10">
                         {Math.round(usagePercentage)}%
                       </span>
                     </div>
                   </div>
 
-                  {/* TITLE - BIGGER Bold uppercase, 2 lines max */}
+                  {/* TITLE - MUCH BIGGER Bold uppercase, 2 lines max */}
                   <div className="relative z-10 mb-1">
-                    <h3 className="font-black text-sm text-gray-900 uppercase tracking-tight leading-tight line-clamp-2">
+                    <h3 className="font-black text-base text-gray-900 uppercase tracking-tight leading-tight line-clamp-2">
                       {bookmark.title || "Untitled"}
                     </h3>
                   </div>
@@ -481,32 +481,32 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
 
                   {/* BOTTOM SECTION - BIGGER Fixed at bottom */}
                   <div className="relative z-10 flex items-center justify-between mt-auto">
-                    {/* BOTTOM LEFT - BIGGER Visit count with green dot */}
-                    <div className="flex items-center gap-1.5">
+                    {/* BOTTOM LEFT - MUCH BIGGER Visit count with green dot */}
+                    <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1">
-                        <Eye className="w-3 h-3 text-gray-500" />
-                        <span className="text-[9px] font-semibold text-gray-600 uppercase tracking-wide">
+                        <Eye className="w-4 h-4 text-gray-500" />
+                        <span className="text-[11px] font-bold text-gray-600 uppercase tracking-wide">
                           {visitCount} VISITS
                         </span>
                       </div>
                       {visitCount > 0 && (
-                        <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
                       )}
                     </div>
 
-                    {/* BOTTOM RIGHT - MUCH BIGGER circular decorative badge */}
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-400 via-pink-400 to-orange-400 flex items-center justify-center shadow-md">
+                    {/* BOTTOM RIGHT - WHITE SQUARE with rounded corners */}
+                    <div className="w-14 h-14 rounded-xl bg-white border-2 border-gray-200 flex items-center justify-center shadow-sm">
                       {bookmark.favicon ? (
                         <Image
                           src={bookmark.favicon}
                           alt=""
-                          width={28}
-                          height={28}
+                          width={32}
+                          height={32}
                           className="object-contain"
                           unoptimized
                         />
                       ) : (
-                        <span className="text-lg font-black text-white">
+                        <span className="text-lg font-black text-gray-700">
                           {bookmark.title?.charAt(0)?.toUpperCase() || "?"}
                         </span>
                       )}
