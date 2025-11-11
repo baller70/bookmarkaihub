@@ -450,11 +450,6 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                   </div>
                 </div>
               </div>
-
-              {/* Drag handle at bottom center */}
-              <div className="flex justify-center py-1 border-t border-gray-100 bg-white/50">
-                <MoreHorizontal className="w-4 h-4 text-gray-400" />
-              </div>
             </div>
           ))}
         </div>
