@@ -51,8 +51,8 @@ export default function AboutYou() {
       const res = await fetch('/api/user/custom-logo')
       if (res.ok) {
         const data = await res.json()
-        if (data.signedUrl) {
-          setCustomLogoUrl(data.signedUrl)
+        if (data.customLogoUrl) {
+          setCustomLogoUrl(data.customLogoUrl)
         }
       }
     } catch (error) {
@@ -87,8 +87,8 @@ export default function AboutYou() {
 
       if (res.ok) {
         const data = await res.json()
-        if (data.signedUrl) {
-          setCustomLogoUrl(data.signedUrl)
+        if (data.customLogoUrl) {
+          setCustomLogoUrl(data.customLogoUrl)
         }
         toast.success('Custom logo uploaded! This will now appear on all your bookmarks.')
         // Optionally refresh the session to update user data

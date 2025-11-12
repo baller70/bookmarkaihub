@@ -23,10 +23,10 @@ export async function GET() {
     if (user.customLogo) {
       // Generate signed URL for the custom logo
       const signedUrl = await downloadFile(user.customLogo);
-      return NextResponse.json({ signedUrl });
+      return NextResponse.json({ customLogoUrl: signedUrl });
     }
 
-    return NextResponse.json({ signedUrl: null });
+    return NextResponse.json({ customLogoUrl: null });
   } catch (error) {
     console.error('Error fetching custom logo:', error);
     return NextResponse.json({ error: 'Failed to fetch custom logo' }, { status: 500 });
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ 
       success: true, 
       customLogo: updatedUser.customLogo,
-      signedUrl
+      customLogoUrl: signedUrl
     });
   } catch (error) {
     console.error('Error uploading custom logo:', error);
