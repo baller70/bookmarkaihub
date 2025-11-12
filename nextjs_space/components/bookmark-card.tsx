@@ -206,18 +206,15 @@ export function BookmarkCard({
 
         {/* Background Logo - Faint watermark */}
         {(customLogoUrl || bookmark.favicon) && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
-            <div className="relative w-full h-full flex items-center justify-center">
-              <Image
-                src={customLogoUrl || bookmark.favicon}
-                alt=""
-                width={400}
-                height={400}
-                className="opacity-[0.05] object-cover"
-                style={{ filter: 'grayscale(30%)' }}
-                unoptimized
-              />
-            </div>
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <Image
+              src={customLogoUrl || bookmark.favicon}
+              alt=""
+              fill
+              className="opacity-[0.05] object-cover"
+              style={{ filter: 'grayscale(30%)' }}
+              unoptimized
+            />
           </div>
         )}
 
