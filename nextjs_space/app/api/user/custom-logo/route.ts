@@ -3,7 +3,35 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { uploadFile, deleteFile } from '@/lib/s3';
+import { uploadFile, deleteFile, downloadFile } from '@/lib/s3';
+
+export async function GET() {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    if (user.customLogo) {
+      // Generate signed URL for the custom logo
+      const signedUrl = await downloadFile(user.customLogo);
+      return NextResponse.json({ signedUrl });
+    }
+
+    return NextResponse.json({ signedUrl: null });
+  } catch (error) {
+    console.error('Error fetching custom logo:', error);
+    return NextResponse.json({ error: 'Failed to fetch custom logo' }, { status: 500 });
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -58,9 +86,13 @@ export async function POST(req: NextRequest) {
       data: { customLogo: cloudStoragePath }
     });
 
+    // Generate signed URL for immediate display
+    const signedUrl = await downloadFile(cloudStoragePath);
+
     return NextResponse.json({ 
       success: true, 
-      customLogo: updatedUser.customLogo 
+      customLogo: updatedUser.customLogo,
+      signedUrl
     });
   } catch (error) {
     console.error('Error uploading custom logo:', error);

@@ -13,7 +13,6 @@ import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { X, Plus, Upload, User, Loader2 } from 'lucide-react'
 import { DNAProfileData, INDUSTRIES, LINK_SOURCE_PREFERENCES, LANGUAGES, MEDIA_FORMATS, CONTENT_FRESHNESS, SOURCE_CREDIBILITY, PRIMARY_USE_CASES, LEARNING_STYLES, CONTENT_DEPTH, TIME_COMMITMENTS, GOAL_SETTING_STYLES, PROFILE_VISIBILITY, NOTIFICATION_FREQUENCY } from '@/lib/types'
-import { downloadFile } from '@/lib/s3'
 
 export default function AboutYou() {
   const { data: session, update: updateSession } = useSession() || {}
@@ -49,13 +48,11 @@ export default function AboutYou() {
 
   const fetchCustomLogo = async () => {
     try {
-      const res = await fetch('/api/user')
+      const res = await fetch('/api/user/custom-logo')
       if (res.ok) {
         const data = await res.json()
-        if (data.customLogo) {
-          // Generate signed URL for display
-          const signedUrl = await downloadFile(data.customLogo)
-          setCustomLogoUrl(signedUrl)
+        if (data.signedUrl) {
+          setCustomLogoUrl(data.signedUrl)
         }
       }
     } catch (error) {
@@ -90,9 +87,8 @@ export default function AboutYou() {
 
       if (res.ok) {
         const data = await res.json()
-        if (data.customLogo) {
-          const signedUrl = await downloadFile(data.customLogo)
-          setCustomLogoUrl(signedUrl)
+        if (data.signedUrl) {
+          setCustomLogoUrl(data.signedUrl)
         }
         toast.success('Custom logo uploaded! This will now appear on all your bookmarks.')
         // Optionally refresh the session to update user data
