@@ -116,12 +116,6 @@ export function DashboardContent() {
     fetchAnalytics()
   }
 
-  const handleSyncAll = async () => {
-    await fetchBookmarks()
-    await fetchAnalytics()
-    toast.success("All bookmarks synced successfully!")
-  }
-
   const handleBulkSelectToggle = () => {
     setBulkSelectMode(!bulkSelectMode)
     setSelectedBookmarks(new Set())
@@ -348,7 +342,6 @@ export function DashboardContent() {
       {/* Header */}
       <DashboardHeader
         onBookmarkCreated={handleBookmarkCreated}
-        onSyncAll={handleSyncAll}
         bulkSelectMode={bulkSelectMode}
         onBulkSelectToggle={handleBulkSelectToggle}
         selectedCount={selectedBookmarks.size}

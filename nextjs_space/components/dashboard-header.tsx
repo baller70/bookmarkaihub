@@ -7,7 +7,7 @@ import { signOut, useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AddBookmarkModal } from "@/components/add-bookmark-modal"
-import { Check, Plus, RefreshCw, Grid3x3, List as ListIcon, LayoutGrid, FolderOpen, MoreVertical, LogOut } from "lucide-react"
+import { Check, Plus, FolderOpen, MoreVertical, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
   DropdownMenu,
@@ -19,7 +19,6 @@ import {
 
 interface DashboardHeaderProps {
   onBookmarkCreated: () => void
-  onSyncAll?: () => void
   bulkSelectMode?: boolean
   onBulkSelectToggle?: () => void
   selectedCount?: number
@@ -27,25 +26,12 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({
   onBookmarkCreated,
-  onSyncAll,
   bulkSelectMode = false,
   onBulkSelectToggle,
   selectedCount = 0,
 }: DashboardHeaderProps) {
   const [showAddModal, setShowAddModal] = useState(false)
-  const [isSyncing, setIsSyncing] = useState(false)
   const { data: session } = useSession()
-
-  const handleSyncAll = async () => {
-    setIsSyncing(true)
-    try {
-      if (onSyncAll) {
-        await onSyncAll()
-      }
-    } finally {
-      setIsSyncing(false)
-    }
-  }
 
   return (
     <>
@@ -99,33 +85,6 @@ export function DashboardHeader({
               <SelectItem value="entertainment">Entertainment</SelectItem>
             </SelectContent>
           </Select>
-
-          {/* Sync All Button with View Icons */}
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSyncAll}
-              disabled={isSyncing}
-              className="h-9 px-4 gap-2 text-gray-900 bg-white border-gray-300 hover:bg-gray-50"
-            >
-              <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-              <span className="text-xs font-medium">{isSyncing ? 'Syncing...' : 'Sync All'}</span>
-            </Button>
-            
-            {/* View Icons */}
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="h-9 w-9">
-                <Grid3x3 className="h-4 w-4 text-blue-500" />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-9 w-9">
-                <ListIcon className="h-4 w-4 text-blue-500" />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-9 w-9">
-                <LayoutGrid className="h-4 w-4 text-blue-500" />
-              </Button>
-            </div>
-          </div>
 
           {/* Add Bookmark Button */}
           <Button
@@ -205,22 +164,6 @@ export function DashboardHeader({
                     {selectedCount}
                   </span>
                 )}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleSyncAll} disabled={isSyncing}>
-                <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                <span>{isSyncing ? 'Syncing...' : 'Sync All'}</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Grid3x3 className="mr-2 h-4 w-4" />
-                <span>Grid View</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <ListIcon className="mr-2 h-4 w-4" />
-                <span>List View</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <LayoutGrid className="mr-2 h-4 w-4" />
-                <span>Compact View</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
