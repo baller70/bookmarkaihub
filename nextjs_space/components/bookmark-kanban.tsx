@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -94,6 +95,7 @@ const getCardAccentColor = (priority: string) => {
 
 export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [customLogoUrl, setCustomLogoUrl] = useState<string | null>(null);
   const [rows, setRows] = useState<KanbanRow[]>([
     {
       id: 'row-1',
@@ -104,6 +106,25 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   ]);
   const [editingColumn, setEditingColumn] = useState<{ rowId: string; columnId: string } | null>(null);
   const [editingValue, setEditingValue] = useState('');
+
+  // Fetch custom logo on mount
+  useEffect(() => {
+    const fetchCustomLogo = async () => {
+      try {
+        const response = await fetch('/api/user/custom-logo');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.customLogoUrl) {
+            setCustomLogoUrl(data.customLogoUrl);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching custom logo:', error);
+      }
+    };
+
+    fetchCustomLogo();
+  }, []);
 
   // Group bookmarks by column
   const groupedBookmarks = bookmarks.reduce((groups: any, bookmark: any) => {
@@ -318,11 +339,23 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                               accentColor ? 'border-l-4' : ''
                             }`}
                           >
-                            {/* Card Header */}
-                            <div className="flex items-start justify-between mb-3 sm:mb-3.5">
-                              <h4 className="font-bold text-xs sm:text-sm pr-8 line-clamp-2 leading-relaxed">
+                            {/* Card Header with Logo */}
+                            <div className="flex items-start gap-2 mb-3 sm:mb-3.5">
+                              {/* Custom Logo/Favicon */}
+                              <div className="relative w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0 rounded-md overflow-hidden bg-white border">
+                                <Image
+                                  src={customLogoUrl || bookmark.favicon || '/favicon.svg'}
+                                  alt={bookmark.title}
+                                  fill
+                                  className="object-contain p-0.5"
+                                  unoptimized
+                                />
+                              </div>
+                              
+                              <h4 className="font-bold text-xs sm:text-sm pr-12 line-clamp-2 leading-relaxed flex-1">
                                 {bookmark.title.toUpperCase()}
                               </h4>
+                              
                               <div className="absolute top-2 sm:top-3 right-2 sm:right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Button variant="ghost" size="icon" className="h-6 w-6 sm:h-7 sm:w-7">
                                   <MoreVertical className="w-3 h-3" />
