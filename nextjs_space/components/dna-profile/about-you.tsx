@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -10,13 +11,17 @@ import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { X, Plus, Upload, User } from 'lucide-react'
+import { X, Plus, Upload, User, Loader2 } from 'lucide-react'
 import { DNAProfileData, INDUSTRIES, LINK_SOURCE_PREFERENCES, LANGUAGES, MEDIA_FORMATS, CONTENT_FRESHNESS, SOURCE_CREDIBILITY, PRIMARY_USE_CASES, LEARNING_STYLES, CONTENT_DEPTH, TIME_COMMITMENTS, GOAL_SETTING_STYLES, PROFILE_VISIBILITY, NOTIFICATION_FREQUENCY } from '@/lib/types'
+import { downloadFile } from '@/lib/s3'
 
 export default function AboutYou() {
+  const { data: session, update: updateSession } = useSession() || {}
   const [profile, setProfile] = useState<DNAProfileData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [customLogoUrl, setCustomLogoUrl] = useState<string | null>(null)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
 
   // Skill/Interest input states
   const [subIndustryInput, setSubIndustryInput] = useState('')
@@ -25,6 +30,7 @@ export default function AboutYou() {
 
   useEffect(() => {
     fetchProfile()
+    fetchCustomLogo()
   }, [])
 
   const fetchProfile = async () => {
@@ -38,6 +44,94 @@ export default function AboutYou() {
       toast.error('Failed to load profile')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchCustomLogo = async () => {
+    try {
+      const res = await fetch('/api/user')
+      if (res.ok) {
+        const data = await res.json()
+        if (data.customLogo) {
+          // Generate signed URL for display
+          const signedUrl = await downloadFile(data.customLogo)
+          setCustomLogoUrl(signedUrl)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load custom logo')
+    }
+  }
+
+  const handleLogoUpload = async (file: File) => {
+    if (!file) return
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size must be less than 5MB')
+      return
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Only image files are allowed')
+      return
+    }
+
+    setUploadingLogo(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const res = await fetch('/api/user/custom-logo', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        if (data.customLogo) {
+          const signedUrl = await downloadFile(data.customLogo)
+          setCustomLogoUrl(signedUrl)
+        }
+        toast.success('Custom logo uploaded! This will now appear on all your bookmarks.')
+        // Optionally refresh the session to update user data
+        if (updateSession) {
+          await updateSession()
+        }
+      } else {
+        const error = await res.json()
+        toast.error(error.error || 'Failed to upload logo')
+      }
+    } catch (error) {
+      console.error('Error uploading logo:', error)
+      toast.error('Failed to upload logo')
+    } finally {
+      setUploadingLogo(false)
+    }
+  }
+
+  const handleLogoRemove = async () => {
+    setUploadingLogo(true)
+    try {
+      const res = await fetch('/api/user/custom-logo', {
+        method: 'DELETE'
+      })
+
+      if (res.ok) {
+        setCustomLogoUrl(null)
+        toast.success('Custom logo removed. Bookmarks will now show their original favicons.')
+        if (updateSession) {
+          await updateSession()
+        }
+      } else {
+        toast.error('Failed to remove logo')
+      }
+    } catch (error) {
+      console.error('Error removing logo:', error)
+      toast.error('Failed to remove logo')
+    } finally {
+      setUploadingLogo(false)
     }
   }
 
@@ -118,51 +212,68 @@ export default function AboutYou() {
           <CardDescription className="text-sm text-gray-600">Your basic profile information and avatar</CardDescription>
         </CardHeader>
         <CardContent className="pt-6 space-y-6">
-          {/* Avatar and Name Row */}
+          {/* Custom Logo and Name Row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            {/* Avatar Section */}
+            {/* Custom Logo Section - Universal Branding */}
             <div className="flex flex-col items-center gap-3">
-              <div className="w-24 h-24 rounded-full bg-gray-50 flex items-center justify-center border-2 border-gray-200 text-3xl font-medium text-gray-600">
-                {profile.avatar ? (
-                  <img src={profile.avatar} alt="Avatar" className="w-full h-full rounded-full object-cover" />
+              <div className="w-24 h-24 rounded-lg bg-gray-50 flex items-center justify-center border-2 border-gray-200 overflow-hidden">
+                {customLogoUrl ? (
+                  <img src={customLogoUrl} alt="Custom Logo" className="w-full h-full object-contain" />
                 ) : (
-                  <span>U</span>
+                  <User className="w-12 h-12 text-gray-400" />
                 )}
               </div>
               <div className="flex flex-col gap-2 w-full">
-                <label htmlFor="avatar-upload" className="w-full">
+                <label htmlFor="logo-upload" className="w-full">
                   <input
-                    id="avatar-upload"
+                    id="logo-upload"
                     type="file"
                     accept="image/*"
                     className="hidden"
+                    disabled={uploadingLogo}
                     onChange={(e) => {
                       const file = e.target.files?.[0]
                       if (file) {
-                        const reader = new FileReader()
-                        reader.onloadend = () => {
-                          handleUpdate('avatar', reader.result as string)
-                          toast.success('Avatar uploaded! Remember to save your profile.')
-                        }
-                        reader.readAsDataURL(file)
+                        handleLogoUpload(file)
                       }
                     }}
                   />
-                  <Button variant="outline" size="sm" asChild className="w-full bg-white border-gray-300 text-gray-700 hover:bg-gray-50 text-xs">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    asChild 
+                    className="w-full bg-white border-gray-300 text-gray-700 hover:bg-gray-50 text-xs"
+                    disabled={uploadingLogo}
+                  >
                     <span className="cursor-pointer flex items-center justify-center gap-2">
-                      <Upload className="w-3 h-3" />
-                      Upload Custom Photo
+                      {uploadingLogo ? (
+                        <>
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-3 h-3" />
+                          Upload Custom Photo
+                        </>
+                      )}
                     </span>
                   </Button>
                 </label>
-                <Button 
-                  variant="link" 
-                  size="sm" 
-                  onClick={() => handleUpdate('avatar', '')} 
-                  className="text-gray-500 hover:text-gray-700 text-xs h-auto p-0"
-                >
-                  Remove Logo (Reset to Default)
-                </Button>
+                {customLogoUrl && (
+                  <Button 
+                    variant="link" 
+                    size="sm" 
+                    onClick={handleLogoRemove} 
+                    disabled={uploadingLogo}
+                    className="text-gray-500 hover:text-gray-700 text-xs h-auto p-0"
+                  >
+                    Remove Logo (Reset to Default)
+                  </Button>
+                )}
+                <p className="text-[10px] text-gray-500 text-center mt-1">
+                  This logo will appear on all bookmarks
+                </p>
               </div>
             </div>
 

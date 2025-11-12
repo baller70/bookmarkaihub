@@ -46,6 +46,7 @@ model User {
   image         String?
   fullName      String?
   isAdmin       Boolean   @default(false)
+  customLogo    String?   @db.Text // S3 cloud storage path for global custom logo
   
   accounts      Account[]
   sessions      Session[]
@@ -82,6 +83,11 @@ model Bookmark {
   favicon     String?  @db.Text
   priority    Priority @default(MEDIUM)
   isFavorite  Boolean  @default(false)
+  
+  // Custom branding (Grid View only)
+  customFavicon    String? @db.Text // S3 cloud storage path for custom favicon
+  customLogo       String? @db.Text // S3 cloud storage path for custom logo overlay
+  customBackground String? @db.Text // S3 cloud storage path for custom background
   
   // Usage tracking
   totalVisits      Int      @default(0)
