@@ -44,12 +44,12 @@ export function BookmarkListCard({ bookmark, onUpdate }: BookmarkListCardProps) 
         {/* Background Logo - Faint watermark */}
         {bookmark.favicon && (
           <div className="absolute right-0 top-0 bottom-0 w-1/2 flex items-center justify-end pr-12 pointer-events-none overflow-hidden">
-            <div className="relative w-64 h-64">
+            <div className="relative w-full h-full">
               <Image
                 src={bookmark.favicon}
                 alt=""
                 fill
-                className="opacity-[0.08] object-contain"
+                className="opacity-[0.08] object-cover"
                 style={{ filter: 'grayscale(20%)' }}
                 unoptimized
               />

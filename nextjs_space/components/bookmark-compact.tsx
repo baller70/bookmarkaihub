@@ -421,7 +421,7 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
                           src={customLogoUrl || bookmark.favicon}
                           alt=""
                           fill
-                          className="object-contain scale-150"
+                          className="object-cover"
                           unoptimized
                         />
                       </div>

@@ -213,7 +213,7 @@ export function BookmarkCard({
                 alt=""
                 width={400}
                 height={400}
-                className="opacity-[0.05] object-contain"
+                className="opacity-[0.05] object-cover"
                 style={{ filter: 'grayscale(30%)' }}
                 unoptimized
               />

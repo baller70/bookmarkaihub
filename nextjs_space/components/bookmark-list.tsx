@@ -329,12 +329,12 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
               {/* Full card faded watermark background */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden opacity-5">
                 {(customLogoUrl || bookmark.favicon) ? (
-                  <div className="relative w-64 h-64">
+                  <div className="relative w-full h-full">
                     <Image
                       src={customLogoUrl || bookmark.favicon}
                       alt=""
                       fill
-                      className="object-contain"
+                      className="object-cover"
                       unoptimized
                     />
                   </div>
