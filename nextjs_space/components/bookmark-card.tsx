@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -53,6 +53,25 @@ export function BookmarkCard({
   const [showDetail, setShowDetail] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isFavorite, setIsFavorite] = useState(bookmark.isFavorite || false)
+  const [customLogoUrl, setCustomLogoUrl] = useState<string | null>(null)
+
+  // Fetch custom logo on mount
+  useEffect(() => {
+    const fetchCustomLogo = async () => {
+      try {
+        const response = await fetch('/api/user/custom-logo')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.customLogoUrl) {
+            setCustomLogoUrl(data.customLogoUrl)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching custom logo:', error)
+      }
+    }
+    fetchCustomLogo()
+  }, [])
 
   const {
     attributes,
@@ -186,11 +205,11 @@ export function BookmarkCard({
         </div>
 
         {/* Background Logo - Faint watermark */}
-        {bookmark.favicon && (
+        {(customLogoUrl || bookmark.favicon) && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
             <div className="relative w-full h-full flex items-center justify-center">
               <Image
-                src={bookmark.favicon}
+                src={customLogoUrl || bookmark.favicon}
                 alt=""
                 width={400}
                 height={400}
@@ -241,9 +260,9 @@ export function BookmarkCard({
             <div className="flex items-start space-x-3 sm:space-x-4 mb-3 sm:mb-4">
               {/* Small Header Logo */}
               <div className="relative w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0 bg-black rounded-2xl overflow-hidden shadow-sm">
-                {bookmark.favicon ? (
+                {(customLogoUrl || bookmark.favicon) ? (
                   <Image
-                    src={bookmark.favicon}
+                    src={customLogoUrl || bookmark.favicon}
                     alt={bookmark.title}
                     fill
                     className="object-cover p-1.5 sm:p-2"
@@ -270,9 +289,9 @@ export function BookmarkCard({
             {/* LARGE CENTERED MIDDLE LOGO */}
             <div className="flex items-center justify-center my-3 sm:my-4">
               <div className="relative w-24 h-24 sm:w-32 sm:h-32 bg-white rounded-3xl shadow-lg overflow-hidden border-4 border-white">
-                {bookmark.favicon ? (
+                {(customLogoUrl || bookmark.favicon) ? (
                   <Image
-                    src={bookmark.favicon}
+                    src={customLogoUrl || bookmark.favicon}
                     alt={bookmark.title}
                     fill
                     className="object-cover"

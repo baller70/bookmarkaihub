@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Clock, Search, ChevronDown, Plus, TrendingUp, Filter, ExternalLink, MoreVertical, Heart, Clock as ClockIcon, Edit2 } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -54,6 +54,25 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
   const [draggedBookmarkId, setDraggedBookmarkId] = useState<string | null>(null);
   const [orderedBookmarks, setOrderedBookmarks] = useState<Bookmark[]>(bookmarks);
+  const [customLogoUrl, setCustomLogoUrl] = useState<string | null>(null);
+
+  // Fetch custom logo on mount
+  useEffect(() => {
+    const fetchCustomLogo = async () => {
+      try {
+        const response = await fetch('/api/user/custom-logo')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.customLogoUrl) {
+            setCustomLogoUrl(data.customLogoUrl)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching custom logo:', error)
+      }
+    }
+    fetchCustomLogo()
+  }, [])
 
   // Update ordered bookmarks when bookmarks prop changes
   React.useEffect(() => {
@@ -319,10 +338,10 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
                         } bg-gradient-to-br from-pink-50/30 via-purple-50/20 to-blue-50/30`}
                       >
                         {/* Full Background Faded Logo - Stretched to Cover Every Inch */}
-                        {bookmark.favicon && (
+                        {(customLogoUrl || bookmark.favicon) && (
                           <div className="absolute inset-0 opacity-[0.08] pointer-events-none overflow-hidden">
                             <Image
-                              src={bookmark.favicon}
+                              src={customLogoUrl || bookmark.favicon}
                               alt=""
                               fill
                               className="object-cover"
@@ -334,9 +353,9 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
                           {/* Logo */}
                           <div className="flex-shrink-0">
                             <div className="relative w-16 h-16 bg-white rounded-xl flex items-center justify-center overflow-hidden shadow-sm">
-                              {bookmark.favicon ? (
+                              {(customLogoUrl || bookmark.favicon) ? (
                                 <Image
-                                  src={bookmark.favicon}
+                                  src={customLogoUrl || bookmark.favicon}
                                   alt={bookmark.title}
                                   fill
                                   className="object-contain p-2"

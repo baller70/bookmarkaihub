@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
 import {
@@ -186,6 +186,25 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
   const [categories, setCategories] = useState<any[]>([])
   const [showEditCategory, setShowEditCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
+  const [customLogoUrl, setCustomLogoUrl] = useState<string | null>(null)
+
+  // Fetch custom logo on mount
+  useEffect(() => {
+    const fetchCustomLogo = async () => {
+      try {
+        const response = await fetch('/api/user/custom-logo')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.customLogoUrl) {
+            setCustomLogoUrl(data.customLogoUrl)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching custom logo:', error)
+      }
+    }
+    fetchCustomLogo()
+  }, [])
   
   // Save category colors
   const handleSaveColors = async () => {
@@ -395,11 +414,11 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
                 <div className="aspect-square flex flex-col p-3 relative">
                   
                   {/* Background watermark pattern (faded logo) */}
-                  {bookmark.favicon && (
+                  {(customLogoUrl || bookmark.favicon) && (
                     <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none overflow-hidden">
                       <div className="relative w-full h-full">
                         <Image
-                          src={bookmark.favicon}
+                          src={customLogoUrl || bookmark.favicon}
                           alt=""
                           fill
                           className="object-contain scale-150"
@@ -412,9 +431,9 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
                   {/* TOP LEFT - BIGGER Black square logo container FILLING SPACE */}
                   <div className="relative z-10 mb-2">
                     <div className="w-14 h-14 bg-black rounded-lg flex items-center justify-center overflow-hidden">
-                      {bookmark.favicon ? (
+                      {(customLogoUrl || bookmark.favicon) ? (
                         <Image
-                          src={bookmark.favicon}
+                          src={customLogoUrl || bookmark.favicon}
                           alt={bookmark.title || "Bookmark"}
                           width={44}
                           height={44}
@@ -496,9 +515,9 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
 
                     {/* BOTTOM RIGHT - WHITE SQUARE with rounded corners */}
                     <div className="w-14 h-14 rounded-xl bg-white border-2 border-gray-200 flex items-center justify-center shadow-sm">
-                      {bookmark.favicon ? (
+                      {(customLogoUrl || bookmark.favicon) ? (
                         <Image
-                          src={bookmark.favicon}
+                          src={customLogoUrl || bookmark.favicon}
                           alt=""
                           width={32}
                           height={32}

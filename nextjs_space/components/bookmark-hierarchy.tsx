@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FolderKanban, Search, Plus, Settings, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -44,6 +44,25 @@ export function BookmarkHierarchy({ bookmarks }: BookmarkHierarchyProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBookmark, setSelectedBookmark] = useState<Bookmark | null>(null);
   const [folderPages, setFolderPages] = useState<Record<string, number>>({});
+  const [customLogoUrl, setCustomLogoUrl] = useState<string | null>(null);
+
+  // Fetch custom logo on mount
+  useEffect(() => {
+    const fetchCustomLogo = async () => {
+      try {
+        const response = await fetch('/api/user/custom-logo')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.customLogoUrl) {
+            setCustomLogoUrl(data.customLogoUrl)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching custom logo:', error)
+      }
+    }
+    fetchCustomLogo()
+  }, [])
 
   // Group bookmarks by category to create folders
   const folders: Folder[] = React.useMemo(() => {
@@ -276,10 +295,10 @@ export function BookmarkHierarchy({ bookmarks }: BookmarkHierarchyProps) {
                   >
                     <div className="flex items-start gap-2">
                       <div className="w-5 h-5 flex-shrink-0 mt-0.5">
-                        {bookmark.favicon ? (
+                        {(customLogoUrl || bookmark.favicon) ? (
                           <div className="relative w-5 h-5">
                             <Image
-                              src={bookmark.favicon}
+                              src={customLogoUrl || bookmark.favicon}
                               alt={bookmark.title}
                               fill
                               className="object-contain"
