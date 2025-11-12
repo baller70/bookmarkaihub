@@ -352,7 +352,7 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
                         <div className="flex gap-4 relative z-10">
                           {/* Logo */}
                           <div className="flex-shrink-0">
-                            <div className="relative w-16 h-16 bg-white rounded-xl flex items-center justify-center overflow-hidden shadow-sm">
+                            <div className={`relative w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden ${customLogoUrl ? '' : 'bg-white shadow-sm'}`}>
                               {(customLogoUrl || bookmark.favicon) ? (
                                 <Image
                                   src={customLogoUrl || bookmark.favicon}

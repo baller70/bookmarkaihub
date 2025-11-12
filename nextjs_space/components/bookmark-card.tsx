@@ -285,7 +285,7 @@ export function BookmarkCard({
 
             {/* LARGE CENTERED MIDDLE LOGO */}
             <div className="flex items-center justify-center my-3 sm:my-4">
-              <div className="relative w-24 h-24 sm:w-32 sm:h-32 bg-white rounded-3xl shadow-lg overflow-hidden border-4 border-white">
+              <div className={`relative w-24 h-24 sm:w-32 sm:h-32 rounded-3xl overflow-hidden ${customLogoUrl ? '' : 'bg-white shadow-lg border-4 border-white'}`}>
                 {(customLogoUrl || bookmark.favicon) ? (
                   <Image
                     src={customLogoUrl || bookmark.favicon}

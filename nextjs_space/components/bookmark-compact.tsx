@@ -430,7 +430,7 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
 
                   {/* TOP LEFT - BIGGER Black square logo container FILLING SPACE */}
                   <div className="relative z-10 mb-2">
-                    <div className="w-14 h-14 bg-black rounded-lg flex items-center justify-center overflow-hidden">
+                    <div className={`w-14 h-14 rounded-lg flex items-center justify-center overflow-hidden ${customLogoUrl ? '' : 'bg-black'}`}>
                       {(customLogoUrl || bookmark.favicon) ? (
                         <Image
                           src={customLogoUrl || bookmark.favicon}
@@ -514,7 +514,7 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
                     </div>
 
                     {/* BOTTOM RIGHT - WHITE SQUARE with rounded corners */}
-                    <div className="w-14 h-14 rounded-xl bg-white border-2 border-gray-200 flex items-center justify-center shadow-sm">
+                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${customLogoUrl ? '' : 'bg-white border-2 border-gray-200 shadow-sm'}`}>
                       {(customLogoUrl || bookmark.favicon) ? (
                         <Image
                           src={customLogoUrl || bookmark.favicon}

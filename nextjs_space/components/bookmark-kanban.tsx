@@ -342,7 +342,7 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                             {/* Card Header with Logo */}
                             <div className="flex items-start gap-2 mb-3 sm:mb-3.5">
                               {/* Custom Logo/Favicon */}
-                              <div className="relative w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0 rounded-md overflow-hidden bg-white border">
+                              <div className={`relative w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0 rounded-md overflow-hidden ${customLogoUrl ? '' : 'bg-white border'}`}>
                                 <Image
                                   src={customLogoUrl || bookmark.favicon || '/favicon.svg'}
                                   alt={bookmark.title}
