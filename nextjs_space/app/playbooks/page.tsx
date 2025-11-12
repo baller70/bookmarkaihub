@@ -279,30 +279,46 @@ export default function PlaybooksPage() {
                         </div>
                         
                         {activePlaybook.items[currentIndex] && (
-                          <div className="bg-muted rounded-lg p-6 mb-4">
-                            <div className="flex items-center gap-4">
-                              <div className="w-16 h-16 rounded-lg bg-background flex items-center justify-center">
+                          <div className="relative rounded-lg overflow-hidden mb-4 h-64 bg-gradient-to-br from-gray-50 to-gray-100">
+                            {/* Full-length background image */}
+                            {activePlaybook.items[currentIndex].bookmark.favicon && (
+                              <div className="absolute inset-0 opacity-10">
+                                <img
+                                  src={activePlaybook.items[currentIndex].bookmark.favicon}
+                                  alt=""
+                                  className="w-full h-full object-cover blur-sm"
+                                />
+                              </div>
+                            )}
+                            
+                            {/* Content overlay */}
+                            <div className="relative h-full flex flex-col items-center justify-center p-8 bg-gradient-to-t from-black/60 via-black/40 to-transparent">
+                              {/* Large centered favicon */}
+                              <div className="w-24 h-24 rounded-2xl bg-white shadow-xl flex items-center justify-center mb-4">
                                 {activePlaybook.items[currentIndex].bookmark.favicon ? (
                                   <img
                                     src={activePlaybook.items[currentIndex].bookmark.favicon}
                                     alt=""
-                                    className="w-10 h-10"
+                                    className="w-16 h-16 object-contain"
                                   />
                                 ) : (
-                                  <div className="w-10 h-10 bg-primary/10 rounded" />
+                                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl" />
                                 )}
                               </div>
-                              <div className="flex-1">
-                                <h3 className="text-xl font-semibold">
-                                  {activePlaybook.items[currentIndex].bookmark.title}
-                                </h3>
-                                <p className="text-sm text-muted-foreground">
-                                  {activePlaybook.items[currentIndex].bookmark.url}
-                                </p>
-                              </div>
-                              <div className="text-sm text-muted-foreground">
+                              
+                              {/* Title and URL */}
+                              <h3 className="text-2xl font-bold text-white text-center mb-2">
+                                {activePlaybook.items[currentIndex].bookmark.title}
+                              </h3>
+                              <p className="text-sm text-white/90 text-center mb-2">
+                                {activePlaybook.items[currentIndex].bookmark.url}
+                              </p>
+                              
+                              {/* Duration badge */}
+                              <Badge variant="secondary" className="bg-white/20 text-white border-white/30 backdrop-blur-sm">
+                                <Clock className="w-3 h-3 mr-1" />
                                 {formatDuration(activePlaybook.items[currentIndex].duration)}
-                              </div>
+                              </Badge>
                             </div>
                           </div>
                         )}

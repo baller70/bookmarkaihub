@@ -131,7 +131,7 @@ export default function FavoritesView() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <Card className="bg-white border border-gray-200">
           <CardContent className="pt-6 pb-6">
             <div className="flex items-center justify-between">
@@ -175,22 +175,6 @@ export default function FavoritesView() {
               </div>
               <div className="p-3 rounded-lg bg-orange-50 flex-shrink-0">
                 <TrendingUp className="w-6 h-6 text-orange-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white border border-gray-200">
-          <CardContent className="pt-6 pb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="text-3xl font-bold text-gray-900">{stats.mostVisited.visits || 'N/A'}</div>
-                <div className="text-sm text-gray-600 mt-1 truncate">
-                  {stats.mostVisited.title || 'React Documentation'}
-                </div>
-              </div>
-              <div className="p-3 rounded-lg bg-yellow-50 flex-shrink-0">
-                <Star className="w-6 h-6 text-yellow-500" />
               </div>
             </div>
           </CardContent>
