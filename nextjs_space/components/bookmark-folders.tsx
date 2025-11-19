@@ -180,10 +180,6 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
             key={category.id}
             onClick={() => handleFolderClick(category.id)}
             className="group relative bg-white border border-black rounded-lg p-6 hover:shadow-md hover:border-gray-900 transition-all cursor-pointer"
-            style={{
-              ...(category.backgroundColor && { backgroundColor: category.backgroundColor }),
-              ...(category.color && { borderColor: category.color, borderWidth: '2px' }),
-            }}
           >
             {/* Three Dot Menu - Top Right */}
             {category.id !== 'uncategorized' && (
