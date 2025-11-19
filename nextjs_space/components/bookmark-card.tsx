@@ -189,7 +189,7 @@ export function BookmarkCard({
         style={style}
         className={cn(
           "group relative overflow-hidden cursor-pointer transition-all duration-300",
-          "border border-gray-200/80 hover:shadow-lg",
+          "border border-black hover:shadow-lg",
           "bg-gradient-to-br from-blue-50/30 via-white to-purple-50/20",
           "rounded-3xl h-[600px] sm:h-[640px]",
           isDeleting && "opacity-50 pointer-events-none",

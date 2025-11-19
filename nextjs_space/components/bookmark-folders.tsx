@@ -121,7 +121,11 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
 
       toast.success('Folder colors updated');
       setColorPickerOpen(null);
-      onUpdate();
+      
+      // Refresh only after closing the color picker to prevent interruption
+      setTimeout(() => {
+        onUpdate();
+      }, 100);
     } catch (error) {
       console.error('Error updating colors:', error);
       toast.error('Failed to update colors');

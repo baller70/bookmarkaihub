@@ -260,14 +260,14 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
 
             {/* Kanban Board */}
             {row.isExpanded && (
-              <div className="overflow-x-auto -mx-2 sm:-mx-3 md:-mx-4 px-2 sm:px-3 md:px-4">
-                <div className="flex gap-4 sm:gap-5 md:gap-6 pb-3 sm:pb-4 min-w-max">
+              <div className="w-full">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 md:gap-6 pb-3 sm:pb-4">
                 {row.columns.map((column) => {
               // Only show bookmarks in the first row (row-1), other rows are blank
               const columnBookmarks = rowIndex === 0 ? (groupedBookmarks[column.id] || []) : [];
               
               return (
-                <div key={column.id} className="flex-shrink-0 w-[280px] sm:w-[320px] lg:w-[360px] space-y-3.5">
+                <div key={column.id} className="min-w-0 space-y-3.5">
                   {/* Column Header */}
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-start gap-2 min-w-0 flex-1">
