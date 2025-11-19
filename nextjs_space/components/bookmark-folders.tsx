@@ -38,16 +38,20 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
   const [colorPickerOpen, setColorPickerOpen] = useState<string | null>(null);
   const [tempBackgroundColor, setTempBackgroundColor] = useState('#FFFFFF');
   const [tempOutlineColor, setTempOutlineColor] = useState('#000000');
+  const [categoryColors, setCategoryColors] = useState<Map<string, { backgroundColor: string; color: string }>>(new Map());
 
-  // Group bookmarks by category
+  // Group bookmarks by category with live color updates
   const categorizedBookmarks = useMemo(() => {
     const grouped = new Map<string, { category: any; bookmarks: any[] }>();
 
     bookmarks?.forEach((bookmark) => {
       const categoryId = bookmark.category?.id || "uncategorized";
       const categoryName = bookmark.category?.name || "UNCATEGORIZED";
-      const categoryColor = bookmark.category?.color;
-      const categoryBackgroundColor = bookmark.category?.backgroundColor;
+      
+      // Use live updated colors if available, otherwise use original
+      const liveColors = categoryColors.get(categoryId);
+      const categoryColor = liveColors?.color || bookmark.category?.color;
+      const categoryBackgroundColor = liveColors?.backgroundColor || bookmark.category?.backgroundColor;
 
       if (!grouped.has(categoryId)) {
         grouped.set(categoryId, {
@@ -64,7 +68,7 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
     });
 
     return Array.from(grouped.values());
-  }, [bookmarks]);
+  }, [bookmarks, categoryColors]);
 
   const handleEditName = (category: any) => {
     setEditingCategoryId(category.id);
@@ -108,6 +112,18 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
 
   const handleSaveColors = async (categoryId: string) => {
     try {
+      // Update local state immediately for instant visual feedback
+      const newColors = new Map(categoryColors);
+      newColors.set(categoryId, {
+        backgroundColor: tempBackgroundColor,
+        color: tempOutlineColor,
+      });
+      setCategoryColors(newColors);
+      
+      // Close the color picker immediately
+      setColorPickerOpen(null);
+      
+      // Save to backend in the background
       const response = await fetch(`/api/categories/${categoryId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -117,15 +133,15 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to update colors');
+      if (!response.ok) {
+        // Revert on error
+        const revertColors = new Map(categoryColors);
+        revertColors.delete(categoryId);
+        setCategoryColors(revertColors);
+        throw new Error('Failed to update colors');
+      }
 
       toast.success('Folder colors updated');
-      setColorPickerOpen(null);
-      
-      // Refresh only after closing the color picker to prevent interruption
-      setTimeout(() => {
-        onUpdate();
-      }, 100);
     } catch (error) {
       console.error('Error updating colors:', error);
       toast.error('Failed to update colors');
