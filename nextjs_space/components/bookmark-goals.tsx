@@ -213,7 +213,7 @@ export function BookmarkGoals({ bookmarks, onUpdate }: BookmarkGoalsProps) {
               {folders.map((folder) => (
                 <div
                   key={folder.id}
-                  className="relative border rounded-lg p-6 hover:shadow-md transition cursor-pointer group"
+                  className="relative bg-white border border-black rounded-lg p-6 hover:shadow-md hover:border-gray-900 transition cursor-pointer group"
                   onClick={() => setSelectedFolder(folder)}
                 >
                   {/* Three Dot Menu */}
