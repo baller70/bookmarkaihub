@@ -281,13 +281,24 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
             {colorPickerOpen === category.id && (
               <div 
                 className="mb-4 p-3 bg-white rounded-md border border-gray-200"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                }}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                }}
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                }}
               >
                 <div className="space-y-3">
                   {/* Live Preview */}
                   <div 
                     className="flex flex-col items-center p-3 bg-gray-50 rounded-md border border-gray-200"
                     onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => e.stopPropagation()}
                   >
                     <p className="text-xs font-medium text-gray-600 mb-2">Preview</p>
                     <div 
@@ -305,7 +316,11 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
                     </p>
                   </div>
 
-                  <div onClick={(e) => e.stopPropagation()}>
+                  <div 
+                    onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => e.stopPropagation()}
+                  >
                     <Label htmlFor="bg-color" className="text-xs font-medium text-gray-700">
                       Background Color (Navy Blue Square)
                     </Label>
@@ -316,6 +331,8 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
                         value={tempBackgroundColor}
                         onChange={(e) => setTempBackgroundColor(e.target.value)}
                         onClick={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
                         className="h-9 w-16 p-1 cursor-pointer"
                       />
                       <Input
@@ -323,12 +340,18 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
                         value={tempBackgroundColor}
                         onChange={(e) => setTempBackgroundColor(e.target.value)}
                         onClick={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
                         className="h-9 flex-1 text-xs"
                         placeholder="#FFFFFF"
                       />
                     </div>
                   </div>
-                  <div onClick={(e) => e.stopPropagation()}>
+                  <div 
+                    onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => e.stopPropagation()}
+                  >
                     <Label htmlFor="outline-color" className="text-xs font-medium text-gray-700">
                       Outline Color (White Folder Icon)
                     </Label>
@@ -339,6 +362,8 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
                         value={tempOutlineColor}
                         onChange={(e) => setTempOutlineColor(e.target.value)}
                         onClick={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
                         className="h-9 w-16 p-1 cursor-pointer"
                       />
                       <Input
@@ -346,18 +371,28 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
                         value={tempOutlineColor}
                         onChange={(e) => setTempOutlineColor(e.target.value)}
                         onClick={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
                         className="h-9 flex-1 text-xs"
                         placeholder="#000000"
                       />
                     </div>
                   </div>
-                  <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
+                  <div 
+                    className="flex gap-2 pt-2" 
+                    onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => e.stopPropagation()}
+                  >
                     <Button
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
+                        e.preventDefault();
                         handleSaveColors(category.id);
                       }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => e.stopPropagation()}
                       className="flex-1"
                     >
                       <Check className="h-4 w-4 mr-1" />
@@ -368,8 +403,11 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
                       variant="outline"
                       onClick={(e) => {
                         e.stopPropagation();
+                        e.preventDefault();
                         setColorPickerOpen(null);
                       }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => e.stopPropagation()}
                       className="flex-1"
                     >
                       <X className="h-4 w-4 mr-1" />
