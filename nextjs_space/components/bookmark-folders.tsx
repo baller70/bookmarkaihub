@@ -231,7 +231,7 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
 
             {/* Category Name - Editable */}
             {editingCategoryId === category.id ? (
-              <div className="mb-3">
+              <div className="mb-3" onClick={(e) => e.stopPropagation()}>
                 <Input
                   value={editedName}
                   onChange={(e) => setEditedName(e.target.value)}
@@ -270,7 +270,10 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
 
             {/* Color Picker Panel */}
             {colorPickerOpen === category.id && (
-              <div className="mb-4 p-3 bg-white rounded-md border border-gray-200">
+              <div 
+                className="mb-4 p-3 bg-white rounded-md border border-gray-200"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div className="space-y-3">
                   <div>
                     <Label htmlFor="bg-color" className="text-xs font-medium text-gray-700">
