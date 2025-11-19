@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Folder, Target, ChevronLeft, Plus, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { Folder, Target, ChevronLeft, Plus, MoreVertical, Edit, Trash2, Type, Palette } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
@@ -9,6 +9,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import { CreateGoalFolderModal } from './create-goal-folder-modal';
@@ -56,6 +57,15 @@ export function BookmarkGoals({ bookmarks, onUpdate }: BookmarkGoalsProps) {
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Name editing state
+  const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
+  const [editedName, setEditedName] = useState('');
+
+  // Color picker state
+  const [colorPickerOpen, setColorPickerOpen] = useState<string | null>(null);
+  const [tempColor, setTempColor] = useState('#3B82F6');
+  const [folderColors, setFolderColors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetchFolders();
@@ -134,6 +144,71 @@ export function BookmarkGoals({ bookmarks, onUpdate }: BookmarkGoalsProps) {
   const handleGoalModalClose = () => {
     setShowGoalModal(false);
     setEditingGoal(undefined);
+  };
+
+  // Name editing handlers
+  const handleEditName = (folder: GoalFolder) => {
+    setEditingFolderId(folder.id);
+    setEditedName(folder.name);
+  };
+
+  const handleSaveName = async (folderId: string) => {
+    if (!editedName.trim()) {
+      toast.error('Folder name cannot be empty');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/goal-folders/${folderId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editedName.trim() }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update folder name');
+
+      toast.success('Folder name updated');
+      setEditingFolderId(null);
+      fetchFolders();
+    } catch (error) {
+      toast.error('Failed to update folder name');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingFolderId(null);
+    setEditedName('');
+  };
+
+  // Color picker handlers
+  const handleOpenColorPicker = (folder: GoalFolder) => {
+    setColorPickerOpen(folder.id);
+    setTempColor(folder.color || '#3B82F6');
+  };
+
+  const handleSaveColor = async (folderId: string) => {
+    try {
+      const response = await fetch(`/api/goal-folders/${folderId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ color: tempColor }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update folder color');
+
+      // Update local state for immediate UI feedback
+      setFolderColors(prev => ({ ...prev, [folderId]: tempColor }));
+      
+      toast.success('Folder color updated');
+      setColorPickerOpen(null);
+      fetchFolders();
+    } catch (error) {
+      toast.error('Failed to update folder color');
+    }
+  };
+
+  const handleCancelColorPicker = () => {
+    setColorPickerOpen(null);
   };
 
   const getStatusLabel = (status: string) => {
@@ -229,32 +304,46 @@ export function BookmarkGoals({ bookmarks, onUpdate }: BookmarkGoalsProps) {
                           <MoreVertical className="w-4 h-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
+                      <DropdownMenuContent align="end" className="w-56">
                         <DropdownMenuItem
                           onClick={(e) => {
                             e.stopPropagation();
-                            // For now, just open the folder - edit can be added later
-                            setSelectedFolder(folder);
+                            handleEditName(folder);
                           }}
+                          className="cursor-pointer"
                         >
-                          <Edit className="w-4 h-4 mr-2" />
-                          Edit Folder
+                          <Type className="mr-2 h-4 w-4" />
+                          Edit Folder Name
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenColorPicker(folder);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <Palette className="mr-2 h-4 w-4" />
+                          Change Colors
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={(e) => {
                             e.stopPropagation();
                             handleCreateGoalInFolder(folder);
                           }}
+                          className="cursor-pointer"
                         >
                           <Plus className="w-4 h-4 mr-2" />
                           Add Goal
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteFolder(folder.id);
                           }}
-                          className="text-red-600"
+                          className="text-red-600 cursor-pointer"
                         >
                           <Trash2 className="w-4 h-4 mr-2" />
                           Delete Folder
@@ -266,19 +355,137 @@ export function BookmarkGoals({ bookmarks, onUpdate }: BookmarkGoalsProps) {
                   {/* Folder Icon */}
                   <div
                     className="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
-                    style={{ backgroundColor: folder.color }}
+                    style={{ backgroundColor: folderColors[folder.id] || folder.color }}
                   >
                     <Folder className="w-6 h-6 text-white" />
                   </div>
 
-                  {/* Folder Name */}
-                  <h4 className="font-semibold text-lg mb-1 uppercase">{folder.name}</h4>
+                  {/* Folder Name - Editable */}
+                  {editingFolderId === folder.id ? (
+                    <div className="mb-4" onClick={(e) => e.stopPropagation()}>
+                      <Input
+                        value={editedName}
+                        onChange={(e) => setEditedName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSaveName(folder.id);
+                          if (e.key === 'Escape') handleCancelEdit();
+                        }}
+                        className="mb-2"
+                        autoFocus
+                      />
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={() => handleSaveName(folder.id)}>
+                          Save
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={handleCancelEdit}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <h4 className="font-semibold text-lg mb-1 uppercase">{folder.name}</h4>
+                  )}
 
                   {/* Goals Count */}
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Target className="w-4 h-4" />
                     <span>{folder.goals.length} {folder.goals.length === 1 ? 'goal' : 'goals'}</span>
                   </div>
+
+                  {/* Color Picker Panel */}
+                  {colorPickerOpen === folder.id && (
+                    <div
+                      className="absolute top-0 left-0 right-0 bottom-0 bg-white border-2 border-black rounded-lg p-4 z-50 shadow-xl"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                      }}
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                      }}
+                      onPointerDown={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                      }}
+                    >
+                      <h5 className="font-semibold text-sm mb-3">Choose Folder Color</h5>
+                      
+                      {/* Color Options Grid */}
+                      <div className="grid grid-cols-4 gap-2 mb-4">
+                        {[
+                          '#3B82F6', '#8B5CF6', '#EC4899', '#EF4444',
+                          '#F59E0B', '#10B981', '#14B8A6', '#6366F1',
+                          '#F97316', '#06B6D4', '#84CC16', '#A855F7',
+                          '#1F2937', '#475569', '#64748B', '#94A3B8'
+                        ].map((color) => (
+                          <button
+                            key={color}
+                            className={`w-full h-10 rounded-md border-2 transition-all ${
+                              tempColor === color ? 'border-black scale-110' : 'border-gray-300'
+                            }`}
+                            style={{ backgroundColor: color }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              setTempColor(color);
+                            }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                            }}
+                            onPointerDown={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                            }}
+                          />
+                        ))}
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            handleSaveColor(folder.id);
+                          }}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                          }}
+                          onPointerDown={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                          }}
+                          className="flex-1"
+                        >
+                          Save Color
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            handleCancelColorPicker();
+                          }}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                          }}
+                          onPointerDown={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                          }}
+                          className="flex-1"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
