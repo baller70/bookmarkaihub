@@ -4,11 +4,16 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { 
   BookmarkIcon, Eye, TrendingUp, Clock, Target, Zap, 
   Activity, Calendar, Lightbulb, Users, BarChart3, 
   PieChart, Trash2, FileText, AlertTriangle, CheckCircle,
-  Timer, FolderOpen, Star, Loader2
+  Timer, FolderOpen, Star, Loader2, ChevronDown
 } from 'lucide-react'
 
 type Tab = 'overview' | 'timeTracking' | 'insights' | 'categories' | 'projects' | 'recommendations'
@@ -120,7 +125,26 @@ export function AnalyticsContent({ showTitle = true }: AnalyticsContentProps) {
                 Deep Insights Into Your Bookmark Usage And Productivity
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 items-center">
+              {/* Breakdown Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-white border-gray-300 text-gray-700 hover:!bg-gray-50 hover:!text-gray-900 font-medium"
+                  >
+                    <PieChart className="w-4 h-4 mr-2" />
+                    Breakdown
+                    <ChevronDown className="w-4 h-4 ml-2" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-96 p-0">
+                  <CategoryBreakdown data={analyticsData} />
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Time Period Filters */}
               {['7d', '30d', '90d', '1y'].map((period) => (
                 <Button
                   key={period}
@@ -1183,6 +1207,143 @@ function RecommendationsTab({ data }: { data: AnalyticsData | null }) {
           </div>
         </CardContent>
       </Card>
+    </div>
+  )
+}
+
+// Category Breakdown Component (for Dropdown)
+function CategoryBreakdown({ data }: { data: AnalyticsData | null }) {
+  if (!data || !data.categoryStats || data.categoryStats.length === 0) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-sm text-gray-500">No category data available</p>
+      </div>
+    )
+  }
+
+  const totalBookmarks = data.categoryStats.reduce((sum, cat) => sum + cat.bookmarks, 0)
+  const totalVisits = data.categoryStats.reduce((sum, cat) => sum + cat.visits, 0)
+  const totalTime = data.categoryStats.reduce((sum, cat) => sum + cat.timeSpent, 0)
+
+  return (
+    <div className="bg-white">
+      {/* Header */}
+      <div className="px-5 py-4 border-b border-gray-100">
+        <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+          Category Breakdown
+        </h3>
+        <p className="text-xs text-gray-500 mt-1">
+          Performance metrics across all categories
+        </p>
+      </div>
+
+      {/* Summary Stats */}
+      <div className="px-5 py-4 bg-gray-50 border-b border-gray-100">
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Total</p>
+            <p className="text-xl font-semibold text-gray-900">{data.categoryStats.length}</p>
+            <p className="text-xs text-gray-500 mt-0.5">Categories</p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Bookmarks</p>
+            <p className="text-xl font-semibold text-gray-900">{totalBookmarks}</p>
+            <p className="text-xs text-gray-500 mt-0.5">Total items</p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Visits</p>
+            <p className="text-xl font-semibold text-gray-900">{totalVisits}</p>
+            <p className="text-xs text-gray-500 mt-0.5">All time</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Category List */}
+      <div className="max-h-96 overflow-y-auto">
+        {data.categoryStats.map((category, index) => {
+          const percentage = totalBookmarks > 0 
+            ? Math.round((category.bookmarks / totalBookmarks) * 100) 
+            : 0
+          const avgTimePerBookmark = category.bookmarks > 0 
+            ? (category.timeSpent / category.bookmarks).toFixed(1) 
+            : '0'
+          const visitRate = category.bookmarks > 0 
+            ? (category.visits / category.bookmarks).toFixed(1) 
+            : '0'
+
+          return (
+            <div
+              key={index}
+              className="px-5 py-4 border-b border-gray-50 hover:bg-gray-50 transition-colors"
+            >
+              {/* Category Name & Color */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2.5 flex-1">
+                  <div
+                    className="w-2 h-2 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: category.color || '#6B7280' }}
+                  />
+                  <span className="text-sm font-medium text-gray-900 truncate">
+                    {category.name}
+                  </span>
+                </div>
+                <span className="text-xs font-semibold text-gray-600 ml-2">
+                  {percentage}%
+                </span>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="mb-3">
+                <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${percentage}%`,
+                      backgroundColor: category.color || '#6B7280',
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <p className="text-xs text-gray-500">Bookmarks</p>
+                  <p className="text-sm font-semibold text-gray-900 mt-0.5">
+                    {category.bookmarks}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Visits</p>
+                  <p className="text-sm font-semibold text-gray-900 mt-0.5">
+                    {category.visits}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Avg Time</p>
+                  <p className="text-sm font-semibold text-gray-900 mt-0.5">
+                    {avgTimePerBookmark}m
+                  </p>
+                </div>
+              </div>
+
+              {/* Visit Rate Badge */}
+              <div className="mt-2 inline-flex">
+                <div className="px-2 py-0.5 bg-gray-100 rounded text-xs text-gray-600">
+                  <span className="font-medium">{visitRate}</span> visits/bookmark
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Footer */}
+      <div className="px-5 py-3 bg-gray-50 border-t border-gray-100">
+        <p className="text-xs text-gray-500 text-center">
+          Showing all {data.categoryStats.length} categories
+        </p>
+      </div>
     </div>
   )
 }
