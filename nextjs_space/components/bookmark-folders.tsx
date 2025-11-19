@@ -174,7 +174,7 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
       </div>
 
       {/* Folder Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         {categorizedBookmarks.map(({ category, bookmarks: categoryBookmarks }) => (
           <div
             key={category.id}
