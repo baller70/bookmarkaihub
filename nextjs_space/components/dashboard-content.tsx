@@ -12,6 +12,7 @@ import { BookmarkHierarchy } from "@/components/bookmark-hierarchy"
 import BookmarkFolders from "@/components/bookmark-folders"
 import { BookmarkKanban } from "@/components/bookmark-kanban"
 import { BookmarkCompact } from "@/components/bookmark-compact"
+import { BookmarkCompactFolders } from "@/components/bookmark-compact-folders"
 import { BookmarkGoals } from "@/components/bookmark-goals"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -207,7 +208,7 @@ export function DashboardContent() {
           onSelectBookmark={handleSelectBookmark}
         />
       case "COMPACT":
-        return <BookmarkCompact 
+        return <BookmarkCompactFolders 
           bookmarks={currentBookmarks} 
           onUpdate={fetchBookmarks}
         />
