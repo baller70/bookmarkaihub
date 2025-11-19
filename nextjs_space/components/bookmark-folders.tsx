@@ -106,8 +106,8 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
 
   const handleOpenColorPicker = (category: any) => {
     setColorPickerOpen(category.id);
-    setTempBackgroundColor(category.backgroundColor || '#FFFFFF');
-    setTempOutlineColor(category.color || '#000000');
+    setTempBackgroundColor(category.backgroundColor || '#1F2937'); // Match the actual default navy blue
+    setTempOutlineColor(category.color || '#FFFFFF'); // Match the actual default white
   };
 
   const handleSaveColors = async (categoryId: string) => {
@@ -284,9 +284,27 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="space-y-3">
+                  {/* Live Preview */}
+                  <div className="flex flex-col items-center p-3 bg-gray-50 rounded-md border border-gray-200">
+                    <p className="text-xs font-medium text-gray-600 mb-2">Preview</p>
+                    <div 
+                      className="rounded-md p-2 flex items-center justify-center"
+                      style={{ backgroundColor: tempBackgroundColor }}
+                    >
+                      <Folder
+                        className="w-12 h-12"
+                        style={{ color: tempOutlineColor }}
+                        strokeWidth={2}
+                      />
+                    </div>
+                    <p className="text-[10px] text-gray-500 mt-1">
+                      Square BG: {tempBackgroundColor} • Icon: {tempOutlineColor}
+                    </p>
+                  </div>
+
                   <div>
                     <Label htmlFor="bg-color" className="text-xs font-medium text-gray-700">
-                      Background Color
+                      Background Color (Navy Blue Square)
                     </Label>
                     <div className="flex gap-2 mt-1">
                       <Input
@@ -307,7 +325,7 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
                   </div>
                   <div>
                     <Label htmlFor="outline-color" className="text-xs font-medium text-gray-700">
-                      Outline Color
+                      Outline Color (White Folder Icon)
                     </Label>
                     <div className="flex gap-2 mt-1">
                       <Input
