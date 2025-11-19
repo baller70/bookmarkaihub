@@ -139,7 +139,11 @@ export function AnalyticsContent({ showTitle = true }: AnalyticsContentProps) {
                     <ChevronDown className="w-4 h-4 ml-2" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-96 p-0">
+                <DropdownMenuContent 
+                  align="end" 
+                  className="w-96 p-0 z-[100] border-gray-200 shadow-xl"
+                  sideOffset={8}
+                >
                   <CategoryBreakdown data={analyticsData} />
                 </DropdownMenuContent>
               </DropdownMenu>
