@@ -219,12 +219,21 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
               </div>
             )}
 
-            {/* Large Folder Icon with Dark Square Background */}
+            {/* Large Folder Icon with Customizable Colors */}
             <div className="flex justify-start mb-5">
-              <div className="bg-gray-900 rounded-md p-3 flex items-center justify-center">
+              <div 
+                className="rounded-md p-3 flex items-center justify-center"
+                style={{
+                  backgroundColor: category.backgroundColor || '#1F2937'
+                }}
+              >
                 <Folder
-                  className="w-16 h-16 text-white"
-                  strokeWidth={1.5}
+                  className="w-16 h-16"
+                  style={{ 
+                    color: category.color || '#FFFFFF',
+                    fill: category.backgroundColor || 'transparent'
+                  }}
+                  strokeWidth={2}
                 />
               </div>
             </div>
