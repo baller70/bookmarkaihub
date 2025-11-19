@@ -66,17 +66,34 @@ export async function GET(request: Request) {
     ).length
 
     // Calculate category statistics
+    const defaultColors = [
+      '#3B82F6', // blue
+      '#8B5CF6', // purple
+      '#10B981', // green
+      '#F59E0B', // orange
+      '#EF4444', // red
+      '#EC4899', // pink
+      '#14B8A6', // teal
+      '#F97316', // orange-alt
+    ]
+    
     const categoryStats: Record<string, any> = {}
+    let colorIndex = 0
+    
     bookmarks.forEach((bookmark: typeof bookmarks[0]) => {
       bookmark.categories.forEach((bc: typeof bookmark.categories[0]) => {
         const catName = bc.category.name
         if (!categoryStats[catName]) {
+          // Use category color if available, otherwise assign a default color
+          const categoryColor = bc.category.color || bc.category.backgroundColor || defaultColors[colorIndex % defaultColors.length]
+          colorIndex++
+          
           categoryStats[catName] = {
             name: catName,
             bookmarks: 0,
             visits: 0,
             timeSpent: 0,
-            color: bc.category.color,
+            color: categoryColor,
           }
         }
         categoryStats[catName].bookmarks++
@@ -94,7 +111,7 @@ export async function GET(request: Request) {
         percent: totalTimeSpent > 0 ? Math.round((cat.timeSpent / totalTimeSpent) * 100) : 0,
         bookmarks: cat.bookmarks,
         visits: cat.visits,
-        color: cat.color,
+        color: cat.color, // Already has default color from categoryStats
       }))
 
     // Calculate top performing bookmarks
