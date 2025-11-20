@@ -68,6 +68,15 @@ import { MediaTool } from "@/components/media-tool"
 import { CommentsTool } from "@/components/comments-tool"
 import { AddRelatedBookmarksModal } from "@/components/add-related-bookmarks-modal"
 import { AddGoalsModal } from "@/components/add-goals-modal"
+// NEW TOOLS - Phase 1 & 2
+import { ReadingProgressTool } from "@/components/reading-progress-tool"
+import { CodeSnippetsTool } from "@/components/code-snippets-tool"
+import { HighlightsTool } from "@/components/highlights-tool"
+import { AISummaryTool } from "@/components/ai-summary-tool"
+import { VersionMonitorTool } from "@/components/version-monitor-tool"
+import { PriceTrackerTool } from "@/components/price-tracker-tool"
+import { RelatedResourcesTool } from "@/components/related-resources-tool"
+import { BookmarkShareTool } from "@/components/bookmark-share-tool"
 
 interface BookmarkDetailModalProps {
   bookmark: any
@@ -1242,6 +1251,51 @@ export function BookmarkDetailModal({
           {/* HABITS TAB */}
           <TabsContent value="habits" className="p-4 sm:p-6 bg-white mt-0">
             <HabitsTool bookmarkId={bookmark.id} />
+          </TabsContent>
+
+          {/* NEW TOOLS - Phase 1 & 2 */}
+          {/* READING PROGRESS TAB */}
+          <TabsContent value="reading-progress" className="p-4 sm:p-6 bg-white mt-0">
+            <ReadingProgressTool bookmarkId={bookmark.id} />
+          </TabsContent>
+
+          {/* CODE SNIPPETS TAB */}
+          <TabsContent value="code-snippets" className="p-4 sm:p-6 bg-white mt-0">
+            <CodeSnippetsTool bookmarkId={bookmark.id} />
+          </TabsContent>
+
+          {/* WEB HIGHLIGHTS TAB */}
+          <TabsContent value="highlights" className="p-4 sm:p-6 bg-white mt-0">
+            <HighlightsTool bookmarkId={bookmark.id} />
+          </TabsContent>
+
+          {/* AI SUMMARY TAB */}
+          <TabsContent value="ai-summary" className="p-4 sm:p-6 bg-white mt-0">
+            <AISummaryTool 
+              bookmarkId={bookmark.id} 
+              bookmarkTitle={bookmark.title}
+              bookmarkUrl={bookmark.url}
+            />
+          </TabsContent>
+
+          {/* VERSION MONITOR TAB */}
+          <TabsContent value="version-monitor" className="p-4 sm:p-6 bg-white mt-0">
+            <VersionMonitorTool bookmarkId={bookmark.id} />
+          </TabsContent>
+
+          {/* PRICE TRACKER TAB */}
+          <TabsContent value="price-tracker" className="p-4 sm:p-6 bg-white mt-0">
+            <PriceTrackerTool bookmarkId={bookmark.id} />
+          </TabsContent>
+
+          {/* RELATED RESOURCES TAB */}
+          <TabsContent value="related-resources" className="p-4 sm:p-6 bg-white mt-0">
+            <RelatedResourcesTool bookmarkId={bookmark.id} />
+          </TabsContent>
+
+          {/* BOOKMARK SHARING TAB */}
+          <TabsContent value="bookmark-share" className="p-4 sm:p-6 bg-white mt-0">
+            <BookmarkShareTool bookmarkId={bookmark.id} />
           </TabsContent>
         </Tabs>
       </DialogContent>

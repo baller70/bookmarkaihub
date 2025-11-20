@@ -87,6 +87,65 @@ async function main() {
       isDefault: false,
       isSystem: false,
     },
+    // NEW TOOLS - Phase 1 & 2
+    // PRO TIER TOOLS
+    {
+      key: 'reading-progress',
+      label: 'READING PROGRESS',
+      icon: 'Book',
+      isDefault: false,
+      isSystem: false,
+    },
+    {
+      key: 'code-snippets',
+      label: 'CODE SNIPPETS',
+      icon: 'Code',
+      isDefault: false,
+      isSystem: false,
+    },
+    // ELITE TIER TOOLS
+    {
+      key: 'highlights',
+      label: 'WEB HIGHLIGHTS',
+      icon: 'Highlighter',
+      isDefault: false,
+      isSystem: false,
+    },
+    {
+      key: 'ai-summary',
+      label: 'AI SUMMARY',
+      icon: 'Sparkles',
+      isDefault: false,
+      isSystem: false,
+    },
+    {
+      key: 'version-monitor',
+      label: 'VERSION MONITOR',
+      icon: 'GitBranch',
+      isDefault: false,
+      isSystem: false,
+    },
+    {
+      key: 'price-tracker',
+      label: 'PRICE TRACKER',
+      icon: 'DollarSign',
+      isDefault: false,
+      isSystem: false,
+    },
+    {
+      key: 'related-resources',
+      label: 'RELATED RESOURCES',
+      icon: 'Link2',
+      isDefault: false,
+      isSystem: false,
+    },
+    {
+      key: 'bookmark-share',
+      label: 'SHARING',
+      icon: 'Share2',
+      isDefault: false,
+      isSystem: false,
+    },
   ]
 
   for (const tool of defaultTools) {

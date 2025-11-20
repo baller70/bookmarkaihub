@@ -189,6 +189,16 @@ model Bookmark {
   // Related bookmarks
   relatedFrom     RelatedBookmark[] @relation("BookmarkRelations")
   relatedTo       RelatedBookmark[] @relation("RelatedBookmarks")
+  
+  // New tools (Phase 1 & 2)
+  readingProgress   ReadingProgress[]
+  codeSnippets      CodeSnippet[]
+  webHighlights     WebHighlight[]
+  aiSummaries       AISummary[]
+  versionSnapshots  VersionSnapshot[]
+  priceTracker      PriceTracker[]
+  relatedResources  RelatedResource[]
+  shares            BookmarkShare[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1092,4 +1102,209 @@ enum BadgeLevel {
   GOLD
   PLATINUM
   DIAMOND
+}
+
+// ============================================
+// NEW BOOKMARK TOOLS (Phase 1 & 2)
+// ============================================
+
+// 1. Reading Progress Tracker (PRO tier)
+model ReadingProgress {
+  id                String    @id @default(cuid())
+  bookmarkId        String
+  userId            String
+  scrollPosition    Float     @default(0) // Percentage 0-100
+  currentSection    String?   @db.Text
+  estimatedTimeLeft Int       @default(0) // in minutes
+  totalSections     Int       @default(1)
+  completedSections Int       @default(0)
+  lastReadAt        DateTime  @default(now())
+  
+  bookmark          Bookmark  @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([bookmarkId, userId])
+  @@index([bookmarkId])
+  @@index([userId, lastReadAt])
+}
+
+// 2. Code Snippets Manager (PRO tier)
+model CodeSnippet {
+  id          String   @id @default(cuid())
+  bookmarkId  String
+  userId      String
+  title       String
+  code        String   @db.Text
+  language    String   @default("javascript") // javascript, python, etc.
+  description String?  @db.Text
+  tags        String[] // Array of tags
+  lineNumber  Int?     // Reference line in original content
+  
+  bookmark    Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([bookmarkId])
+  @@index([userId, createdAt])
+  @@index([language])
+}
+
+// 3. Web Clipper & Highlights (ELITE tier)
+model WebHighlight {
+  id              String   @id @default(cuid())
+  bookmarkId      String
+  userId          String
+  highlightedText String   @db.Text
+  context         String?  @db.Text // Surrounding text for context
+  personalNote    String?  @db.Text
+  color           String   @default("#FCD34D") // Yellow default
+  tags            String[] // Array of tags
+  position        Int?     // Position in document
+  
+  bookmark        Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([bookmarkId])
+  @@index([userId, createdAt])
+}
+
+// 4. AI Summary & Insights (ELITE tier)
+model AISummary {
+  id                String   @id @default(cuid())
+  bookmarkId        String
+  userId            String
+  summaryType       SummaryType @default(TLDR)
+  content           String   @db.Text
+  keyPoints         String[] // Array of key points
+  actionItems       String[] // Array of action items
+  discussionQuestions String[] // Array of questions
+  generatedAt       DateTime @default(now())
+  
+  bookmark          Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@index([bookmarkId])
+  @@index([userId, generatedAt])
+}
+
+enum SummaryType {
+  TLDR
+  KEY_POINTS
+  ACTION_ITEMS
+  DISCUSSION_QUESTIONS
+  FULL_SUMMARY
+}
+
+// 5. Version Monitor & Change Tracker (ELITE tier)
+model VersionSnapshot {
+  id              String   @id @default(cuid())
+  bookmarkId      String
+  userId          String
+  snapshotContent String   @db.Text
+  contentHash     String   // MD5 hash for change detection
+  changesSummary  String?  @db.Text
+  majorChange     Boolean  @default(false)
+  diffSize        Int      @default(0) // Number of changed characters
+  
+  bookmark        Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@index([bookmarkId, createdAt])
+  @@index([userId, majorChange])
+}
+
+// 6. Price & Availability Tracker (ELITE tier)
+model PriceTracker {
+  id                String   @id @default(cuid())
+  bookmarkId        String
+  userId            String
+  currentPrice      Float
+  originalPrice     Float
+  currency          String   @default("USD")
+  availability      AvailabilityStatus @default(IN_STOCK)
+  priceHistory      Json     // Array of {date, price} objects
+  lowestPrice       Float?
+  highestPrice      Float?
+  alertOnDrop       Boolean  @default(true)
+  alertThreshold    Float?   // Alert when price drops below this
+  
+  bookmark          Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastChecked DateTime @default(now())
+  
+  @@unique([bookmarkId, userId])
+  @@index([bookmarkId])
+  @@index([userId, alertOnDrop])
+}
+
+enum AvailabilityStatus {
+  IN_STOCK
+  OUT_OF_STOCK
+  LIMITED
+  DISCONTINUED
+  UNKNOWN
+}
+
+// 7. Related Resources Finder (ELITE tier)
+model RelatedResource {
+  id               String   @id @default(cuid())
+  bookmarkId       String
+  userId           String
+  resourceType     ResourceType @default(EXTERNAL)
+  title            String
+  url              String   @db.Text
+  description      String?  @db.Text
+  relevanceScore   Float    @default(0) // 0-1
+  source           String?  // "ai_suggestion", "user_added", "web_search"
+  
+  bookmark         Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@index([bookmarkId])
+  @@index([userId, relevanceScore])
+}
+
+enum ResourceType {
+  INTERNAL // From user's own bookmarks
+  EXTERNAL // From web search
+  AI_SUGGESTED // AI-generated suggestions
+}
+
+// 8. Collaboration & Sharing (ELITE tier)
+model BookmarkShare {
+  id            String   @id @default(cuid())
+  bookmarkId    String
+  ownerId       String   // User who owns the bookmark
+  sharedWithId  String   // User who receives access
+  permission    SharePermission @default(VIEW)
+  message       String?  @db.Text
+  accessCount   Int      @default(0)
+  lastAccessed  DateTime?
+  expiresAt     DateTime?
+  
+  bookmark      Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([bookmarkId, sharedWithId])
+  @@index([bookmarkId])
+  @@index([sharedWithId])
+  @@index([ownerId, createdAt])
+}
+
+enum SharePermission {
+  VIEW
+  COMMENT
+  EDIT
 }
