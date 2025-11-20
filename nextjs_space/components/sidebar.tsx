@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { CompanySwitcher } from "@/components/company-switcher"
 import {
   LayoutDashboard,
   User,
@@ -128,6 +129,11 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
           >
             <X className="h-5 w-5" />
           </Button>
+        </div>
+
+        {/* Company Switcher */}
+        <div className="p-3 border-b border-gray-200">
+          <CompanySwitcher />
         </div>
 
         {/* Navigation */}

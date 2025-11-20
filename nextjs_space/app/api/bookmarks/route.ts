@@ -6,6 +6,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { getFaviconUrl } from "@/lib/favicon-service"
+import { getActiveCompanyId } from "@/lib/company"
 
 export async function GET(request: Request) {
   try {
@@ -20,9 +21,13 @@ export async function GET(request: Request) {
     const tag = searchParams.get("tag")
     const priority = searchParams.get("priority")
 
+    // Get active company
+    const activeCompanyId = await getActiveCompanyId(session.user.id);
+
     const bookmarks = await prisma.bookmark.findMany({
       where: {
         userId: session.user.id,
+        ...(activeCompanyId && { companyId: activeCompanyId }),
         ...(search && {
           OR: [
             { title: { contains: search, mode: "insensitive" } },
@@ -110,11 +115,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { title, url, description, favicon, priority, categoryIds, tagIds } = await request.json()
+    const { title, url, description, favicon, priority, categoryIds, tagIds, companyIds } = await request.json()
 
     if (!title || !url) {
       return NextResponse.json({ error: "Title and URL are required" }, { status: 400 })
     }
+
+    // Get active company for default assignment
+    const activeCompanyId = await getActiveCompanyId(session.user.id);
 
     // Auto-fetch high-quality favicon (always prioritize high-quality PNG sources)
     // Even if favicon is provided from metadata, we try to get a better quality one
@@ -133,6 +141,9 @@ export async function POST(request: Request) {
       finalFavicon = favicon || '';
     }
 
+    // Determine which company to assign (use active company if not specified)
+    const targetCompanyId = companyIds && companyIds.length > 0 ? companyIds[0] : activeCompanyId;
+
     const bookmark = await prisma.bookmark.create({
       data: {
         title,
@@ -141,6 +152,7 @@ export async function POST(request: Request) {
         favicon: finalFavicon || "",
         priority: priority || "MEDIUM",
         userId: session.user.id,
+        companyId: targetCompanyId,
         categories: categoryIds?.length > 0 ? {
           create: categoryIds.map((categoryId: string) => ({
             categoryId,

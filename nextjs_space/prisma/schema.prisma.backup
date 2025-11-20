@@ -47,7 +47,6 @@ model User {
   fullName      String?
   isAdmin       Boolean   @default(false)
   customLogo    String?   @db.Text // S3 cloud storage path for global custom logo
-  subscriptionTier  SubscriptionTier @default(BASIC)
   
   accounts      Account[]
   sessions      Session[]
@@ -62,8 +61,6 @@ model User {
   playbooks     Playbook[]
   searchHistory SearchHistory[]
   timeCapsules  TimeCapsule[]
-  ownedCompanies    Company[] @relation("CompanyOwner")
-  companies         UserCompany[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -75,53 +72,6 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
-}
-
-enum SubscriptionTier {
-  BASIC
-  PRO
-  ELITE
-}
-
-model Company {
-  id                      String    @id @default(cuid())
-  name                    String
-  logo                    String?   @db.Text
-  description             String?   @db.Text
-  ownerId                 String
-  owner                   User      @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  members                 UserCompany[]
-  bookmarks               Bookmark[]
-  categories              Category[]
-  goals                   Goal[]
-  goalFolders             GoalFolder[]
-  todoItems               TodoItem[]
-  taskLists               TaskList[]
-  quickNotes              QuickNote[]
-  habits                  Habit[]
-  comments                BookmarkComment[]
-  media                   Media[]
-  mediaFolders            MediaFolder[]
-  notificationSchedules   NotificationSchedule[]
-  notificationPreferences NotificationPreference[]
-  timerSettings           TimerSettings[]
-  timerQueues             TimerQueue[]
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
-
-  @@unique([ownerId, name])
-}
-
-model UserCompany {
-  id        String   @id @default(cuid())
-  userId    String
-  companyId String
-  role      String   @default("member")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-
-  @@unique([userId, companyId])
 }
 
 // Core bookmark management
@@ -137,7 +87,6 @@ model Bookmark {
   // Custom branding (Grid View only)
   customFavicon    String? @db.Text // S3 cloud storage path for custom favicon
   customLogo       String? @db.Text // S3 cloud storage path for custom logo overlay
-  subscriptionTier  SubscriptionTier @default(BASIC)
   customBackground String? @db.Text // S3 cloud storage path for custom background
   
   // Usage tracking
@@ -155,8 +104,6 @@ model Bookmark {
   // Relationships
   userId       String
   user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  companyId    String?
-  company      Company?            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   categories   BookmarkCategory[]
   tags         BookmarkTag[]
   tasks        Task[]
@@ -207,8 +154,6 @@ model Category {
   
   userId      String
   user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  companyId    String?
-  company      Company?            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   bookmarks   BookmarkCategory[]
   
   folderId    String?
@@ -341,8 +286,6 @@ model GoalFolder {
   
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  companyId   String?
-  company     Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
   goals       Goal[]
 
   createdAt DateTime @default(now())
@@ -366,8 +309,6 @@ model Goal {
   
   userId      String
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  companyId   String?
-  company     Company?   @relation(fields: [companyId], references: [id], onDelete: Cascade)
   
   folderId    String?
   folder      GoalFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
@@ -603,8 +544,6 @@ model TodoItem {
   order       Int      @default(0)
   
   bookmark      Bookmark       @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
-  companyId   String?
-  company     Company?          @relation(fields: [companyId], references: [id], onDelete: Cascade)
   listItems     TaskListItem[]
   timerQueue    TimerQueue[]
   
@@ -627,8 +566,6 @@ model QuickNote {
   content     String   @db.Text // Can store markdown or HTML
   
   bookmark    Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
-  companyId   String?
-  company     Company?          @relation(fields: [companyId], references: [id], onDelete: Cascade)
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -646,8 +583,6 @@ model Habit {
   isActive    Boolean  @default(true)
   
   bookmark    Bookmark      @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
-  companyId   String?
-  company     Company?          @relation(fields: [companyId], references: [id], onDelete: Cascade)
   checkins    HabitCheckIn[]
   
   createdAt DateTime @default(now())
@@ -685,8 +620,6 @@ model TaskList {
   order       Int      @default(0)
   
   bookmark    Bookmark         @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
-  companyId   String?
-  company     Company?          @relation(fields: [companyId], references: [id], onDelete: Cascade)
   items       TaskListItem[]
   
   createdAt DateTime @default(now())
@@ -718,8 +651,6 @@ model TimerQueue {
   completed   Boolean  @default(false)
   
   bookmark    Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
-  companyId   String?
-  company     Company?          @relation(fields: [companyId], references: [id], onDelete: Cascade)
   todoItem    TodoItem? @relation(fields: [todoItemId], references: [id], onDelete: Cascade)
   
   createdAt DateTime @default(now())
@@ -739,8 +670,6 @@ model TimerSettings {
   soundEnabled      Boolean  @default(true)
   
   bookmark    Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
-  companyId   String?
-  company     Company?          @relation(fields: [companyId], references: [id], onDelete: Cascade)
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -759,8 +688,6 @@ model NotificationSchedule {
   notifyVia   String[] @default(["app"]) // app, email, sms
   
   bookmark    Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
-  companyId   String?
-  company     Company?          @relation(fields: [companyId], references: [id], onDelete: Cascade)
   history     NotificationHistory[]
   
   createdAt DateTime @default(now())
@@ -792,8 +719,6 @@ model NotificationPreference {
   quietHoursEnd      String? // HH:MM format
   
   bookmark    Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
-  companyId   String?
-  company     Company?          @relation(fields: [companyId], references: [id], onDelete: Cascade)
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -875,8 +800,6 @@ model Media {
   description String?  @db.Text
   
   bookmark    Bookmark      @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
-  companyId   String?
-  company     Company?          @relation(fields: [companyId], references: [id], onDelete: Cascade)
   folder      MediaFolder?  @relation(fields: [folderId], references: [id], onDelete: SetNull)
   
   createdAt DateTime @default(now())
@@ -893,8 +816,6 @@ model MediaFolder {
   parentId    String?
   
   bookmark    Bookmark      @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
-  companyId   String?
-  company     Company?          @relation(fields: [companyId], references: [id], onDelete: Cascade)
   parent      MediaFolder?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
   children    MediaFolder[] @relation("FolderHierarchy")
   media       Media[]
@@ -926,8 +847,6 @@ model BookmarkComment {
   tags        String[] @default([])
   
   bookmark    Bookmark          @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
-  companyId   String?
-  company     Company?          @relation(fields: [companyId], references: [id], onDelete: Cascade)
   replies     CommentReply[]
   mentions    CommentMention[]
   
