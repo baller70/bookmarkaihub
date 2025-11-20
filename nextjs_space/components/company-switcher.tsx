@@ -40,7 +40,7 @@ export function CompanySwitcher() {
       // Fetch all companies
       const companiesRes = await fetch('/api/companies');
       if (companiesRes.ok) {
-        const companiesData = await companies.json();
+        const companiesData = await companiesRes.json();
         setCompanies(companiesData);
       }
 

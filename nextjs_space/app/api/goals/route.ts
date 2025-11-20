@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { getActiveCompanyId } from '@/lib/company';
 
 export async function GET() {
   try {
@@ -19,8 +20,14 @@ export async function GET() {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // Get active company
+    const activeCompanyId = await getActiveCompanyId(user.id);
+
     const goals = await prisma.goal.findMany({
-      where: { userId: user.id },
+      where: { 
+        userId: user.id,
+        ...(activeCompanyId && { companyId: activeCompanyId }),
+      },
       include: {
         folder: true,
         bookmarks: {
@@ -85,6 +92,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
     }
 
+    // Get active company
+    const activeCompanyId = await getActiveCompanyId(user.id);
+
     // Create the goal
     const goal = await prisma.goal.create({
       data: {
@@ -99,6 +109,7 @@ export async function POST(request: Request) {
         tags: tags || [],
         notes: notes || null,
         userId: user.id,
+        companyId: activeCompanyId,
         folderId: folderId || null,
       },
     });

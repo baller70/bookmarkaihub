@@ -5,6 +5,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
+import { getActiveCompanyId } from "@/lib/company"
 
 export async function GET() {
   try {
@@ -13,9 +14,13 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // Get active company
+    const activeCompanyId = await getActiveCompanyId(session.user.id);
+
     const categories = await prisma.category.findMany({
       where: {
         userId: session.user.id,
+        ...(activeCompanyId && { companyId: activeCompanyId }),
       },
       include: {
         _count: {
@@ -70,6 +75,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 })
     }
 
+    // Get active company
+    const activeCompanyId = await getActiveCompanyId(session.user.id);
+
     // Check if category with this name already exists for this user
     const existingCategory = await prisma.category.findFirst({
       where: {
@@ -92,6 +100,7 @@ export async function POST(request: Request) {
         color: color || "#3B82F6",
         icon: icon || "folder",
         userId: session.user.id,
+        companyId: activeCompanyId,
       },
     })
 
