@@ -32,6 +32,7 @@ import {
 export default function AILinkPilotPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("auto-processing")
+  const [discoverySubTab, setDiscoverySubTab] = useState("recommendations")
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     intake: true,
     tagging: true,
@@ -533,77 +534,169 @@ export default function AILinkPilotPage() {
 
                   {/* Sub-tabs */}
                   <div className="flex gap-2 border-b border-gray-200">
-                    <button className="px-4 py-2 text-sm font-medium text-gray-900 border-b-2 border-black">
+                    <button 
+                      onClick={() => setDiscoverySubTab("recommendations")}
+                      className={cn(
+                        "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+                        discoverySubTab === "recommendations"
+                          ? "text-gray-900 border-black"
+                          : "text-gray-500 hover:text-gray-900 border-transparent"
+                      )}
+                    >
                       Recommendations
                     </button>
-                    <button className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900">
+                    <button 
+                      onClick={() => setDiscoverySubTab("link-finder")}
+                      className={cn(
+                        "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+                        discoverySubTab === "link-finder"
+                          ? "text-gray-900 border-black"
+                          : "text-gray-500 hover:text-gray-900 border-transparent"
+                      )}
+                    >
                       Link Finder
                     </button>
                   </div>
 
-                  {/* Personalized Recommendations */}
-                  <Card className="p-4 sm:p-6 bg-white border-gray-200">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Wand2 className="h-5 w-5 text-gray-700" />
-                      <h3 className="font-semibold text-gray-900">PERSONALIZED RECOMMENDATIONS</h3>
-                    </div>
-                    <p className="text-xs sm:text-sm text-gray-500 mb-6">AI-powered suggestions based on your interests and reading habits</p>
-
-                    <div className="space-y-6">
-                      <div>
-                        <div className="flex items-center justify-between mb-3">
-                          <Label>Suggestions per refresh</Label>
-                          <span className="text-sm font-medium text-gray-900">5</span>
+                  {/* Recommendations Tab Content */}
+                  {discoverySubTab === "recommendations" && (
+                    <>
+                      {/* Personalized Recommendations */}
+                      <Card className="p-4 sm:p-6 bg-white border-gray-200">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Wand2 className="h-5 w-5 text-gray-700" />
+                          <h3 className="font-semibold text-gray-900">PERSONALIZED RECOMMENDATIONS</h3>
                         </div>
-                        <Slider defaultValue={[5]} max={10} step={1} className="mb-2" />
-                      </div>
+                        <p className="text-xs sm:text-sm text-gray-500 mb-6">AI-powered suggestions based on your interests and reading habits</p>
 
-                      <div>
-                        <div className="flex items-center justify-between mb-3">
-                          <Label>Serendipity Level</Label>
-                          <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <div className="space-y-6">
+                          <div>
+                            <div className="flex items-center justify-between mb-3">
+                              <Label>Suggestions per refresh</Label>
+                              <span className="text-sm font-medium text-gray-900">5</span>
+                            </div>
+                            <Slider defaultValue={[5]} max={10} step={1} className="mb-2" />
+                          </div>
+
+                          <div>
+                            <div className="flex items-center justify-between mb-3">
+                              <Label>Serendipity Level</Label>
+                              <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                            </div>
+                            <Slider defaultValue={[50]} max={100} step={1} className="mb-2" />
+                            <div className="flex justify-between text-xs text-gray-500">
+                              <span>Focused</span>
+                              <span>Diverse</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div>
+                              <p className="font-medium text-gray-900 text-sm">Include trending links</p>
+                            </div>
+                            <Switch defaultChecked />
+                          </div>
+
+                          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div>
+                              <p className="font-medium text-gray-900 text-sm">Auto-include after selection</p>
+                            </div>
+                            <Switch defaultChecked />
+                          </div>
+
+                          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div>
+                              <p className="font-medium text-gray-900 text-sm">Show TL;DR summaries</p>
+                            </div>
+                            <Switch defaultChecked />
+                          </div>
+                        </div>
+                      </Card>
+
+                      {/* Generate Recommendations Button */}
+                      <Card className="p-4 sm:p-6 bg-white border-gray-200">
+                        <h3 className="font-semibold text-gray-900 mb-2">GENERATE RECOMMENDATIONS</h3>
+                        <p className="text-xs sm:text-sm text-gray-500 mb-4">Get AI-powered content suggestions</p>
+                        <Button className="bg-black text-white hover:bg-gray-800">
+                          <Wand2 className="h-4 w-4 mr-2" />
+                          Generate
+                        </Button>
+                      </Card>
+                    </>
+                  )}
+
+                  {/* Link Finder Tab Content */}
+                  {discoverySubTab === "link-finder" && (
+                    <Card className="p-4 sm:p-6 bg-white border-gray-200">
+                      <div className="flex items-center gap-2 mb-4">
+                        <svg className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <h3 className="font-semibold text-gray-900">AI LINK FINDER</h3>
+                      </div>
+                      <p className="text-xs sm:text-sm text-gray-500 mb-6">Discover relevant links using AI-powered search</p>
+
+                      <div className="space-y-6">
+                        <div>
+                          <Label className="mb-2 block">Topic / Keywords</Label>
+                          <Input placeholder="e.g., artificial intelligence, web development" />
+                        </div>
+
+                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <svg className="h-4 w-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                            </svg>
+                            <Label>Use my profile interests</Label>
+                          </div>
+                          <Switch defaultChecked />
+                        </div>
+
+                        <div>
+                          <Label className="mb-2 block">Date Range</Label>
+                          <Select defaultValue="past-week">
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="past-week">Past week</SelectItem>
+                              <SelectItem value="past-month">Past month</SelectItem>
+                              <SelectItem value="past-year">Past year</SelectItem>
+                              <SelectItem value="all-time">All time</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label className="mb-2 block">Link Types</Label>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">Article</Badge>
+                            <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">Video</Badge>
+                            <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">PDF</Badge>
+                            <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">Repo</Badge>
+                            <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">Dataset</Badge>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center justify-between mb-3">
+                            <Label>Max results</Label>
+                            <span className="text-sm font-medium text-gray-900">20</span>
+                          </div>
+                          <Slider defaultValue={[20]} min={5} max={50} step={5} />
+                        </div>
+
+                        <Button className="w-full bg-gray-600 hover:bg-gray-700 text-white">
+                          <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                           </svg>
-                        </div>
-                        <Slider defaultValue={[50]} max={100} step={1} className="mb-2" />
-                        <div className="flex justify-between text-xs text-gray-500">
-                          <span>Focused</span>
-                          <span>Diverse</span>
-                        </div>
+                          Find Links
+                        </Button>
                       </div>
-
-                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div>
-                          <p className="font-medium text-gray-900 text-sm">Include trending links</p>
-                        </div>
-                        <Switch defaultChecked />
-                      </div>
-
-                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div>
-                          <p className="font-medium text-gray-900 text-sm">Auto-include after selection</p>
-                        </div>
-                        <Switch defaultChecked />
-                      </div>
-
-                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div>
-                          <p className="font-medium text-gray-900 text-sm">Show TL;DR summaries</p>
-                        </div>
-                        <Switch defaultChecked />
-                      </div>
-                    </div>
-                  </Card>
-
-                  {/* Generate Recommendations Button */}
-                  <Card className="p-4 sm:p-6 bg-white border-gray-200">
-                    <h3 className="font-semibold text-gray-900 mb-2">GENERATE RECOMMENDATIONS</h3>
-                    <p className="text-xs sm:text-sm text-gray-500 mb-4">Get AI-powered content suggestions</p>
-                    <Button className="bg-black text-white hover:bg-gray-800">
-                      <Wand2 className="h-4 w-4 mr-2" />
-                      Generate
-                    </Button>
-                  </Card>
+                    </Card>
+                  )}
                 </div>
               )}
 
