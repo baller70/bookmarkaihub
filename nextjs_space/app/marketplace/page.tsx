@@ -1,271 +1,342 @@
 
-"use client"
+'use client';
 
-import { DashboardLayout } from "@/components/dashboard-layout"
-import { DashboardAuth } from "@/components/dashboard-auth"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { 
-  Store, 
-  Search, 
-  TrendingUp, 
-  Star, 
-  Download, 
-  Users,
-  Zap,
-  Target,
-  Layout,
-  FileText
-} from "lucide-react"
-import { useState } from "react"
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { DashboardAuth } from '@/components/dashboard-auth';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { Search, Plus, TrendingUp, Star, Eye, ShoppingCart, ArrowLeft, Shield } from 'lucide-react';
+import { toast } from 'sonner';
+import Image from 'next/image';
+
+interface Bundle {
+  id: string;
+  title: string;
+  description: string;
+  coverImage?: string;
+  price: number;
+  tags: string[];
+  viewCount: number;
+  purchaseCount: number;
+  averageRating: number;
+  category?: { id: string; name: string; icon: string };
+  seller?: { id: string; name?: string; email: string; image?: string };
+  badge?: { badgeLevel: string; qualityScore: number };
+  _count?: { items: number; purchases: number; reviews: number };
+}
+
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  _count: { bundles: number };
+}
+
+const BADGE_COLORS = {
+  BRONZE: 'bg-amber-700 text-white',
+  SILVER: 'bg-gray-400 text-gray-900',
+  GOLD: 'bg-yellow-500 text-gray-900',
+  PLATINUM: 'bg-purple-600 text-white',
+  DIAMOND: 'bg-cyan-400 text-gray-900',
+};
+
+const BADGE_ICONS = {
+  BRONZE: '🥉',
+  SILVER: '🥈',
+  GOLD: '🥇',
+  PLATINUM: '💎',
+  DIAMOND: '💠',
+};
 
 export default function MarketplacePage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("All")
+  const router = useRouter();
+  const { data: session } = useSession() || {};
+  const [bundles, setBundles] = useState<Bundle[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [sortBy, setSortBy] = useState('recent');
+  const [priceFilter, setPriceFilter] = useState('all');
 
-  const templates = [
-    {
-      id: 1,
-      name: "Developer Essentials",
-      description: "Curated collection of development tools, documentation, and resources",
-      author: "DevTools Team",
-      downloads: 1243,
-      rating: 4.8,
-      price: "Free",
-      category: "Development",
-      icon: "💻",
-      color: "blue",
-    },
-    {
-      id: 2,
-      name: "Design Resources Pro",
-      description: "Premium design tools, inspiration sites, and asset libraries",
-      author: "DesignHub",
-      downloads: 892,
-      rating: 4.9,
-      price: "$9.99",
-      category: "Design",
-      icon: "🎨",
-      color: "purple",
-    },
-    {
-      id: 3,
-      name: "Marketing Stack",
-      description: "Complete marketing toolkit with analytics, SEO, and social media tools",
-      author: "MarketingPro",
-      downloads: 2156,
-      rating: 4.7,
-      price: "Free",
-      category: "Marketing",
-      icon: "📈",
-      color: "green",
-    },
-    {
-      id: 4,
-      name: "Productivity Boost",
-      description: "Time management, note-taking, and project management applications",
-      author: "ProductivityLab",
-      downloads: 1789,
-      rating: 4.6,
-      price: "$4.99",
-      category: "Productivity",
-      icon: "⚡",
-      color: "yellow",
-    },
-    {
-      id: 5,
-      name: "Learning Resources",
-      description: "Educational platforms, courses, and documentation sites",
-      author: "EduCollective",
-      downloads: 967,
-      rating: 4.8,
-      price: "Free",
-      category: "Education",
-      icon: "📚",
-      color: "orange",
-    },
-    {
-      id: 6,
-      name: "Finance Tracker",
-      description: "Financial tools, crypto trackers, and investment resources",
-      author: "FinanceHub",
-      downloads: 1432,
-      rating: 4.5,
-      price: "$7.99",
-      category: "Finance",
-      icon: "💰",
-      color: "emerald",
-    },
-  ]
+  useEffect(() => {
+    fetchCategories();
+    fetchBundles();
+  }, []);
 
-  const categories = [
-    { name: "All", count: templates.length, icon: Layout },
-    { name: "Development", count: 1, icon: Target },
-    { name: "Design", count: 1, icon: Zap },
-    { name: "Marketing", count: 1, icon: TrendingUp },
-    { name: "Productivity", count: 1, icon: FileText },
-  ]
+  useEffect(() => {
+    fetchBundles();
+  }, [searchQuery, selectedCategory, sortBy, priceFilter]);
 
-  const handleSearch = () => {
-    // Search is handled by the filteredTemplates below
-  }
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/marketplace/categories');
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    }
+  };
 
-  const handleInstall = (templateId: number) => {
-    alert(`Installing template ${templateId}...`)
-  }
+  const fetchBundles = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (searchQuery) params.append('search', searchQuery);
+      if (selectedCategory !== 'all') params.append('categoryId', selectedCategory);
+      params.append('sortBy', sortBy);
+      if (priceFilter === 'free') {
+        params.append('minPrice', '0');
+        params.append('maxPrice', '0');
+      } else if (priceFilter === 'paid') {
+        params.append('minPrice', '0.01');
+      }
 
-  // Filter templates based on search query and selected category
-  const filteredTemplates = templates.filter((template) => {
-    const matchesSearch = searchQuery === "" || 
-      template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      template.category.toLowerCase().includes(searchQuery.toLowerCase())
-    
-    const matchesCategory = selectedCategory === "All" || template.category === selectedCategory
-    
-    return matchesSearch && matchesCategory
-  })
+      const res = await fetch(`/api/marketplace/bundles?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        setBundles(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch bundles:', error);
+      toast.error('Failed to load marketplace');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <DashboardAuth>
-      <DashboardLayout>
-        <div className="p-8">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl">
-                <Store className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold">MARKETPLACE</h1>
-                <p className="text-gray-600">Discover and install bookmark collections and templates</p>
+      <div className="min-h-screen bg-white dark:bg-gray-900">
+        {/* Header */}
+        <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+          <div className="max-w-7xl mx-auto px-4 py-6">
+            <div className="flex items-center justify-between mb-4">
+              <Button
+                variant="ghost"
+                onClick={() => router.push('/dashboard')}
+                className="gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Dashboard
+              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => router.push('/marketplace/profile')}
+                  className="gap-2"
+                >
+                  <Shield className="h-4 w-4" />
+                  My Profile
+                </Button>
+                <Button
+                  onClick={() => router.push('/marketplace/create')}
+                  className="gap-2 bg-black text-white hover:bg-gray-800"
+                >
+                  <Plus className="h-4 w-4" />
+                  Create Bundle
+                </Button>
               </div>
             </div>
-          </div>
 
-          {/* Search and Filter */}
-          <div className="mb-8">
-            <div className="flex gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                  placeholder="Search templates, collections, and tools..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  className="pl-10 h-12"
-                />
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Marketplace
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Buy and sell curated bookmark bundles from the community
+            </p>
+
+            {/* Search and Filters */}
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="md:col-span-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search bundles..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </div>
-              <Button 
-                onClick={handleSearch}
-                className="h-12 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name} ({cat._count.bundles})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sort By" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recent">Most Recent</SelectItem>
+                  <SelectItem value="popular">Most Popular</SelectItem>
+                  <SelectItem value="rating">Highest Rated</SelectItem>
+                  <SelectItem value="price">Lowest Price</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Price Filter */}
+            <div className="mt-4 flex gap-2">
+              <Button
+                variant={priceFilter === 'all' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setPriceFilter('all')}
               >
-                <Search className="h-4 w-4 mr-2" />
-                Search
+                All
+              </Button>
+              <Button
+                variant={priceFilter === 'free' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setPriceFilter('free')}
+              >
+                Free
+              </Button>
+              <Button
+                variant={priceFilter === 'paid' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setPriceFilter('paid')}
+              >
+                Paid
               </Button>
             </div>
           </div>
+        </div>
 
-          {/* Categories */}
-          <div className="flex gap-3 mb-8 overflow-x-auto pb-2">
-            {categories.map((category) => {
-              const Icon = category.icon
-              return (
-                <Button
-                  key={category.name}
-                  variant={selectedCategory === category.name ? "default" : "outline"}
-                  onClick={() => setSelectedCategory(category.name)}
-                  className="flex items-center gap-2 whitespace-nowrap"
+        {/* Bundle Grid */}
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600 dark:text-gray-400">Loading bundles...</p>
+            </div>
+          ) : bundles.length === 0 ? (
+            <div className="text-center py-12">
+              <ShoppingCart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                No bundles found
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Try adjusting your search or filters
+              </p>
+              <Button onClick={() => router.push('/marketplace/create')}>
+                Create Your First Bundle
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {bundles.map((bundle) => (
+                <Card
+                  key={bundle.id}
+                  className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border border-gray-200"
+                  onClick={() => router.push(`/marketplace/bundle/${bundle.id}`)}
                 >
-                  <Icon className="h-4 w-4" />
-                  {category.name}
-                  <Badge variant="secondary" className="ml-1">
-                    {category.count}
-                  </Badge>
-                </Button>
-              )
-            })}
-          </div>
+                  {/* Cover Image */}
+                  <div className="relative w-full h-48 bg-gradient-to-br from-blue-500 to-purple-600">
+                    {bundle.coverImage ? (
+                      <Image
+                        src={bundle.coverImage}
+                        alt={bundle.title}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <ShoppingCart className="h-16 w-16 text-white/50" />
+                      </div>
+                    )}
+                    {bundle.price === 0 && (
+                      <Badge className="absolute top-2 right-2 bg-green-500 text-white">
+                        FREE
+                      </Badge>
+                    )}
+                  </div>
 
-          {/* Templates Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTemplates.map((template) => (
-              <Card key={template.id} className="p-6 hover:shadow-lg transition-shadow cursor-pointer group">
-                {/* Header */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className={`w-12 h-12 bg-${template.color}-100 rounded-xl flex items-center justify-center text-2xl`}
-                    >
-                      {template.icon}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg group-hover:text-blue-600 transition-colors">
-                        {template.name}
+                  <div className="p-4">
+                    {/* Title and Price */}
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-semibold text-lg text-gray-900 dark:text-white line-clamp-1">
+                        {bundle.title}
                       </h3>
-                      <p className="text-sm text-gray-500">{template.author}</p>
+                      {bundle.price > 0 && (
+                        <span className="text-lg font-bold text-gray-900 dark:text-white">
+                          ${bundle.price.toFixed(2)}
+                        </span>
+                      )}
                     </div>
-                  </div>
-                </div>
 
-                {/* Description */}
-                <p className="text-gray-600 text-sm mb-4">
-                  {template.description}
-                </p>
+                    {/* Description */}
+                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
+                      {bundle.description}
+                    </p>
 
-                {/* Stats */}
-                <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium">{template.rating}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Download className="h-4 w-4" />
-                    <span>{template.downloads}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Users className="h-4 w-4" />
-                    <span>Active</span>
-                  </div>
-                </div>
+                    {/* Category */}
+                    {bundle.category && (
+                      <Badge variant="outline" className="mb-3">
+                        {bundle.category.name}
+                      </Badge>
+                    )}
 
-                {/* Footer */}
-                <div className="flex items-center justify-between pt-4 border-t">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline">{template.category}</Badge>
-                    <Badge 
-                      variant={template.price === "Free" ? "default" : "secondary"}
-                      className={template.price === "Free" ? "bg-green-100 text-green-800" : ""}
-                    >
-                      {template.price}
-                    </Badge>
-                  </div>
-                  <Button 
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleInstall(template.id)
-                    }}
-                  >
-                    Install
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
+                    {/* Stats */}
+                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-3">
+                      <div className="flex items-center gap-1">
+                        <Eye className="h-4 w-4" />
+                        {bundle.viewCount}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <ShoppingCart className="h-4 w-4" />
+                        {bundle.purchaseCount}
+                      </div>
+                      {bundle.averageRating > 0 && (
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          {bundle.averageRating.toFixed(1)}
+                        </div>
+                      )}
+                      {bundle._count && (
+                        <span>{bundle._count.items} links</span>
+                      )}
+                    </div>
 
-          {/* Empty State for Search */}
-          {filteredTemplates.length === 0 && (
-            <div className="text-center py-12 mt-8">
-              <Store className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">NO RESULTS FOUND</h3>
-              <p className="text-gray-600">Try adjusting your search to find what you're looking for</p>
+                    {/* Seller Info */}
+                    {bundle.seller && (
+                      <div className="flex items-center gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                        <div className="flex-1">
+                          <p className="text-xs text-gray-500">Sold by</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {bundle.seller.name || bundle.seller.email}
+                          </p>
+                        </div>
+                        {bundle.badge && (
+                          <Badge className={BADGE_COLORS[bundle.badge.badgeLevel as keyof typeof BADGE_COLORS]}>
+                            {BADGE_ICONS[bundle.badge.badgeLevel as keyof typeof BADGE_ICONS]}{' '}
+                            {bundle.badge.badgeLevel}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              ))}
             </div>
           )}
         </div>
-      </DashboardLayout>
+      </div>
     </DashboardAuth>
-  )
+  );
 }
