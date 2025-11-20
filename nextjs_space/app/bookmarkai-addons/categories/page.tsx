@@ -433,7 +433,7 @@ export default function ManageCategoriesPage() {
           {/* Title Section */}
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold mb-2">MANAGE CATEGORIES</h1>
+              <h1 className="text-3xl font-bold mb-2 uppercase">MANAGE CATEGORIES</h1>
               <p className="text-muted-foreground">
                 Organize your bookmarks with custom categories
               </p>
@@ -544,7 +544,7 @@ export default function ManageCategoriesPage() {
           {/* Unassigned Categories */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">UNASSIGNED</h2>
+              <h2 className="text-xl font-bold uppercase">UNASSIGNED</h2>
               <span className="text-sm text-muted-foreground">
                 {unassignedCategories.length} categories
               </span>

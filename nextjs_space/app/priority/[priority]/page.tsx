@@ -156,7 +156,7 @@ export default function PriorityDetailPage() {
         <DashboardLayout>
           <div className="p-8">
             <div className="text-center">
-              <h2 className="text-2xl font-bold mb-2">Invalid Priority Level</h2>
+              <h2 className="text-2xl font-bold mb-2 uppercase">Invalid Priority Level</h2>
               <p className="text-gray-600 mb-4">The specified priority level does not exist.</p>
               <Button onClick={handleBack}>Back to Priority Management</Button>
             </div>
@@ -188,7 +188,7 @@ export default function PriorityDetailPage() {
                   <Icon className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">{config.label} Priority</h1>
+                  <h1 className="text-2xl font-bold text-gray-900 uppercase">{config.label} Priority</h1>
                   <p className="text-sm text-gray-700">
                     {filteredBookmarks.length} bookmark{filteredBookmarks.length !== 1 ? 's' : ''}
                   </p>

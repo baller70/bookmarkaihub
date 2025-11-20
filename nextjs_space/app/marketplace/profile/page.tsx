@@ -106,7 +106,7 @@ export default function ProfilePage() {
 
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 uppercase">
               My Marketplace Profile
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
@@ -133,7 +133,7 @@ export default function ProfilePage() {
                 <Card className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 uppercase">
                         Seller Badge
                       </h2>
                       <div className="flex items-center gap-3">
@@ -161,25 +161,25 @@ export default function ProfilePage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
                     <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white uppercase">
                         {sellerData.badge.totalSales}
                       </p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">Total Sales</p>
                     </div>
                     <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white uppercase">
                         ${sellerData.badge.totalRevenue.toFixed(2)}
                       </p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">Total Revenue</p>
                     </div>
                     <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white uppercase">
                         {sellerData.badge.averageRating.toFixed(1)} ★
                       </p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">Avg Rating</p>
                     </div>
                     <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white uppercase">
                         {sellerData.badge.totalUpvotes}
                       </p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">Total Upvotes</p>
@@ -223,7 +223,7 @@ export default function ProfilePage() {
               {/* My Bundles */}
               <Card className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white uppercase">
                     My Bundles ({sellerData?.bundles?.length || 0})
                   </h2>
                   <Button
@@ -290,7 +290,7 @@ export default function ProfilePage() {
               {/* Recent Reviews */}
               {sellerData?.reviews && sellerData.reviews.length > 0 && (
                 <Card className="p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 uppercase">
                     Recent Reviews
                   </h2>
                   <div className="space-y-3">
@@ -341,21 +341,21 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Card className="p-6 text-center">
                     <ShoppingCart className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white uppercase">
                       {buyerData.stats.totalPurchases}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Bundles Purchased</p>
                   </Card>
                   <Card className="p-6 text-center">
                     <DollarSign className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white uppercase">
                       ${buyerData.stats.totalSpent.toFixed(2)}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Total Spent</p>
                   </Card>
                   <Card className="p-6 text-center">
                     <Star className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white uppercase">
                       {buyerData.stats.totalReviews}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Reviews Written</p>
@@ -365,7 +365,7 @@ export default function ProfilePage() {
 
               {/* My Purchases */}
               <Card className="p-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 uppercase">
                   My Purchases ({buyerData?.purchases?.length || 0})
                 </h2>
 

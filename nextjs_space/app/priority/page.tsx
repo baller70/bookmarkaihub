@@ -101,7 +101,7 @@ export default function PriorityPage() {
           {/* Header */}
           <div className="flex items-start justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">PRIORITY MANAGEMENT</h1>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2 uppercase">PRIORITY MANAGEMENT</h1>
               <p className="text-sm text-gray-600">Organize bookmarks by priority levels</p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">

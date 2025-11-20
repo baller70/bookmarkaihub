@@ -150,7 +150,7 @@ export default function AILinkPilotPage() {
                   {/* Header */}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
                     <div className="min-w-0">
-                      <h2 className="text-xl sm:text-xl sm:text-2xl font-bold text-gray-900">AUTO-PROCESSING</h2>
+                      <h2 className="text-xl sm:text-xl sm:text-2xl font-bold text-gray-900 uppercase">AUTO-PROCESSING</h2>
                       <p className="text-xs sm:text-xs sm:text-sm text-gray-500 mt-1">autoProcessing.description</p>
                     </div>
                     <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
@@ -528,7 +528,7 @@ export default function AILinkPilotPage() {
                 <div className="space-y-6">
                   {/* Header */}
                   <div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900">AI CONTENT DISCOVERY</h2>
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 uppercase">AI CONTENT DISCOVERY</h2>
                     <p className="text-xs sm:text-sm text-gray-500 mt-1">Personalized recommendations and intelligent link finding powered by AI</p>
                   </div>
 
@@ -704,7 +704,7 @@ export default function AILinkPilotPage() {
                 <div className="space-y-4 sm:space-y-6">
                   {/* Header */}
                   <div>
-                    <h2 className="text-xl sm:text-xl sm:text-2xl font-bold text-gray-900">MAGIC BULK LINK UPLOADER</h2>
+                    <h2 className="text-xl sm:text-xl sm:text-2xl font-bold text-gray-900 uppercase">MAGIC BULK LINK UPLOADER</h2>
                     <p className="text-xs sm:text-xs sm:text-sm text-gray-500 mt-1">Import multiple links at once with intelligent categorization and batch processing</p>
                   </div>
 
@@ -896,7 +896,7 @@ export default function AILinkPilotPage() {
                 <div className="space-y-4 sm:space-y-6">
                   {/* Header */}
                   <div>
-                    <h2 className="text-xl sm:text-xl sm:text-2xl font-bold text-gray-900">LINK VALIDATOR</h2>
+                    <h2 className="text-xl sm:text-xl sm:text-2xl font-bold text-gray-900 uppercase">LINK VALIDATOR</h2>
                     <p className="text-xs sm:text-xs sm:text-sm text-gray-500 mt-1">Monitor and maintain the health of your bookmarked links with automated validation</p>
                   </div>
 
@@ -916,7 +916,7 @@ export default function AILinkPilotPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                           </svg>
                         </div>
-                        <div className="text-3xl font-bold text-gray-900 mb-1">0</div>
+                        <div className="text-3xl font-bold text-gray-900 mb-1 uppercase">0</div>
                         <div className="text-xs sm:text-sm text-gray-500">Total Links</div>
                       </div>
 
@@ -924,7 +924,7 @@ export default function AILinkPilotPage() {
                         <div className="flex justify-center mb-2">
                           <CheckCircle2 className="h-6 w-6 sm:h-8 sm:w-8 text-green-500" />
                         </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">0</div>
+                        <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 uppercase">0</div>
                         <div className="text-xs sm:text-xs sm:text-sm text-gray-500">Healthy</div>
                       </div>
 
@@ -934,7 +934,7 @@ export default function AILinkPilotPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                         </div>
-                        <div className="text-3xl font-bold text-gray-900 mb-1">0</div>
+                        <div className="text-3xl font-bold text-gray-900 mb-1 uppercase">0</div>
                         <div className="text-xs sm:text-sm text-gray-500">Broken</div>
                       </div>
 
@@ -944,7 +944,7 @@ export default function AILinkPilotPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                           </svg>
                         </div>
-                        <div className="text-3xl font-bold text-gray-900 mb-1">0</div>
+                        <div className="text-3xl font-bold text-gray-900 mb-1 uppercase">0</div>
                         <div className="text-xs sm:text-sm text-gray-500">Redirects</div>
                       </div>
 
@@ -954,7 +954,7 @@ export default function AILinkPilotPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                         </div>
-                        <div className="text-3xl font-bold text-gray-900 mb-1">0</div>
+                        <div className="text-3xl font-bold text-gray-900 mb-1 uppercase">0</div>
                         <div className="text-xs sm:text-sm text-gray-500">Timeouts</div>
                       </div>
 
@@ -964,7 +964,7 @@ export default function AILinkPilotPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                           </svg>
                         </div>
-                        <div className="text-3xl font-bold text-gray-900 mb-1">0</div>
+                        <div className="text-3xl font-bold text-gray-900 mb-1 uppercase">0</div>
                         <div className="text-xs sm:text-sm text-gray-500">Phishing</div>
                       </div>
                     </div>
@@ -1071,7 +1071,7 @@ export default function AILinkPilotPage() {
                 <div className="space-y-6">
                   {/* Header */}
                   <div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-blue-500">BROWSER LAUNCHER</h2>
+                    <h2 className="text-xl sm:text-2xl font-bold text-blue-500 uppercase">BROWSER LAUNCHER</h2>
                     <p className="text-xs sm:text-sm text-gray-500 mt-1">Capture tabs from your browser and automatically convert them into organized, tagged bookmarks</p>
                   </div>
 
@@ -1084,7 +1084,7 @@ export default function AILinkPilotPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                           </svg>
                         </div>
-                        <h3 className="text-xl font-semibold text-gray-900 mb-3">READY TO CAPTURE TABS</h3>
+                        <h3 className="text-xl font-semibold text-gray-900 mb-3 uppercase">READY TO CAPTURE TABS</h3>
                         <p className="text-xs sm:text-sm text-gray-500 mb-6">
                           Use the browser extension or keyboard shortcut to capture your<br />
                           current tabs and convert them into bookmarks.

@@ -408,7 +408,7 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                         unoptimized
                       />
                     ) : (
-                      <span className="text-2xl font-bold text-white">
+                      <span className="text-2xl font-bold text-white uppercase">
                         {bookmark.title?.charAt(0) || "?"}
                       </span>
                     )}

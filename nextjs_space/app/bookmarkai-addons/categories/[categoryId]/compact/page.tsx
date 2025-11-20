@@ -184,7 +184,7 @@ export default function CompactCategoryPage() {
                   />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold uppercase tracking-wide mb-2 text-gray-900">
+                  <h1 className="text-3xl font-bold uppercase tracking-wide mb-2 text-gray-900 uppercase">
                     {category.name}
                   </h1>
                   <p className="text-sm text-gray-600 font-medium">

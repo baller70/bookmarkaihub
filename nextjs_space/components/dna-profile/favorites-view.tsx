@@ -113,7 +113,7 @@ export default function FavoritesView() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold uppercase tracking-tight">Favorites</h1>
+          <h1 className="text-4xl font-bold uppercase tracking-tight uppercase">Favorites</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {favorites.length} {favorites.length === 1 ? 'bookmark' : 'bookmarks'} marked as favorite
           </p>
@@ -136,7 +136,7 @@ export default function FavoritesView() {
           <CardContent className="pt-6 pb-6">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <div className="text-3xl font-bold text-gray-900">{stats.totalFavorites}</div>
+                <div className="text-3xl font-bold text-gray-900 uppercase">{stats.totalFavorites}</div>
                 <div className="text-sm text-gray-600 mt-1">
                   Bookmarks marked as favorite
                 </div>
@@ -152,7 +152,7 @@ export default function FavoritesView() {
           <CardContent className="pt-6 pb-6">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <div className="text-3xl font-bold text-gray-900">{stats.totalVisits}</div>
+                <div className="text-3xl font-bold text-gray-900 uppercase">{stats.totalVisits}</div>
                 <div className="text-sm text-gray-600 mt-1">
                   Combined visits to favorites
                 </div>
@@ -168,7 +168,7 @@ export default function FavoritesView() {
           <CardContent className="pt-6 pb-6">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <div className="text-3xl font-bold text-gray-900">{stats.avgVisits}</div>
+                <div className="text-3xl font-bold text-gray-900 uppercase">{stats.avgVisits}</div>
                 <div className="text-sm text-gray-600 mt-1">
                   Average visits per favorite
                 </div>

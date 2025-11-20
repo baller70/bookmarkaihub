@@ -193,7 +193,7 @@ export function ListsTab({ bookmarkId }: ListsTabProps) {
       <div>
         <div className="flex items-center justify-between mb-2">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-wide">List Manager</h2>
+            <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-wide uppercase">List Manager</h2>
             <p className="text-sm text-gray-600 mt-1">Create focused lists of 4-5 tasks for timer sessions</p>
           </div>
           <Button onClick={() => setShowAddListForm(true)} className="bg-blue-600 hover:bg-blue-700">

@@ -777,7 +777,7 @@ export default function SettingsPage() {
                           <div className="text-center mb-4">
                             <p className="font-semibold text-gray-900">Free</p>
                             <div className="flex items-baseline justify-center my-3">
-                              <span className="text-3xl font-bold">$0</span>
+                              <span className="text-3xl font-bold uppercase">$0</span>
                               <span className="text-sm text-gray-600 ml-1">per month</span>
                             </div>
                           </div>
@@ -804,7 +804,7 @@ export default function SettingsPage() {
                           <div className="text-center mb-4">
                             <p className="font-semibold text-gray-900">Pro</p>
                             <div className="flex items-baseline justify-center my-3">
-                              <span className="text-3xl font-bold">$9</span>
+                              <span className="text-3xl font-bold uppercase">$9</span>
                               <span className="text-sm text-gray-600 ml-1">per month</span>
                             </div>
                           </div>
@@ -833,7 +833,7 @@ export default function SettingsPage() {
                           <div className="text-center mb-4">
                             <p className="font-semibold text-gray-900">Elite</p>
                             <div className="flex items-baseline justify-center my-3">
-                              <span className="text-3xl font-bold">$19</span>
+                              <span className="text-3xl font-bold uppercase">$19</span>
                               <span className="text-sm text-gray-600 ml-1">per month</span>
                             </div>
                           </div>

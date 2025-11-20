@@ -43,7 +43,7 @@ export default function AutoProcessingPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Auto-Processing</h2>
+          <h2 className="text-2xl font-bold text-gray-900 uppercase">Auto-Processing</h2>
           <p className="text-sm text-gray-600 mt-1">autoProcessing.description</p>
         </div>
         <div className="flex items-center gap-3">

@@ -91,7 +91,7 @@ export default function SearchPage() {
     <DashboardAuth>
       <DashboardLayout>
         <div className="max-w-5xl mx-auto space-y-6 p-6">
-          <h1 className="text-3xl font-bold">SEARCH</h1>
+          <h1 className="text-3xl font-bold uppercase">SEARCH</h1>
 
           {/* Search Bar */}
           <Card>
@@ -207,7 +207,7 @@ export default function SearchPage() {
           {!loading && results.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">{results.length} Results</h2>
+                <h2 className="text-xl font-semibold uppercase">{results.length} Results</h2>
                 <Button variant="ghost" size="sm" onClick={() => setResults([])}>
                   <X className="w-4 h-4 mr-2" />
                   Clear Results

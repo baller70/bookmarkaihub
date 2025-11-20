@@ -188,13 +188,13 @@ export default function CategoryDetailPage() {
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
                 <div
-                  className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl"
+                  className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl uppercase"
                   style={{ backgroundColor: category.color ? category.color + '20' : '#e5e7eb' }}
                 >
                   {category.icon || '📁'}
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold mb-2">{category.name}</h1>
+                  <h1 className="text-3xl font-bold mb-2 uppercase">{category.name}</h1>
                   <p className="text-gray-600 dark:text-gray-400">
                     {bookmarks.length} bookmark{bookmarks.length !== 1 ? 's' : ''} in this category
                   </p>

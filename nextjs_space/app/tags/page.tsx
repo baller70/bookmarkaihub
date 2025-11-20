@@ -97,7 +97,7 @@ export default function TagsPage() {
                   <Tag className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">TAGS</h1>
+                  <h1 className="text-2xl font-bold text-gray-900 uppercase">TAGS</h1>
                   <p className="text-sm text-gray-600">Organize bookmarks with custom tags</p>
                 </div>
               </div>
@@ -131,7 +131,7 @@ export default function TagsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Total Tags</p>
-                  <p className="text-3xl font-bold text-gray-900">{tags.length}</p>
+                  <p className="text-3xl font-bold text-gray-900 uppercase">{tags.length}</p>
                 </div>
                 <Tag className="h-10 w-10 text-purple-500" />
               </div>
@@ -140,7 +140,7 @@ export default function TagsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Most Used</p>
-                  <p className="text-3xl font-bold text-gray-900">{tags[0]?.name || "AI"}</p>
+                  <p className="text-3xl font-bold text-gray-900 uppercase">{tags[0]?.name || "AI"}</p>
                 </div>
                 <TrendingUp className="h-10 w-10 text-green-500" />
               </div>
@@ -149,7 +149,7 @@ export default function TagsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Active Tags</p>
-                  <p className="text-3xl font-bold text-gray-900">{tags.filter(t => t._count?.bookmarks > 0).length}</p>
+                  <p className="text-3xl font-bold text-gray-900 uppercase">{tags.filter(t => t._count?.bookmarks > 0).length}</p>
                 </div>
                 <Tag className="h-10 w-10 text-blue-500" />
               </div>
@@ -158,7 +158,7 @@ export default function TagsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Unused Tags</p>
-                  <p className="text-3xl font-bold text-gray-900">{tags.filter(t => !t._count?.bookmarks || t._count.bookmarks === 0).length}</p>
+                  <p className="text-3xl font-bold text-gray-900 uppercase">{tags.filter(t => !t._count?.bookmarks || t._count.bookmarks === 0).length}</p>
                 </div>
                 <Tag className="h-10 w-10 text-gray-400" />
               </div>

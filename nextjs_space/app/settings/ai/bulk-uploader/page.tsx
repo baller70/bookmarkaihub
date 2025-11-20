@@ -38,7 +38,7 @@ export default function BulkUploaderPage() {
                 <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl">
                   <Sparkles className="h-6 w-6 text-white" />
                 </div>
-                <h1 className="text-3xl font-bold">AI LinkPilot</h1>
+                <h1 className="text-3xl font-bold uppercase">AI LinkPilot</h1>
               </div>
             </div>
           </div>
@@ -83,7 +83,7 @@ export default function BulkUploaderPage() {
             {/* Main Content */}
             <div className="lg:col-span-3 space-y-6">
               <div>
-                <h2 className="text-2xl font-bold mb-2">Magic Bulk Link Uploader</h2>
+                <h2 className="text-2xl font-bold mb-2 uppercase">Magic Bulk Link Uploader</h2>
                 <p className="text-gray-600">Import multiple links at once with intelligent categorization and batch processing</p>
               </div>
 

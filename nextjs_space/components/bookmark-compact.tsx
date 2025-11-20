@@ -441,7 +441,7 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
                           unoptimized
                         />
                       ) : (
-                        <span className="text-3xl font-black text-white">
+                        <span className="text-3xl font-black text-white uppercase">
                           {bookmark.title?.charAt(0)?.toUpperCase() || "?"}
                         </span>
                       )}

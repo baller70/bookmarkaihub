@@ -89,7 +89,7 @@ export function ManageToolsModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">Manage Tools</DialogTitle>
+          <DialogTitle className="text-2xl font-bold uppercase">Manage Tools</DialogTitle>
           <p className="text-sm text-gray-500">
             Customize which tools appear in your bookmark tabs
           </p>

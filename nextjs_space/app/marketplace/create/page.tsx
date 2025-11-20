@@ -163,7 +163,7 @@ export default function CreateBundlePage() {
         </div>
 
         <div className="max-w-4xl mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 uppercase">
             Create Bundle
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mb-8">
@@ -173,7 +173,7 @@ export default function CreateBundlePage() {
           <div className="space-y-6">
             {/* Basic Info */}
             <Card className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 uppercase">
                 Basic Information
               </h2>
 
@@ -280,7 +280,7 @@ export default function CreateBundlePage() {
             {/* Select Bookmarks */}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white uppercase">
                   Select Bookmarks ({selectedBookmarks.length} selected)
                 </h2>
                 {selectedBookmarks.length > 0 && (

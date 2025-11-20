@@ -174,8 +174,8 @@ export function MediaTool({ bookmarkId }: MediaToolProps) {
                 : "hover:border-blue-500 hover:shadow-md"
             }`}
           >
-            <div className="text-4xl mb-2">{item.icon}</div>
-            <div className="text-2xl font-bold">{item.count}</div>
+            <div className="text-4xl mb-2 uppercase">{item.icon}</div>
+            <div className="text-2xl font-bold uppercase">{item.count}</div>
             <div className="text-sm text-gray-600 uppercase">{item.label}</div>
           </div>
         ))}

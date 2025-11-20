@@ -195,7 +195,7 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
           <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center">
             <Clock className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Timeline View</h1>
+          <h1 className="text-3xl font-bold text-gray-900 uppercase">Timeline View</h1>
         </div>
         <p className="text-gray-600">Chronological view of your bookmarks journey</p>
       </div>
@@ -297,7 +297,7 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
                 <Clock className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-gray-900">{group.label}</h3>
+                <h3 className="text-xl font-bold text-gray-900 uppercase">{group.label}</h3>
                 <p className="text-sm text-gray-500">{group.bookmarks.length} bookmarks</p>
               </div>
               <button className="ml-auto text-gray-400 hover:text-gray-600">
@@ -361,7 +361,7 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
                                   className="object-contain p-2"
                                 />
                               ) : (
-                                <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
+                                <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold uppercase">
                                   {bookmark.title.charAt(0).toUpperCase()}
                                 </div>
                               )}
@@ -374,7 +374,7 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
                             <div className="flex items-start justify-between gap-4 mb-2">
                               <div className="flex-1">
                                 <h4
-                                  className="text-xl font-bold text-indigo-600 hover:text-indigo-700 mb-2 cursor-pointer"
+                                  className="text-xl font-bold text-indigo-600 hover:text-indigo-700 mb-2 cursor-pointer uppercase"
                                   onClick={() => setSelectedBookmark(bookmark)}
                                 >
                                   {bookmark.title}

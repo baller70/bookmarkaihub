@@ -38,7 +38,7 @@ export function DashboardHeader({
       <div className="hidden lg:flex items-start justify-between">
         {/* Left: Title and Subtitle */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 font-audiowide tracking-tight">
+          <h1 className="text-3xl font-bold text-gray-900 font-audiowide tracking-tight uppercase">
             BOOKMARKHUB
           </h1>
           <p className="text-sm text-gray-500 mt-1">Your Digital Workspace</p>
@@ -100,7 +100,7 @@ export function DashboardHeader({
       <div className="lg:hidden space-y-5">
         {/* Title */}
         <div className="text-center">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 font-audiowide tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 font-audiowide tracking-tight uppercase">
             BOOKMARKHUB
           </h1>
           <p className="text-xs sm:text-sm text-gray-500 mt-1">Your Digital Workspace</p>

@@ -35,7 +35,7 @@ export default function BrowserLauncherPage() {
                 <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl">
                   <Sparkles className="h-6 w-6 text-white" />
                 </div>
-                <h1 className="text-3xl font-bold">AI LinkPilot</h1>
+                <h1 className="text-3xl font-bold uppercase">AI LinkPilot</h1>
               </div>
             </div>
           </div>
@@ -80,7 +80,7 @@ export default function BrowserLauncherPage() {
             {/* Main Content */}
             <div className="lg:col-span-3 space-y-6">
               <div>
-                <h2 className="text-2xl font-bold mb-2 text-blue-600">Browser Launcher</h2>
+                <h2 className="text-2xl font-bold mb-2 text-blue-600 uppercase">Browser Launcher</h2>
                 <p className="text-gray-600">
                   Capture tabs from your browser and automatically convert them into organized, tagged bookmarks
                 </p>
@@ -96,7 +96,7 @@ export default function BrowserLauncherPage() {
                       </div>
                     </div>
 
-                    <h3 className="text-2xl font-bold mb-3">READY TO CAPTURE TABS</h3>
+                    <h3 className="text-2xl font-bold mb-3 uppercase">READY TO CAPTURE TABS</h3>
                     <p className="text-gray-600 mb-6">
                       Use the browser extension or keyboard shortcut to capture your current tabs and convert them into bookmarks.
                     </p>

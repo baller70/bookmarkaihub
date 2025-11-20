@@ -533,7 +533,7 @@ export function BookmarkDetailModal({
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <h2 className="text-sm sm:text-xl font-bold text-gray-900 flex items-center gap-2 truncate">
+                <h2 className="text-sm sm:text-xl font-bold text-gray-900 flex items-center gap-2 truncate uppercase">
                   <span className="truncate">{bookmark.title}</span>
                   <button 
                     className="p-1 hover:bg-gray-100 rounded flex-shrink-0"
@@ -1011,7 +1011,7 @@ export function BookmarkDetailModal({
           <TabsContent value="arp" className="p-3 sm:p-6 bg-white mt-0">
             <div className="space-y-4 sm:space-y-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <h2 className="text-lg sm:text-2xl font-bold">ACTION RESEARCH PLAN</h2>
+                <h2 className="text-lg sm:text-2xl font-bold uppercase">ACTION RESEARCH PLAN</h2>
                 <Badge variant="outline" className="text-xs sm:text-sm">1 Section</Badge>
               </div>
 
@@ -1021,7 +1021,7 @@ export function BookmarkDetailModal({
                     <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                     <span className="text-sm font-medium">Overall Progress</span>
                   </div>
-                  <div className="text-3xl font-bold mb-1">0%</div>
+                  <div className="text-3xl font-bold mb-1 uppercase">0%</div>
                   <div className="text-xs text-gray-500">0/1</div>
                   <Progress value={0} className="mt-2 h-1" />
                   <div className="text-xs text-gray-500 mt-1">0 in progress</div>
@@ -1167,7 +1167,7 @@ export function BookmarkDetailModal({
             <div className="max-w-2xl mx-auto">
               <div className="text-center space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold mb-2">POMODORO TIMER</h2>
+                  <h2 className="text-2xl font-bold mb-2 uppercase">POMODORO TIMER</h2>
                   <p className="text-sm text-gray-500">Focus on your work with the Pomodoro technique</p>
                 </div>
 
@@ -1218,15 +1218,15 @@ export function BookmarkDetailModal({
                 {/* Timer Stats */}
                 <div className="grid grid-cols-3 gap-4 pt-6">
                   <div className="bg-white border rounded-lg p-4">
-                    <div className="text-2xl font-bold text-gray-900">0</div>
+                    <div className="text-2xl font-bold text-gray-900 uppercase">0</div>
                     <div className="text-xs text-gray-500 uppercase">Completed</div>
                   </div>
                   <div className="bg-white border rounded-lg p-4">
-                    <div className="text-2xl font-bold text-gray-900">25</div>
+                    <div className="text-2xl font-bold text-gray-900 uppercase">25</div>
                     <div className="text-xs text-gray-500 uppercase">Minutes</div>
                   </div>
                   <div className="bg-white border rounded-lg p-4">
-                    <div className="text-2xl font-bold text-gray-900">0</div>
+                    <div className="text-2xl font-bold text-gray-900 uppercase">0</div>
                     <div className="text-xs text-gray-500 uppercase">Today</div>
                   </div>
                 </div>

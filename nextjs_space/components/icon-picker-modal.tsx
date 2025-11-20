@@ -246,7 +246,7 @@ export function IconPickerModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">CHOOSE AN ICON</DialogTitle>
+          <DialogTitle className="text-xl font-bold uppercase">CHOOSE AN ICON</DialogTitle>
           <DialogDescription>
             Select an icon for your category folder
           </DialogDescription>

@@ -71,7 +71,7 @@ export function BookmarkListCard({ bookmark, onUpdate }: BookmarkListCardProps) 
                   unoptimized
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-white font-bold text-xl">
+                <div className="w-full h-full flex items-center justify-center text-white font-bold text-xl uppercase">
                   {bookmark.title?.charAt(0)?.toUpperCase()}
                 </div>
               )}

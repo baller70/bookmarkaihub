@@ -143,7 +143,7 @@ export default function PlaybooksPage() {
         <div className="max-w-7xl mx-auto space-y-6 p-6">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">PLAYBOOKS</h1>
+            <h1 className="text-3xl font-bold uppercase">PLAYBOOKS</h1>
             <div className="flex gap-2">
               <Button variant="outline">
                 <Sparkles className="w-4 h-4 mr-2" />
@@ -270,7 +270,7 @@ export default function PlaybooksPage() {
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between mb-4">
                           <div>
-                            <h2 className="text-2xl font-bold">{activePlaybook.title}</h2>
+                            <h2 className="text-2xl font-bold uppercase">{activePlaybook.title}</h2>
                             <p className="text-muted-foreground">{activePlaybook.description}</p>
                           </div>
                           {activePlaybook.category && (
@@ -307,7 +307,7 @@ export default function PlaybooksPage() {
                               </div>
                               
                               {/* Title and URL */}
-                              <h3 className="text-2xl font-bold text-white text-center mb-2">
+                              <h3 className="text-2xl font-bold text-white text-center mb-2 uppercase">
                                 {activePlaybook.items[currentIndex].bookmark.title}
                               </h3>
                               <p className="text-sm text-white/90 text-center mb-2">

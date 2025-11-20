@@ -146,7 +146,7 @@ export default function MarketplacePage() {
               </div>
             </div>
 
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 uppercase">
               Marketplace
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
@@ -228,7 +228,7 @@ export default function MarketplacePage() {
           ) : bundles.length === 0 ? (
             <div className="text-center py-12">
               <ShoppingCart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 uppercase">
                 No bundles found
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-4">

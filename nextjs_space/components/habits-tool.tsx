@@ -197,7 +197,7 @@ export function HabitsTool({ bookmarkId }: HabitsToolProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-bold text-gray-900">Habit Tracker</h3>
+          <h3 className="text-xl font-bold text-gray-900 uppercase">Habit Tracker</h3>
           <p className="text-sm text-gray-500">{habits.length} active habits</p>
         </div>
         <Button
@@ -315,13 +315,13 @@ export function HabitsTool({ bookmarkId }: HabitsToolProps) {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-4">
                     <div className="text-center">
-                      <div className="text-2xl font-bold" style={{ color: habit.color }}>
+                      <div className="text-2xl font-bold uppercase" style={{ color: habit.color }}>
                         {streak}
                       </div>
                       <div className="text-xs text-gray-500">Day Streak</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-gray-600">
+                      <div className="text-2xl font-bold text-gray-600 uppercase">
                         {habit.checkins.filter(c => c.completed).length}
                       </div>
                       <div className="text-xs text-gray-500">Total</div>

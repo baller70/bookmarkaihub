@@ -156,7 +156,7 @@ export function BookmarkHierarchy({ bookmarks }: BookmarkHierarchyProps) {
         <div className="flex items-center justify-between mb-2">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-relaxed md:leading-normal">FOLDER ORGANIZATION CHART</h1>
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-relaxed md:leading-normal uppercase">FOLDER ORGANIZATION CHART</h1>
               <Badge variant="secondary" className="bg-gray-100 text-gray-700">
                 {filteredFolders.length} folders
               </Badge>
@@ -211,9 +211,9 @@ export function BookmarkHierarchy({ bookmarks }: BookmarkHierarchyProps) {
       {/* Director Drop Zone */}
       <div className="mb-8">
         <div className="relative bg-blue-100 border-2 border-blue-400 rounded-xl p-12 text-center">
-          <h2 className="text-2xl font-bold text-blue-900 mb-2">DIRECTOR</h2>
+          <h2 className="text-2xl font-bold text-blue-900 mb-2 uppercase">DIRECTOR</h2>
           <p className="text-lg font-semibold text-yellow-600 flex items-center justify-center gap-2">
-            <span className="text-2xl">📁</span>
+            <span className="text-2xl uppercase">📁</span>
             DROP ZONE
           </p>
         </div>

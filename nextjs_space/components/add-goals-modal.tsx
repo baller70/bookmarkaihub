@@ -125,7 +125,7 @@ export function AddGoalsModal({
         <DialogHeader>
           <div className="flex items-center gap-2">
             <Target className="h-5 w-5 text-blue-600" />
-            <DialogTitle className="text-xl font-bold">Add Goals</DialogTitle>
+            <DialogTitle className="text-xl font-bold uppercase">Add Goals</DialogTitle>
           </div>
           <p className="text-sm text-gray-600 mt-2">
             Search and select existing goals to associate with this bookmark.

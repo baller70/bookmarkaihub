@@ -29,7 +29,7 @@ export default function LinkValidatorPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Link Validator</h2>
+        <h2 className="text-2xl font-bold text-gray-900 uppercase">Link Validator</h2>
         <p className="text-sm text-gray-600 mt-1">
           Monitor and maintain the health of your bookmarked links with automated validation
         </p>
@@ -50,7 +50,7 @@ export default function LinkValidatorPage() {
               return (
                 <div key={index} className="text-center">
                   <Icon className={`h-8 w-8 mx-auto mb-2 ${stat.color}`} />
-                  <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                  <div className="text-2xl font-bold text-gray-900 uppercase">{stat.value}</div>
                   <div className="text-xs text-gray-600">{stat.label}</div>
                 </div>
               )

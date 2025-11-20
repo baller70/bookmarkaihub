@@ -218,7 +218,7 @@ function OverviewTab({ data }: { data: AnalyticsData | null }) {
                   <BookmarkIcon className="w-4 h-4 text-blue-500" />
                   <span>Total Bookmarks</span>
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold text-gray-900">{data.overview.totalBookmarks}</div>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900 uppercase">{data.overview.totalBookmarks}</div>
                 <div className="text-xs text-gray-600 mt-1">+{data.overview.bookmarksAdded} this period</div>
               </div>
             </div>
@@ -233,7 +233,7 @@ function OverviewTab({ data }: { data: AnalyticsData | null }) {
                   <Eye className="w-4 h-4 text-green-500" />
                   <span>Total Visits</span>
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold text-gray-900">{data.overview.totalVisits}</div>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900 uppercase">{data.overview.totalVisits}</div>
                 <div className="text-xs text-gray-600 mt-1">All time</div>
               </div>
             </div>
@@ -248,7 +248,7 @@ function OverviewTab({ data }: { data: AnalyticsData | null }) {
                   <Activity className="w-4 h-4 text-purple-500" />
                   <span>Engagement Score</span>
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold text-gray-900">{data.overview.engagementScore.toFixed(1)}%</div>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900 uppercase">{data.overview.engagementScore.toFixed(1)}%</div>
                 <div className="text-xs text-gray-600 mt-1">Average</div>
               </div>
             </div>
@@ -263,7 +263,7 @@ function OverviewTab({ data }: { data: AnalyticsData | null }) {
                   <Clock className="w-4 h-4 text-orange-500" />
                   <span>Active Time</span>
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold text-gray-900">{data.overview.activeTime}h</div>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900 uppercase">{data.overview.activeTime}h</div>
                 <div className="text-xs text-gray-600 mt-1">Total</div>
               </div>
             </div>
@@ -438,7 +438,7 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
                   <Clock className="w-4 h-4 text-blue-500" />
                   <span>Daily Average</span>
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold text-gray-900">{dailyAverage}h</div>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900 uppercase">{dailyAverage}h</div>
                 <div className="text-xs text-gray-600 mt-1">Last 7 days</div>
               </div>
             </div>
@@ -453,7 +453,7 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
                   <Timer className="w-4 h-4 text-orange-500" />
                   <span>Total Hours</span>
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold text-gray-900">{data.overview.activeTime}h</div>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900 uppercase">{data.overview.activeTime}h</div>
                 <div className="text-xs text-gray-600 mt-1">All time</div>
               </div>
             </div>
@@ -468,7 +468,7 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
                   <Target className="w-4 h-4 text-purple-500" />
                   <span>Total Visits</span>
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold text-gray-900">{data.overview.totalVisits}</div>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900 uppercase">{data.overview.totalVisits}</div>
                 <div className="text-xs text-gray-600 mt-1">All bookmarks</div>
               </div>
             </div>
@@ -483,7 +483,7 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
                   <TrendingUp className="w-4 h-4 text-green-500" />
                   <span>Efficiency</span>
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold text-gray-900">{data.overview.engagementScore.toFixed(0)}%</div>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-900 uppercase">{data.overview.engagementScore.toFixed(0)}%</div>
                 <div className="text-xs text-gray-600 mt-1">Engagement score</div>
               </div>
             </div>
@@ -560,15 +560,15 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-700">Short sessions (&lt;30min)</span>
-                <span className="text-2xl font-bold text-gray-900">15</span>
+                <span className="text-2xl font-bold text-gray-900 uppercase">15</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-700">Medium sessions (30min-2h)</span>
-                <span className="text-2xl font-bold text-gray-900">8</span>
+                <span className="text-2xl font-bold text-gray-900 uppercase">8</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-700">Long sessions (&gt;2h)</span>
-                <span className="text-2xl font-bold text-gray-900">5</span>
+                <span className="text-2xl font-bold text-gray-900 uppercase">5</span>
               </div>
             </div>
             <div className="mt-4 p-3 rounded-lg bg-yellow-50 border border-yellow-200">
@@ -591,15 +591,15 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-700">Tab switching rate</span>
-                <span className="text-2xl font-bold text-gray-900">12/hour</span>
+                <span className="text-2xl font-bold text-gray-900 uppercase">12/hour</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-700">Focus streaks</span>
-                <span className="text-2xl font-bold text-gray-900">6 avg</span>
+                <span className="text-2xl font-bold text-gray-900 uppercase">6 avg</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-700">Break frequency</span>
-                <span className="text-2xl font-bold text-gray-900">Every 45min</span>
+                <span className="text-2xl font-bold text-gray-900 uppercase">Every 45min</span>
               </div>
             </div>
             <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200">
@@ -988,19 +988,19 @@ function ProjectsTab() {
           {/* Total Stats */}
           <div className="grid grid-cols-3 gap-4 mb-6">
             <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-              <div className="text-2xl font-bold text-blue-900">
+              <div className="text-2xl font-bold text-blue-900 uppercase">
                 {resourceAllocation.reduce((sum, r) => sum + r.hours, 0)}h
               </div>
               <div className="text-xs text-blue-700 mt-1">Total Hours</div>
             </div>
             <div className="p-3 rounded-lg bg-green-50 border border-green-200">
-              <div className="text-2xl font-bold text-green-900">
+              <div className="text-2xl font-bold text-green-900 uppercase">
                 {resourceAllocation.reduce((sum, r) => sum + r.bookmarks, 0)}
               </div>
               <div className="text-xs text-green-700 mt-1">Total Bookmarks</div>
             </div>
             <div className="p-3 rounded-lg bg-purple-50 border border-purple-200">
-              <div className="text-2xl font-bold text-purple-900">
+              <div className="text-2xl font-bold text-purple-900 uppercase">
                 {activeProjects.length}
               </div>
               <div className="text-xs text-purple-700 mt-1">Active Projects</div>
@@ -1246,17 +1246,17 @@ function CategoryBreakdown({ data }: { data: AnalyticsData | null }) {
         <div className="grid grid-cols-3 gap-4">
           <div>
             <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Total</p>
-            <p className="text-xl font-semibold text-gray-900">{data.categoryStats.length}</p>
+            <p className="text-xl font-semibold text-gray-900 uppercase">{data.categoryStats.length}</p>
             <p className="text-xs text-gray-500 mt-0.5">Categories</p>
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Bookmarks</p>
-            <p className="text-xl font-semibold text-gray-900">{totalBookmarks}</p>
+            <p className="text-xl font-semibold text-gray-900 uppercase">{totalBookmarks}</p>
             <p className="text-xs text-gray-500 mt-0.5">Total items</p>
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Visits</p>
-            <p className="text-xl font-semibold text-gray-900">{totalVisits}</p>
+            <p className="text-xl font-semibold text-gray-900 uppercase">{totalVisits}</p>
             <p className="text-xs text-gray-500 mt-0.5">All time</p>
           </div>
         </div>

@@ -112,7 +112,7 @@ export function SettingsTab({ bookmarkId }: SettingsTabProps) {
 
       {/* ===== TIMER SETTINGS ===== */}
       <div className="space-y-4">
-        <h3 className="text-xl font-bold text-gray-900 uppercase flex items-center gap-2">
+        <h3 className="text-xl font-bold text-gray-900 uppercase flex items-center gap-2 uppercase">
           <Timer className="w-5 h-5 text-blue-600" />
           TIMER SETTINGS
         </h3>
@@ -222,7 +222,7 @@ export function SettingsTab({ bookmarkId }: SettingsTabProps) {
 
       {/* ===== TASK SETTINGS ===== */}
       <div className="space-y-4">
-        <h3 className="text-xl font-bold text-gray-900 uppercase flex items-center gap-2">
+        <h3 className="text-xl font-bold text-gray-900 uppercase flex items-center gap-2 uppercase">
           <CheckSquare className="w-5 h-5 text-blue-600" />
           TASK SETTINGS
         </h3>
@@ -270,7 +270,7 @@ export function SettingsTab({ bookmarkId }: SettingsTabProps) {
 
       {/* ===== LIST SETTINGS ===== */}
       <div className="space-y-4">
-        <h3 className="text-xl font-bold text-gray-900 uppercase flex items-center gap-2">
+        <h3 className="text-xl font-bold text-gray-900 uppercase flex items-center gap-2 uppercase">
           <ListTodo className="w-5 h-5 text-blue-600" />
           LIST SETTINGS
         </h3>

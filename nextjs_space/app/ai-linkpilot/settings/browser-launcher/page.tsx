@@ -13,7 +13,7 @@ export default function BrowserLauncherPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-blue-600">Browser Launcher</h2>
+        <h2 className="text-2xl font-bold text-blue-600 uppercase">Browser Launcher</h2>
         <p className="text-sm text-gray-600 mt-1">
           Capture tabs from your browser and automatically convert them into organized, tagged bookmarks
         </p>
@@ -32,7 +32,7 @@ export default function BrowserLauncherPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">READY TO CAPTURE TABS</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2 uppercase">READY TO CAPTURE TABS</h3>
                   <p className="text-sm text-gray-600">
                     Use the browser extension or keyboard shortcut to capture your current tabs and convert them into bookmarks.
                   </p>
@@ -90,7 +90,7 @@ export default function BrowserLauncherPage() {
               {/* Max tabs per capture */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Max tabs per capture:</Label>
-                <div className="text-2xl font-bold text-gray-900">40</div>
+                <div className="text-2xl font-bold text-gray-900 uppercase">40</div>
               </div>
 
               {/* Auto-tagging */}

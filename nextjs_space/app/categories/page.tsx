@@ -228,7 +228,7 @@ export default function CategoriesPage() {
           {/* Header */}
           <div className="flex items-start justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">MANAGE CATEGORIES</h1>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2 uppercase">MANAGE CATEGORIES</h1>
               <p className="text-sm text-gray-600">Organize your bookmarks with custom categories</p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -305,7 +305,7 @@ export default function CategoriesPage() {
 
           {/* Unassigned Section */}
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-900">UNASSIGNED</h2>
+            <h2 className="text-xl font-bold text-gray-900 uppercase">UNASSIGNED</h2>
             <span className="text-sm text-gray-700 font-medium">{unassignedCategories.length} categories</span>
           </div>
 

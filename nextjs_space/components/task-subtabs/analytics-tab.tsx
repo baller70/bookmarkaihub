@@ -71,7 +71,7 @@ export function AnalyticsTab({ bookmarkId }: AnalyticsTabProps) {
             <Target className="w-5 h-5 text-blue-600" />
             <span className="text-xs font-medium text-blue-700">Total Tasks</span>
           </div>
-          <p className="text-2xl font-bold text-blue-900">{totalTasks}</p>
+          <p className="text-2xl font-bold text-blue-900 uppercase">{totalTasks}</p>
         </div>
 
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -79,7 +79,7 @@ export function AnalyticsTab({ bookmarkId }: AnalyticsTabProps) {
             <CheckCircle className="w-5 h-5 text-green-600" />
             <span className="text-xs font-medium text-green-700">Completed</span>
           </div>
-          <p className="text-2xl font-bold text-green-900">{completedTasks}</p>
+          <p className="text-2xl font-bold text-green-900 uppercase">{completedTasks}</p>
         </div>
 
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -87,7 +87,7 @@ export function AnalyticsTab({ bookmarkId }: AnalyticsTabProps) {
             <Clock className="w-5 h-5 text-yellow-600" />
             <span className="text-xs font-medium text-yellow-700">Pending</span>
           </div>
-          <p className="text-2xl font-bold text-yellow-900">{pendingTasks}</p>
+          <p className="text-2xl font-bold text-yellow-900 uppercase">{pendingTasks}</p>
         </div>
 
         <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
@@ -95,7 +95,7 @@ export function AnalyticsTab({ bookmarkId }: AnalyticsTabProps) {
             <TrendingUp className="w-5 h-5 text-purple-600" />
             <span className="text-xs font-medium text-purple-700">Completion</span>
           </div>
-          <p className="text-2xl font-bold text-purple-900">{completionRate}%</p>
+          <p className="text-2xl font-bold text-purple-900 uppercase">{completionRate}%</p>
         </div>
       </div>
 
@@ -153,11 +153,11 @@ export function AnalyticsTab({ bookmarkId }: AnalyticsTabProps) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-sm text-gray-600 mb-1">Total Lists</p>
-            <p className="text-3xl font-bold text-blue-600">{totalLists}</p>
+            <p className="text-3xl font-bold text-blue-600 uppercase">{totalLists}</p>
           </div>
           <div>
             <p className="text-sm text-gray-600 mb-1">Tasks in Lists</p>
-            <p className="text-3xl font-bold text-purple-600">{totalTasksInLists}</p>
+            <p className="text-3xl font-bold text-purple-600 uppercase">{totalTasksInLists}</p>
           </div>
         </div>
       </div>

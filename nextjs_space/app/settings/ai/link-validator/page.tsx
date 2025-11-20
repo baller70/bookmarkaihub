@@ -35,7 +35,7 @@ export default function LinkValidatorPage() {
                 <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl">
                   <Sparkles className="h-6 w-6 text-white" />
                 </div>
-                <h1 className="text-3xl font-bold">AI LinkPilot</h1>
+                <h1 className="text-3xl font-bold uppercase">AI LinkPilot</h1>
               </div>
             </div>
           </div>
@@ -80,7 +80,7 @@ export default function LinkValidatorPage() {
             {/* Main Content */}
             <div className="lg:col-span-3 space-y-6">
               <div>
-                <h2 className="text-2xl font-bold mb-2">Link Validator</h2>
+                <h2 className="text-2xl font-bold mb-2 uppercase">Link Validator</h2>
                 <p className="text-gray-600">Monitor and maintain the health of your bookmarked links with automated validation</p>
               </div>
 
@@ -96,7 +96,7 @@ export default function LinkValidatorPage() {
                     <div className="flex justify-center mb-2">
                       <Globe className="h-8 w-8 text-blue-600" />
                     </div>
-                    <div className="text-3xl font-bold mb-1">0</div>
+                    <div className="text-3xl font-bold mb-1 uppercase">0</div>
                     <div className="text-sm text-gray-600">Total Links</div>
                   </div>
 
@@ -104,7 +104,7 @@ export default function LinkValidatorPage() {
                     <div className="flex justify-center mb-2">
                       <CheckCircle className="h-8 w-8 text-green-600" />
                     </div>
-                    <div className="text-3xl font-bold mb-1">0</div>
+                    <div className="text-3xl font-bold mb-1 uppercase">0</div>
                     <div className="text-sm text-gray-600">Healthy</div>
                   </div>
 
@@ -112,7 +112,7 @@ export default function LinkValidatorPage() {
                     <div className="flex justify-center mb-2">
                       <XCircle className="h-8 w-8 text-red-600" />
                     </div>
-                    <div className="text-3xl font-bold mb-1">0</div>
+                    <div className="text-3xl font-bold mb-1 uppercase">0</div>
                     <div className="text-sm text-gray-600">Broken</div>
                   </div>
 
@@ -120,7 +120,7 @@ export default function LinkValidatorPage() {
                     <div className="flex justify-center mb-2">
                       <ArrowRight className="h-8 w-8 text-orange-600" />
                     </div>
-                    <div className="text-3xl font-bold mb-1">0</div>
+                    <div className="text-3xl font-bold mb-1 uppercase">0</div>
                     <div className="text-sm text-gray-600">Redirects</div>
                   </div>
 
@@ -128,7 +128,7 @@ export default function LinkValidatorPage() {
                     <div className="flex justify-center mb-2">
                       <Clock className="h-8 w-8 text-orange-600" />
                     </div>
-                    <div className="text-3xl font-bold mb-1">0</div>
+                    <div className="text-3xl font-bold mb-1 uppercase">0</div>
                     <div className="text-sm text-gray-600">Timeouts</div>
                   </div>
 
@@ -136,7 +136,7 @@ export default function LinkValidatorPage() {
                     <div className="flex justify-center mb-2">
                       <AlertCircle className="h-8 w-8 text-red-600" />
                     </div>
-                    <div className="text-3xl font-bold mb-1">0</div>
+                    <div className="text-3xl font-bold mb-1 uppercase">0</div>
                     <div className="text-sm text-gray-600">Phishing</div>
                   </div>
                 </div>

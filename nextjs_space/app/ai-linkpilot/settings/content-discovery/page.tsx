@@ -38,7 +38,7 @@ export default function ContentDiscoveryPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">AI Content Discovery</h2>
+          <h2 className="text-2xl font-bold text-gray-900 uppercase">AI Content Discovery</h2>
           <p className="text-sm text-gray-600 mt-1">
             Personalized recommendations and intelligent link finding powered by AI
           </p>

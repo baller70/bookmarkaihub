@@ -295,7 +295,7 @@ export function BookmarkCard({
                     unoptimized
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white text-3xl sm:text-4xl font-bold">
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white text-3xl sm:text-4xl font-bold uppercase">
                     {bookmark.title?.charAt(0)?.toUpperCase()}
                   </div>
                 )}

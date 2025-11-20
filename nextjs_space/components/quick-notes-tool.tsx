@@ -154,7 +154,7 @@ export function QuickNotesTool({ bookmarkId }: QuickNotesToolProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-bold text-gray-900">Quick Notes</h3>
+          <h3 className="text-xl font-bold text-gray-900 uppercase">Quick Notes</h3>
           <p className="text-sm text-gray-500">{notes.length} notes</p>
         </div>
         <Button

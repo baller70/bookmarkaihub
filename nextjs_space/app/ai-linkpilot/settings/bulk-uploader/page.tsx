@@ -24,7 +24,7 @@ export default function BulkUploaderPage() {
     <div className="space-y-4">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Magic Bulk Link Uploader</h2>
+        <h2 className="text-2xl font-bold text-gray-900 uppercase">Magic Bulk Link Uploader</h2>
         <p className="text-sm text-gray-600 mt-1">
           Import multiple links at once with intelligent categorization and batch processing
         </p>

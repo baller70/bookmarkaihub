@@ -229,7 +229,7 @@ export function BookmarkGoals({ bookmarks, onUpdate }: BookmarkGoalsProps) {
       <div className="space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h2 className="text-2xl font-bold">Goal 2.0</h2>
+          <h2 className="text-2xl font-bold uppercase">Goal 2.0</h2>
           <p className="text-gray-600 text-sm">
             Advanced goal management with folders, deadline tracking and progress monitoring
           </p>

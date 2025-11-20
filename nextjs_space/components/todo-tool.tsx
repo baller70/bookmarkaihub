@@ -150,7 +150,7 @@ export function TodoTool({ bookmarkId }: TodoToolProps) {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-bold text-gray-900">To-Do List</h3>
+            <h3 className="text-xl font-bold text-gray-900 uppercase">To-Do List</h3>
             <p className="text-sm text-gray-500">
               {completedTodos} of {totalTodos} tasks completed
             </p>

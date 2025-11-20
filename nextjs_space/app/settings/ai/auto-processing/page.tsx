@@ -39,7 +39,7 @@ export default function AutoProcessingPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <SettingsIcon className="h-6 w-6" />
-                <h1 className="text-2xl font-bold">AI LinkPilot</h1>
+                <h1 className="text-2xl font-bold uppercase">AI LinkPilot</h1>
               </div>
             </div>
           </div>
@@ -84,7 +84,7 @@ export default function AutoProcessingPage() {
             {/* Main Content */}
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold mb-2">Auto-Processing</h2>
+                <h2 className="text-2xl font-bold mb-2 uppercase">Auto-Processing</h2>
                 <p className="text-gray-600">autoProcessing.description</p>
               </div>
 

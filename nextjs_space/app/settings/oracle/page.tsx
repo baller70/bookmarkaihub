@@ -48,7 +48,7 @@ export default function OracleSettingsPage() {
               <div className="h-6 w-px bg-purple-400" />
               <div className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5" />
-                <h1 className="text-xl font-semibold">Oracle Settings</h1>
+                <h1 className="text-xl font-semibold uppercase">Oracle Settings</h1>
               </div>
             </div>
           </div>
@@ -137,7 +137,7 @@ export default function OracleSettingsPage() {
             <div className="col-span-9">
               <Card className="p-8 flex flex-col items-center justify-center min-h-[400px]">
                 <Sparkles className="h-16 w-16 text-purple-600 mb-4" />
-                <h2 className="text-2xl font-semibold text-gray-900 mb-2">Oracle AI Settings</h2>
+                <h2 className="text-2xl font-semibold text-gray-900 mb-2 uppercase">Oracle AI Settings</h2>
                 <p className="text-gray-600 text-center max-w-md">
                   Select a category from the sidebar to customize your Oracle AI experience
                 </p>

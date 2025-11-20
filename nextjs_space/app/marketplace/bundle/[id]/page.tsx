@@ -273,7 +273,7 @@ export default function BundleDetailPage() {
               {/* Title and Description */}
               <div className="mb-6">
                 <div className="flex items-start justify-between mb-2">
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white uppercase">
                     {bundle.title}
                   </h1>
                   {bundle.category && (
@@ -307,7 +307,7 @@ export default function BundleDetailPage() {
 
               {/* Bookmarks/Links in Bundle */}
               <div className="mb-8">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 uppercase">
                   Included Links ({bundle.items?.length || 0})
                 </h2>
                 <div className="space-y-3">
@@ -363,7 +363,7 @@ export default function BundleDetailPage() {
 
               {/* Reviews Section */}
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 uppercase">
                   Reviews ({bundle.reviews?.length || 0})
                 </h2>
 
@@ -482,7 +482,7 @@ export default function BundleDetailPage() {
                     </Badge>
                   ) : (
                     <div>
-                      <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                      <p className="text-3xl font-bold text-gray-900 dark:text-white uppercase">
                         ${bundle.price.toFixed(2)}
                       </p>
                       <p className="text-sm text-gray-500">One-time purchase</p>
