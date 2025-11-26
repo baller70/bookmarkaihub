@@ -55,17 +55,17 @@ async function main() {
     console.log(`   ↳ Assigned all existing data to ${company.name}`);
   }
 
-  // Update admin user to ELITE tier
-  const adminUser = await prisma.user.findUnique({
-    where: { email: 'john@doe.com' },
+  // Update main user to ELITE tier
+  const mainUser = await prisma.user.findUnique({
+    where: { email: 'khouston@thebasketballfactorynj.com' },
   });
 
-  if (adminUser && adminUser.subscriptionTier !== 'ELITE') {
+  if (mainUser && mainUser.subscriptionTier !== 'ELITE') {
     await prisma.user.update({
-      where: { id: adminUser.id },
+      where: { id: mainUser.id },
       data: { subscriptionTier: 'ELITE' },
     });
-    console.log('✅ Updated admin user to ELITE tier');
+    console.log('✅ Updated main user to ELITE tier');
   }
 
   console.log('🎉 Company seeding complete!');

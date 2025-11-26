@@ -22,15 +22,16 @@ async function main() {
   await prisma.account.deleteMany()
   await prisma.user.deleteMany()
 
-  // Create admin user (john@doe.com/johndoe123 - required for testing)
-  const adminPassword = await bcrypt.hash('johndoe123', 12)
+  // Create main account (khouston@thebasketballfactorynj.com)
+  const mainPassword = await bcrypt.hash('hunterrr777', 12)
   const adminUser = await prisma.user.create({
     data: {
-      email: 'john@doe.com',
-      password: adminPassword,
-      name: 'John Doe',
-      fullName: 'John Doe',
+      email: 'khouston@thebasketballfactorynj.com',
+      password: mainPassword,
+      name: 'K Houston',
+      fullName: 'K Houston',
       isAdmin: true,
+      subscriptionTier: 'ELITE', // Elite subscription for full features
     },
   })
 
