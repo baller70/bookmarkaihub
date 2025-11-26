@@ -28,6 +28,7 @@ export function CompanySwitcher() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [activeCompany, setActiveCompany] = useState<Company | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCompaniesAndActive();
@@ -36,22 +37,29 @@ export function CompanySwitcher() {
   const fetchCompaniesAndActive = async () => {
     try {
       setLoading(true);
+      setError(null);
       
       // Fetch all companies
       const companiesRes = await fetch('/api/companies');
-      if (companiesRes.ok) {
-        const companiesData = await companiesRes.json();
-        setCompanies(companiesData);
+      if (!companiesRes.ok) {
+        const errorData = await companiesRes.json();
+        throw new Error(errorData.error || 'Failed to fetch companies');
       }
+      const companiesData = await companiesRes.json();
+      setCompanies(companiesData);
 
       // Fetch active company
       const activeRes = await fetch('/api/companies/active');
-      if (activeRes.ok) {
-        const activeData = await activeRes.json();
-        setActiveCompany(activeData);
+      if (!activeRes.ok) {
+        const errorData = await activeRes.json();
+        throw new Error(errorData.error || 'Failed to fetch active company');
       }
+      const activeData = await activeRes.json();
+      setActiveCompany(activeData);
     } catch (error) {
       console.error('Error fetching companies:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load companies');
+      toast.error('Failed to load companies. Please try refreshing.');
     } finally {
       setLoading(false);
     }
@@ -78,11 +86,31 @@ export function CompanySwitcher() {
     }
   };
 
-  if (loading || !activeCompany) {
+  if (loading) {
     return (
-      <div className="flex items-center gap-2 p-2 text-sm text-gray-500">
-        <Building2 className="w-4 h-4" />
-        Loading...
+      <div className="flex items-center gap-2 p-3 text-sm text-gray-500">
+        <Building2 className="w-4 h-4 animate-pulse" />
+        <span>Loading...</span>
+      </div>
+    );
+  }
+
+  if (error || !activeCompany) {
+    return (
+      <div className="p-3">
+        <div className="flex items-center gap-2 text-sm text-red-500 mb-2">
+          <Building2 className="w-4 h-4" />
+          <span>{error || 'No company found'}</span>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={() => router.push('/settings?tab=companies')}
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          CREATE COMPANY
+        </Button>
       </div>
     );
   }
