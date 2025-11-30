@@ -219,6 +219,20 @@ export async function PATCH(
       }
     }
 
+    // If URL is being updated, fetch a new favicon
+    if (updateData.url && updateData.url !== existingBookmark.url) {
+      try {
+        const { getFaviconUrl } = await import('@/lib/favicon-service')
+        const newFavicon = await getFaviconUrl(updateData.url)
+        if (newFavicon) {
+          updateData.favicon = newFavicon
+        }
+      } catch (error) {
+        console.error('Error fetching new favicon for updated URL:', error)
+        // Continue with update even if favicon fetch fails
+      }
+    }
+
     // Update only the fields provided (excluding categoryId)
     const bookmark = await prisma.bookmark.update({
       where: { id: params.id },

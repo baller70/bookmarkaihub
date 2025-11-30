@@ -77,6 +77,8 @@ export function BookmarkCard({
   const [categories, setCategories] = useState<any[]>([])
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editedTitle, setEditedTitle] = useState(bookmark.title || "")
+  const [isEditingUrl, setIsEditingUrl] = useState(false)
+  const [editedUrl, setEditedUrl] = useState(bookmark.url || "")
   const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState("")
   const [newCategoryColor, setNewCategoryColor] = useState("#3b82f6")
@@ -240,6 +242,52 @@ export function BookmarkCard({
   const handleCancelEditTitle = () => {
     setEditedTitle(bookmark.title)
     setIsEditingTitle(false)
+  }
+
+  const handleSaveUrl = async () => {
+    if (!editedUrl.trim()) {
+      toast.error("URL cannot be empty")
+      setEditedUrl(bookmark.url)
+      setIsEditingUrl(false)
+      return
+    }
+
+    // Basic URL validation
+    try {
+      new URL(editedUrl.trim())
+    } catch (error) {
+      toast.error("Please enter a valid URL")
+      return
+    }
+
+    try {
+      toast.loading("Updating URL and fetching favicon...", { id: 'url-update' })
+      const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: editedUrl.trim() }),
+      })
+      
+      if (response.ok) {
+        toast.success("URL updated and favicon refreshed", { id: 'url-update' })
+        setIsEditingUrl(false)
+        onUpdate()
+      } else {
+        toast.error("Failed to update URL", { id: 'url-update' })
+        setEditedUrl(bookmark.url)
+        setIsEditingUrl(false)
+      }
+    } catch (error) {
+      console.error("Error updating URL:", error)
+      toast.error("Failed to update URL", { id: 'url-update' })
+      setEditedUrl(bookmark.url)
+      setIsEditingUrl(false)
+    }
+  }
+
+  const handleCancelEditUrl = () => {
+    setEditedUrl(bookmark.url)
+    setIsEditingUrl(false)
   }
 
   const handleAssignCategory = async (categoryId: string) => {
@@ -489,9 +537,56 @@ export function BookmarkCard({
                     </Button>
                   </div>
                 )}
-                <p className="text-xs sm:text-sm text-blue-600 font-medium truncate font-saira">
-                  {bookmark.url?.replace(/^https?:\/\/(www\.)?/, '')}
-                </p>
+                
+                {/* URL with inline edit functionality */}
+                {isEditingUrl ? (
+                  <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    <Input
+                      type="url"
+                      value={editedUrl}
+                      onChange={(e) => setEditedUrl(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveUrl()
+                        if (e.key === 'Escape') handleCancelEditUrl()
+                      }}
+                      className="h-7 text-xs sm:text-sm"
+                      placeholder="https://example.com"
+                      autoFocus
+                    />
+                    <Button
+                      size="sm"
+                      className="h-7 w-7 p-0 bg-green-600 hover:bg-green-700"
+                      onClick={handleSaveUrl}
+                    >
+                      <Save className="h-3 w-3 text-white" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 w-7 p-0 bg-red-100 hover:bg-red-200"
+                      onClick={handleCancelEditUrl}
+                    >
+                      <X className="h-3 w-3 text-red-600" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 group/url">
+                    <p className="text-xs sm:text-sm text-blue-600 font-medium truncate font-saira">
+                      {bookmark.url?.replace(/^https?:\/\/(www\.)?/, '')}
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 w-5 p-0 opacity-0 group-hover/url:opacity-100 transition-opacity"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setIsEditingUrl(true)
+                      }}
+                    >
+                      <Pencil className="h-3 w-3 text-gray-500" />
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
 
