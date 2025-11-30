@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { DashboardAuth } from "@/components/dashboard-auth"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 import { 
   Settings, 
   Wand2, 
@@ -44,6 +45,14 @@ export default function AILinkPilotPage() {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }))
   }
 
+  // Bulk Uploader States
+  const [uploadMethod, setUploadMethod] = useState<"drag-drop" | "paste-text" | "single-url">("drag-drop")
+  const [pasteText, setPasteText] = useState("")
+  const [singleUrl, setSingleUrl] = useState("")
+  const [isDragging, setIsDragging] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   // Auto-Processing States
   const [manualSaves, setManualSaves] = useState(true)
   const [bulkUploads, setBulkUploads] = useState(true)
@@ -65,6 +74,145 @@ export default function AILinkPilotPage() {
   const [smartContext, setSmartContext] = useState(true)
   const [fallbackFolder, setFallbackFolder] = useState("inbox")
   const [draftExpiration, setDraftExpiration] = useState("7-days")
+
+  // Bulk Uploader Functions
+  const extractUrlsFromText = (text: string): string[] => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g
+    const matches = text.match(urlRegex) || []
+    return [...new Set(matches)] // Remove duplicates
+  }
+
+  const parseCSV = (text: string): string[] => {
+    const lines = text.split('\n')
+    const urls: string[] = []
+    
+    lines.forEach(line => {
+      const cells = line.split(',')
+      cells.forEach(cell => {
+        const trimmed = cell.trim().replace(/["']/g, '')
+        if (trimmed.match(/^https?:\/\//)) {
+          urls.push(trimmed)
+        }
+      })
+    })
+    
+    return [...new Set(urls)] // Remove duplicates
+  }
+
+  const createBookmarksFromUrls = async (urls: string[]) => {
+    if (urls.length === 0) {
+      toast.error('No valid URLs found')
+      return
+    }
+
+    setIsUploading(true)
+    let successCount = 0
+    let failCount = 0
+
+    try {
+      for (const url of urls) {
+        try {
+          const response = await fetch('/api/bookmarks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              url,
+              title: new URL(url).hostname.replace('www.', '').toUpperCase(),
+              priority: 'MEDIUM'
+            })
+          })
+
+          if (response.ok) {
+            successCount++
+          } else {
+            failCount++
+          }
+        } catch (error) {
+          failCount++
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`Successfully imported ${successCount} bookmark${successCount > 1 ? 's' : ''}${failCount > 0 ? `. ${failCount} failed.` : ''}`)
+        // Reset forms
+        setPasteText("")
+        setSingleUrl("")
+      } else {
+        toast.error('Failed to import bookmarks')
+      }
+    } catch (error) {
+      toast.error('Error importing bookmarks')
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const handleFileUpload = async (file: File) => {
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      const text = e.target?.result as string
+      let urls: string[] = []
+
+      if (file.name.endsWith('.csv')) {
+        urls = parseCSV(text)
+      } else if (file.name.endsWith('.txt')) {
+        urls = extractUrlsFromText(text)
+      } else {
+        toast.error('Please upload a .csv or .txt file')
+        return
+      }
+
+      await createBookmarksFromUrls(urls)
+    }
+    reader.readAsText(file)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = () => {
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+
+    const files = Array.from(e.dataTransfer.files)
+    if (files.length > 0) {
+      handleFileUpload(files[0])
+    }
+  }
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files && files.length > 0) {
+      handleFileUpload(files[0])
+    }
+  }
+
+  const handlePasteTextImport = () => {
+    const urls = extractUrlsFromText(pasteText)
+    createBookmarksFromUrls(urls)
+  }
+
+  const handleSingleUrlImport = () => {
+    if (!singleUrl.trim()) {
+      toast.error('Please enter a URL')
+      return
+    }
+    
+    if (!singleUrl.match(/^https?:\/\//)) {
+      toast.error('Please enter a valid URL starting with http:// or https://')
+      return
+    }
+
+    createBookmarksFromUrls([singleUrl])
+  }
 
   const sidebarItems = [
     { id: "auto-processing", icon: Settings, label: "Auto-Processing" },
@@ -708,45 +856,48 @@ export default function AILinkPilotPage() {
                     <p className="text-xs sm:text-xs sm:text-sm text-gray-500 mt-1">Import multiple links at once with intelligent categorization and batch processing</p>
                   </div>
 
-                  {/* Warning Banner */}
-                  <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <svg className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-sm text-yellow-700">You have unsaved changes</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        Reset
-                      </Button>
-                      <Button size="sm" className="bg-blue-500 text-white hover:bg-blue-600">
-                        Save
-                      </Button>
-                    </div>
-                  </div>
-
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                     {/* Import Links Section */}
                     <Card className="lg:col-span-2 p-4 sm:p-6 bg-white border-gray-200 overflow-hidden">
                       <h3 className="font-semibold text-gray-900 mb-4">IMPORT LINKS</h3>
                       
                       {/* Upload Method Tabs */}
-                      <div className="flex gap-4 mb-6">
-                        <button className="flex items-center gap-2 text-sm font-medium text-gray-900">
+                      <div className="flex gap-4 mb-6 border-b">
+                        <button
+                          onClick={() => setUploadMethod("drag-drop")}
+                          className={cn(
+                            "flex items-center gap-2 text-sm font-medium pb-2 border-b-2 transition-colors",
+                            uploadMethod === "drag-drop"
+                              ? "text-gray-900 border-blue-500"
+                              : "text-gray-500 hover:text-gray-900 border-transparent"
+                          )}
+                        >
                           <Upload className="h-4 w-4" />
                           Drag & Drop
                         </button>
-                        <button className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900">
+                        <button
+                          onClick={() => setUploadMethod("paste-text")}
+                          className={cn(
+                            "flex items-center gap-2 text-sm font-medium pb-2 border-b-2 transition-colors",
+                            uploadMethod === "paste-text"
+                              ? "text-gray-900 border-blue-500"
+                              : "text-gray-500 hover:text-gray-900 border-transparent"
+                          )}
+                        >
                           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
                           Paste Text
                         </button>
-                        <button className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900">
+                        <button
+                          onClick={() => setUploadMethod("single-url")}
+                          className={cn(
+                            "flex items-center gap-2 text-sm font-medium pb-2 border-b-2 transition-colors",
+                            uploadMethod === "single-url"
+                              ? "text-gray-900 border-blue-500"
+                              : "text-gray-500 hover:text-gray-900 border-transparent"
+                          )}
+                        >
                           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                           </svg>
@@ -754,43 +905,125 @@ export default function AILinkPilotPage() {
                         </button>
                       </div>
 
-                      {/* Drop Zone */}
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
-                        <div className="flex justify-center mb-4">
-                          <div className="relative">
-                            <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
-                              <Upload className="h-8 w-8 text-white" />
+                      {/* Drag & Drop View */}
+                      {uploadMethod === "drag-drop" && (
+                        <>
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".csv,.txt"
+                            onChange={handleFileInputChange}
+                            className="hidden"
+                          />
+                          <div
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                            className={cn(
+                              "border-2 border-dashed rounded-lg p-12 text-center transition-colors",
+                              isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"
+                            )}
+                          >
+                            <div className="flex justify-center mb-4">
+                              <div className="relative">
+                                <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
+                                  <Upload className="h-8 w-8 text-white" />
+                                </div>
+                                {!isUploading && (
+                                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                    <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                            <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                              <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            <h3 className="text-base sm:text-lg font-semibold text-blue-500 mb-2">
+                              {isUploading ? "UPLOADING..." : "DROP YOUR FILES HERE"}
+                            </h3>
+                            <p className="text-xs sm:text-sm text-gray-500 mb-4">
+                              Drag and drop CSV or TXT files with URLs
+                            </p>
+                            <div className="flex justify-center gap-4 text-xs text-gray-500 mb-6">
+                              <div className="flex items-center gap-1">
+                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                CSV Files
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                TXT Files
+                              </div>
+                            </div>
+                            <Button
+                              onClick={() => fileInputRef.current?.click()}
+                              disabled={isUploading}
+                              className="bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
+                            >
+                              <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                               </svg>
-                            </div>
+                              Choose Files
+                            </Button>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Paste Text View */}
+                      {uploadMethod === "paste-text" && (
+                        <div className="space-y-4">
+                          <Textarea
+                            placeholder="Paste your URLs here (one per line or separated by spaces)&#10;Example:&#10;https://example.com&#10;https://another-site.com&#10;https://yet-another.com"
+                            value={pasteText}
+                            onChange={(e) => setPasteText(e.target.value)}
+                            className="min-h-[300px] font-mono text-sm"
+                          />
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              onClick={() => setPasteText("")}
+                              disabled={!pasteText || isUploading}
+                            >
+                              Clear
+                            </Button>
+                            <Button
+                              onClick={handlePasteTextImport}
+                              disabled={!pasteText || isUploading}
+                              className="bg-blue-500 text-white hover:bg-blue-600"
+                            >
+                              {isUploading ? "Importing..." : "Import URLs"}
+                            </Button>
                           </div>
                         </div>
-                        <h3 className="text-base sm:text-lg font-semibold text-blue-500 mb-2">DROP YOUR FILES HERE</h3>
-                        <p className="text-xs sm:text-sm text-gray-500 mb-4">Drag and drop CSV files or paste URLs directly</p>
-                        <div className="flex justify-center gap-4 text-xs text-gray-500 mb-6">
-                          <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            CSV Files
+                      )}
+
+                      {/* Single URL View */}
+                      {uploadMethod === "single-url" && (
+                        <div className="space-y-4">
+                          <div>
+                            <Label className="mb-2 block">ENTER URL</Label>
+                            <Input
+                              type="url"
+                              placeholder="https://example.com"
+                              value={singleUrl}
+                              onChange={(e) => setSingleUrl(e.target.value)}
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter' && !isUploading) {
+                                  handleSingleUrlImport()
+                                }
+                              }}
+                            />
                           </div>
-                          <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            Text URLs
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                            Bulk Import
+                          <div className="flex justify-end">
+                            <Button
+                              onClick={handleSingleUrlImport}
+                              disabled={!singleUrl || isUploading}
+                              className="bg-blue-500 text-white hover:bg-blue-600"
+                            >
+                              {isUploading ? "Adding..." : "Add Bookmark"}
+                            </Button>
                           </div>
                         </div>
-                        <Button className="bg-blue-500 text-white hover:bg-blue-600">
-                          <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                          </svg>
-                          Choose Files
-                        </Button>
-                      </div>
+                      )}
                     </Card>
 
                     {/* Batch Settings Section */}
