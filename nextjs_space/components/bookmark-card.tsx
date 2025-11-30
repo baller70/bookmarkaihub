@@ -13,7 +13,16 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
 import { BookmarkDetailModal } from "@/components/bookmark-detail-modal"
 import { 
   ExternalLink, 
@@ -29,7 +38,8 @@ import {
   Check,
   Pencil,
   Save,
-  X
+  X,
+  Plus
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
@@ -67,6 +77,10 @@ export function BookmarkCard({
   const [categories, setCategories] = useState<any[]>([])
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editedTitle, setEditedTitle] = useState(bookmark.title || "")
+  const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState("")
+  const [newCategoryColor, setNewCategoryColor] = useState("#3b82f6")
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false)
 
   // Fetch custom logo and categories on mount
   useEffect(() => {
@@ -245,6 +259,59 @@ export function BookmarkCard({
     } catch (error) {
       console.error("Error assigning category:", error)
       toast.error("Failed to assign category")
+    }
+  }
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) {
+      toast.error("Please enter a category name")
+      return
+    }
+
+    setIsCreatingCategory(true)
+    try {
+      const response = await fetch('/api/categories', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newCategoryName.trim(),
+          color: newCategoryColor,
+          icon: "📁"
+        }),
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        toast.success(`Category "${newCategoryName}" created!`)
+        
+        // Refresh categories list
+        const categoriesResponse = await fetch('/api/categories')
+        if (categoriesResponse.ok) {
+          const categoriesData = await categoriesResponse.json()
+          const categoriesArray = categoriesData.categories || categoriesData
+          if (Array.isArray(categoriesArray)) {
+            setCategories(categoriesArray)
+          }
+        }
+        
+        // Automatically assign the new category to this bookmark
+        if (data.category?.id) {
+          await handleAssignCategory(data.category.id)
+        }
+        
+        // Reset form and close modal
+        setNewCategoryName("")
+        setNewCategoryColor("#3b82f6")
+        setShowCreateCategoryModal(false)
+      } else {
+        const errorData = await response.json()
+        toast.error(errorData.error || "Failed to create category")
+      }
+    } catch (error) {
+      console.error("Error creating category:", error)
+      toast.error("Failed to create category")
+    } finally {
+      setIsCreatingCategory(false)
     }
   }
 
@@ -647,6 +714,19 @@ export function BookmarkCard({
                     No categories available. Create one first.
                   </DropdownMenuItem>
                 )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowCreateCategoryModal(true)
+                  }}
+                  className="cursor-pointer text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                >
+                  <span className="flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
+                    Add Category
+                  </span>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <Button
@@ -669,6 +749,91 @@ export function BookmarkCard({
         onOpenChange={setShowDetail}
         onUpdate={onUpdate}
       />
+
+      {/* Create Category Modal */}
+      <Dialog open={showCreateCategoryModal} onOpenChange={setShowCreateCategoryModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>CREATE NEW CATEGORY</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="category-name" className="text-sm font-medium">
+                CATEGORY NAME
+              </Label>
+              <Input
+                id="category-name"
+                placeholder="Enter category name..."
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleCreateCategory()
+                  }
+                }}
+                className="border-gray-300"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">
+                COLOR
+              </Label>
+              <div className="grid grid-cols-6 gap-2">
+                {[
+                  '#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B', 
+                  '#10B981', '#06B6D4', '#EF4444', '#6366F1'
+                ].map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    onClick={() => setNewCategoryColor(color)}
+                    className={cn(
+                      "w-10 h-10 rounded-lg border-2 transition-all",
+                      newCategoryColor === color 
+                        ? "border-gray-900 scale-110" 
+                        : "border-gray-200 hover:border-gray-400"
+                    )}
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+              <div 
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-white"
+                style={{ backgroundColor: newCategoryColor }}
+              >
+                📁
+              </div>
+              <span className="font-medium text-sm">
+                {newCategoryName || "Category Name"}
+              </span>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowCreateCategoryModal(false)
+                setNewCategoryName("")
+                setNewCategoryColor("#3b82f6")
+              }}
+              disabled={isCreatingCategory}
+            >
+              CANCEL
+            </Button>
+            <Button
+              onClick={handleCreateCategory}
+              disabled={isCreatingCategory || !newCategoryName.trim()}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {isCreatingCategory ? "CREATING..." : "CREATE CATEGORY"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
