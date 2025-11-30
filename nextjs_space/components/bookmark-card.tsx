@@ -89,7 +89,10 @@ export function BookmarkCard({
         const response = await fetch('/api/categories')
         if (response.ok) {
           const data = await response.json()
+          console.log('Categories loaded:', data)
           setCategories(data)
+        } else {
+          console.error('Failed to fetch categories:', response.status, response.statusText)
         }
       } catch (error) {
         console.error('Error fetching categories:', error)
@@ -211,6 +214,7 @@ export function BookmarkCard({
 
   const handleAssignCategory = async (categoryId: string) => {
     try {
+      console.log('Assigning category:', categoryId, 'to bookmark:', bookmark.id)
       const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -219,9 +223,12 @@ export function BookmarkCard({
       
       if (response.ok) {
         const categoryName = categories.find(c => c.id === categoryId)?.name || "None"
+        console.log('Category assigned successfully:', categoryName)
         toast.success(`Bookmark moved to ${categoryName}`)
         onUpdate()
       } else {
+        const errorData = await response.json()
+        console.error("Failed to assign category:", response.status, errorData)
         toast.error("Failed to assign category")
       }
     } catch (error) {
