@@ -7,6 +7,13 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { Input } from "@/components/ui/input"
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { BookmarkDetailModal } from "@/components/bookmark-detail-modal"
 import { 
   ExternalLink, 
@@ -19,7 +26,10 @@ import {
   Target,
   Clock,
   GripVertical,
-  Check
+  Check,
+  Pencil,
+  Save,
+  X
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
@@ -54,8 +64,11 @@ export function BookmarkCard({
   const [isDeleting, setIsDeleting] = useState(false)
   const [isFavorite, setIsFavorite] = useState(bookmark.isFavorite || false)
   const [customLogoUrl, setCustomLogoUrl] = useState<string | null>(null)
+  const [categories, setCategories] = useState<any[]>([])
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
+  const [editedTitle, setEditedTitle] = useState(bookmark.title || "")
 
-  // Fetch custom logo on mount
+  // Fetch custom logo and categories on mount
   useEffect(() => {
     const fetchCustomLogo = async () => {
       try {
@@ -70,7 +83,21 @@ export function BookmarkCard({
         console.error('Error fetching custom logo:', error)
       }
     }
+    
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/categories')
+        if (response.ok) {
+          const data = await response.json()
+          setCategories(data)
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error)
+      }
+    }
+    
     fetchCustomLogo()
+    fetchCategories()
   }, [])
 
   const {
@@ -145,11 +172,62 @@ export function BookmarkCard({
     }
   }
 
-  const handleMoveToFolder = async (e: React.MouseEvent) => {
-    e.stopPropagation()
-    toast.info("Opening folder selector...")
-    // This could open a modal to select categories
-    setShowDetail(true)
+  const handleSaveTitle = async () => {
+    if (!editedTitle.trim()) {
+      toast.error("Title cannot be empty")
+      setEditedTitle(bookmark.title)
+      setIsEditingTitle(false)
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: editedTitle.trim() }),
+      })
+      
+      if (response.ok) {
+        toast.success("Title updated successfully")
+        setIsEditingTitle(false)
+        onUpdate()
+      } else {
+        toast.error("Failed to update title")
+        setEditedTitle(bookmark.title)
+        setIsEditingTitle(false)
+      }
+    } catch (error) {
+      console.error("Error updating title:", error)
+      toast.error("Failed to update title")
+      setEditedTitle(bookmark.title)
+      setIsEditingTitle(false)
+    }
+  }
+
+  const handleCancelEditTitle = () => {
+    setEditedTitle(bookmark.title)
+    setIsEditingTitle(false)
+  }
+
+  const handleAssignCategory = async (categoryId: string) => {
+    try {
+      const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ categoryId: categoryId === "none" ? null : categoryId }),
+      })
+      
+      if (response.ok) {
+        const categoryName = categories.find(c => c.id === categoryId)?.name || "None"
+        toast.success(`Bookmark moved to ${categoryName}`)
+        onUpdate()
+      } else {
+        toast.error("Failed to assign category")
+      }
+    } catch (error) {
+      console.error("Error assigning category:", error)
+      toast.error("Failed to assign category")
+    }
   }
 
   const handleChangePriority = async (e: React.MouseEvent) => {
@@ -274,9 +352,53 @@ export function BookmarkCard({
               
               {/* Title and URL */}
               <div className="flex-1 min-w-0 pt-1">
-                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-0.5 truncate tracking-tight font-audiowide">
-                  {bookmark.title}
-                </h3>
+                {isEditingTitle ? (
+                  <div className="flex items-center gap-1 mb-0.5" onClick={(e) => e.stopPropagation()}>
+                    <Input
+                      value={editedTitle}
+                      onChange={(e) => setEditedTitle(e.target.value)}
+                      className="text-base sm:text-lg font-bold text-gray-900 tracking-tight font-audiowide h-7 px-2"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveTitle()
+                        if (e.key === 'Escape') handleCancelEditTitle()
+                      }}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0 hover:bg-green-100"
+                      onClick={handleSaveTitle}
+                    >
+                      <Save className="h-3 w-3 text-green-600" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0 hover:bg-red-100"
+                      onClick={handleCancelEditTitle}
+                    >
+                      <X className="h-3 w-3 text-red-600" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 mb-0.5 group/title">
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900 truncate tracking-tight font-audiowide">
+                      {bookmark.title}
+                    </h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 w-5 p-0 opacity-0 group-hover/title:opacity-100 transition-opacity"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setIsEditingTitle(true)
+                      }}
+                    >
+                      <Pencil className="h-3 w-3 text-gray-500" />
+                    </Button>
+                  </div>
+                )}
                 <p className="text-xs sm:text-sm text-blue-600 font-medium truncate font-saira">
                   {bookmark.url?.replace(/^https?:\/\/(www\.)?/, '')}
                 </p>
@@ -453,15 +575,56 @@ export function BookmarkCard({
             >
               <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full hover:bg-purple-50 text-gray-400 hover:text-purple-500 transition-colors touch-target"
-              onClick={handleMoveToFolder}
-              title="Move to Folder"
-            >
-              <Folder className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full hover:bg-purple-50 text-gray-400 hover:text-purple-500 transition-colors touch-target"
+                  title="Move to Category"
+                >
+                  <Folder className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent 
+                align="end" 
+                className="w-48 max-h-64 overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <DropdownMenuItem 
+                  onClick={() => handleAssignCategory("none")}
+                  className={cn(
+                    "cursor-pointer",
+                    !bookmark.categoryId && "bg-gray-100 font-semibold"
+                  )}
+                >
+                  <span className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-gray-300"></div>
+                    No Category
+                  </span>
+                </DropdownMenuItem>
+                {categories.map((category) => (
+                  <DropdownMenuItem 
+                    key={category.id}
+                    onClick={() => handleAssignCategory(category.id)}
+                    className={cn(
+                      "cursor-pointer",
+                      bookmark.categoryId === category.id && "bg-gray-100 font-semibold"
+                    )}
+                  >
+                    <span className="flex items-center gap-2">
+                      <div 
+                        className="w-3 h-3 rounded-full"
+                        style={{ 
+                          backgroundColor: category.color || category.backgroundColor || '#6B7280' 
+                        }}
+                      ></div>
+                      {category.name}
+                    </span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button
               variant="ghost"
               size="sm"
