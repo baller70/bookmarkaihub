@@ -39,7 +39,8 @@ import {
   Pencil,
   Save,
   X,
-  Plus
+  Plus,
+  Sparkles
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
@@ -83,6 +84,7 @@ export function BookmarkCard({
   const [newCategoryName, setNewCategoryName] = useState("")
   const [newCategoryColor, setNewCategoryColor] = useState("#3b82f6")
   const [isCreatingCategory, setIsCreatingCategory] = useState(false)
+  const [isEnhancing, setIsEnhancing] = useState(false)
   
   // Get current category ID from the bookmark's categories array
   const currentCategoryId = bookmark.categories && bookmark.categories.length > 0 
@@ -183,6 +185,37 @@ export function BookmarkCard({
     e.stopPropagation()
     navigator.clipboard.writeText(bookmark.url)
     toast.success("URL copied to clipboard")
+  }
+
+  const handleEnhanceLogo = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    
+    if (isEnhancing) return
+    
+    setIsEnhancing(true)
+    toast.loading("Enhancing logo with AI... This may take 20-30 seconds")
+    
+    try {
+      const response = await fetch(`/api/bookmarks/${bookmark.id}/enhance-logo`, {
+        method: "POST",
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        toast.success("Logo enhanced successfully!")
+        onUpdate() // Refresh the bookmark to show the new logo
+      } else {
+        toast.error(data.message || "Enhancement not needed - logo quality is already good")
+      }
+    } catch (error) {
+      console.error("Error enhancing logo:", error)
+      toast.error("Failed to enhance logo")
+    } finally {
+      setIsEnhancing(false)
+      // Dismiss the loading toast
+      toast.dismiss()
+    }
   }
 
   const handleToggleFavorite = async (e: React.MouseEvent) => {
@@ -750,6 +783,24 @@ export function BookmarkCard({
               title="Copy URL"
             >
               <Copy className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full transition-colors touch-target",
+                isEnhancing 
+                  ? "bg-purple-100 text-purple-600" 
+                  : "hover:bg-purple-50 text-gray-400 hover:text-purple-500"
+              )}
+              onClick={handleEnhanceLogo}
+              disabled={isEnhancing}
+              title={isEnhancing ? "Enhancing logo..." : "Enhance logo quality with AI"}
+            >
+              <Sparkles className={cn(
+                "h-3 w-3 sm:h-3.5 sm:w-3.5",
+                isEnhancing && "animate-pulse"
+              )} />
             </Button>
             <Button
               variant="ghost"

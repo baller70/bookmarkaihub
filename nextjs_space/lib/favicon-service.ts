@@ -1,5 +1,5 @@
 /**
- * Premium Favicon/Logo fetching service
+ * Premium Favicon/Logo fetching service with AI upscaling
  */
 
 const DOMAIN_OVERRIDES: Record<string, string> = {
@@ -12,7 +12,7 @@ function buildUrl(parts: string[]): string {
   return parts.join('')
 }
 
-export async function getFaviconUrl(url: string): Promise<string> {
+export async function getFaviconUrl(url: string, useAIUpscale: boolean = false): Promise<string> {
   try {
     const urlObj = new URL(url)
     const domain = urlObj.hostname.replace(/^www\./, '')
@@ -24,6 +24,17 @@ export async function getFaviconUrl(url: string): Promise<string> {
     // Build Clearbit logo URL with premium 400px size for high-quality display
     const clearbit = buildUrl(['https', '://', 'logo', '.', 'clearbit', '.', 'com', '/', domain, '?size=400'])
     
+    // If AI upscaling is enabled, try to enhance the image
+    if (useAIUpscale) {
+      try {
+        const { getEnhancedFavicon } = await import('./image-upscaler')
+        return await getEnhancedFavicon(url)
+      } catch (error) {
+        console.error('AI upscaling failed, using standard Clearbit:', error)
+        return clearbit
+      }
+    }
+    
     return clearbit
   } catch (error) {
     console.error('Error generating favicon URL:', error)
@@ -31,6 +42,6 @@ export async function getFaviconUrl(url: string): Promise<string> {
   }
 }
 
-export async function fetchHighQualityFavicon(url: string): Promise<string | null> {
-  return getFaviconUrl(url)
+export async function fetchHighQualityFavicon(url: string, useAIUpscale: boolean = false): Promise<string | null> {
+  return getFaviconUrl(url, useAIUpscale)
 }
