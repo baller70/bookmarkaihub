@@ -3,57 +3,56 @@ const prisma = new PrismaClient();
 
 async function checkCategories() {
   try {
-    // Get all categories
-    const categories = await prisma.category.findMany({
+    // Get the user
+    const user = await prisma.user.findUnique({
+      where: { email: 'khouston@thebasketballfactorynj.com' }
+    });
+    
+    if (!user) {
+      console.log('User not found');
+      return;
+    }
+    
+    console.log('User ID:', user.id);
+    
+    // Get user's companies
+    const companies = await prisma.company.findMany({
+      where: { ownerId: user.id }
+    });
+    
+    console.log('\nCompanies:', companies.length);
+    companies.forEach(c => console.log(`  - ${c.name} (ID: ${c.id})`));
+    
+    // Get ALL categories for this user
+    const allCategories = await prisma.category.findMany({
+      where: { userId: user.id },
       include: {
-        bookmarks: {
-          include: {
-            bookmark: true
-          }
+        _count: {
+          select: { bookmarks: true }
         }
       }
     });
     
-    console.log('\n=== CATEGORIES IN DATABASE ===');
-    console.log(`Total categories: ${categories.length}\n`);
-    
-    categories.forEach((cat, index) => {
-      console.log(`${index + 1}. ${cat.name}`);
-      console.log(`   ID: ${cat.id}`);
-      console.log(`   Color: ${cat.color}`);
-      console.log(`   Background Color: ${cat.backgroundColor}`);
-      console.log(`   Icon: ${cat.icon}`);
-      console.log(`   Bookmarks assigned: ${cat.bookmarks.length}`);
-      console.log(`   ---`);
+    console.log('\n=== ALL CATEGORIES ===');
+    console.log('Total categories:', allCategories.length);
+    allCategories.forEach(cat => {
+      console.log(`  - ${cat.name} (Company: ${cat.companyId || 'NULL'}, Bookmarks: ${cat._count.bookmarks})`);
     });
     
-    // Get all bookmarks with categories
-    const bookmarksWithCategories = await prisma.bookmark.findMany({
-      where: {
-        categories: {
-          some: {}
-        }
-      },
-      include: {
-        categories: {
-          include: {
-            category: true
-          }
-        }
-      }
+    // Get categories WITH company ID
+    const categoriesWithCompany = allCategories.filter(c => c.companyId);
+    console.log('\n=== CATEGORIES WITH COMPANY ===');
+    console.log('Total:', categoriesWithCompany.length);
+    categoriesWithCompany.forEach(cat => {
+      console.log(`  - ${cat.name} (Company: ${cat.companyId}, Bookmarks: ${cat._count.bookmarks})`);
     });
     
-    console.log('\n=== BOOKMARKS WITH CATEGORIES ===');
-    console.log(`Total bookmarks with categories: ${bookmarksWithCategories.length}\n`);
-    
-    bookmarksWithCategories.slice(0, 5).forEach((bookmark, index) => {
-      console.log(`${index + 1}. ${bookmark.title}`);
-      bookmark.categories.forEach(bc => {
-        console.log(`   Category: ${bc.category.name} (Color: ${bc.category.color})`);
-      });
-      console.log(`   Total Visits: ${bookmark.totalVisits}`);
-      console.log(`   Time Spent: ${bookmark.timeSpent}`);
-      console.log(`   ---`);
+    // Get categories WITHOUT company ID
+    const categoriesWithoutCompany = allCategories.filter(c => !c.companyId);
+    console.log('\n=== CATEGORIES WITHOUT COMPANY (ORPHANED) ===');
+    console.log('Total:', categoriesWithoutCompany.length);
+    categoriesWithoutCompany.forEach(cat => {
+      console.log(`  - ${cat.name} (Bookmarks: ${cat._count.bookmarks})`);
     });
     
   } catch (error) {
