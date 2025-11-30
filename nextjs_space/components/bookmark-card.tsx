@@ -90,12 +90,20 @@ export function BookmarkCard({
         if (response.ok) {
           const data = await response.json()
           console.log('Categories loaded:', data)
-          setCategories(data)
+          // Ensure data is an array before setting state
+          if (Array.isArray(data)) {
+            setCategories(data)
+          } else {
+            console.error('Categories API returned non-array data:', data)
+            setCategories([])
+          }
         } else {
           console.error('Failed to fetch categories:', response.status, response.statusText)
+          setCategories([])
         }
       } catch (error) {
         console.error('Error fetching categories:', error)
+        setCategories([])
       }
     }
     
@@ -610,26 +618,32 @@ export function BookmarkCard({
                     No Category
                   </span>
                 </DropdownMenuItem>
-                {categories.map((category) => (
-                  <DropdownMenuItem 
-                    key={category.id}
-                    onClick={() => handleAssignCategory(category.id)}
-                    className={cn(
-                      "cursor-pointer",
-                      bookmark.categoryId === category.id && "bg-gray-100 font-semibold"
-                    )}
-                  >
-                    <span className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full"
-                        style={{ 
-                          backgroundColor: category.color || category.backgroundColor || '#6B7280' 
-                        }}
-                      ></div>
-                      {category.name}
-                    </span>
+                {Array.isArray(categories) && categories.length > 0 ? (
+                  categories.map((category) => (
+                    <DropdownMenuItem 
+                      key={category.id}
+                      onClick={() => handleAssignCategory(category.id)}
+                      className={cn(
+                        "cursor-pointer",
+                        bookmark.categoryId === category.id && "bg-gray-100 font-semibold"
+                      )}
+                    >
+                      <span className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full"
+                          style={{ 
+                            backgroundColor: category.color || category.backgroundColor || '#6B7280' 
+                          }}
+                        ></div>
+                        {category.name}
+                      </span>
+                    </DropdownMenuItem>
+                  ))
+                ) : (
+                  <DropdownMenuItem disabled className="text-gray-400 text-sm">
+                    No categories available. Create one first.
                   </DropdownMenuItem>
-                ))}
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
             <Button
