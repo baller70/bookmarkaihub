@@ -81,6 +81,11 @@ export function BookmarkCard({
   const [newCategoryName, setNewCategoryName] = useState("")
   const [newCategoryColor, setNewCategoryColor] = useState("#3b82f6")
   const [isCreatingCategory, setIsCreatingCategory] = useState(false)
+  
+  // Get current category ID from the bookmark's categories array
+  const currentCategoryId = bookmark.categories && bookmark.categories.length > 0 
+    ? bookmark.categories[0].category?.id 
+    : null
 
   // Fetch custom logo and categories on mount
   useEffect(() => {
@@ -680,7 +685,7 @@ export function BookmarkCard({
                   onClick={() => handleAssignCategory("none")}
                   className={cn(
                     "cursor-pointer",
-                    !bookmark.categoryId && "bg-gray-100 font-semibold"
+                    !currentCategoryId && "bg-gray-100 font-semibold"
                   )}
                 >
                   <span className="flex items-center gap-2">
@@ -695,7 +700,7 @@ export function BookmarkCard({
                       onClick={() => handleAssignCategory(category.id)}
                       className={cn(
                         "cursor-pointer",
-                        bookmark.categoryId === category.id && "bg-gray-100 font-semibold"
+                        currentCategoryId === category.id && "bg-gray-100 font-semibold"
                       )}
                     >
                       <span className="flex items-center gap-2">

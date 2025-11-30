@@ -172,6 +172,7 @@ export async function PATCH(
     }
 
     const body = await request.json()
+    const { categoryId, ...updateData } = body
 
     // Verify the bookmark belongs to the user
     const existingBookmark = await prisma.bookmark.findFirst({
@@ -185,10 +186,43 @@ export async function PATCH(
       return NextResponse.json({ error: "Bookmark not found" }, { status: 404 })
     }
 
-    // Update only the fields provided
+    // Handle category assignment separately
+    if (categoryId !== undefined) {
+      // Delete all existing category relationships
+      await prisma.bookmarkCategory.deleteMany({
+        where: { bookmarkId: params.id },
+      })
+
+      // Create new relationship if categoryId is not null
+      if (categoryId !== null) {
+        // Verify the category exists and belongs to the user's company
+        const category = await prisma.category.findFirst({
+          where: {
+            id: categoryId,
+            userId: session.user.id,
+          },
+        })
+
+        if (!category) {
+          return NextResponse.json(
+            { error: "Category not found or doesn't belong to you" },
+            { status: 404 }
+          )
+        }
+
+        await prisma.bookmarkCategory.create({
+          data: {
+            bookmarkId: params.id,
+            categoryId: categoryId,
+          },
+        })
+      }
+    }
+
+    // Update only the fields provided (excluding categoryId)
     const bookmark = await prisma.bookmark.update({
       where: { id: params.id },
-      data: body,
+      data: updateData,
       include: {
         categories: {
           include: {
