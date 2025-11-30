@@ -89,10 +89,13 @@ export function BookmarkCard({
         const response = await fetch('/api/categories')
         if (response.ok) {
           const data = await response.json()
-          console.log('Categories loaded:', data)
+          console.log('Categories API response:', data)
+          // API returns { categories: [...] }, extract the array
+          const categoriesArray = data.categories || data
+          console.log('Categories array:', categoriesArray)
           // Ensure data is an array before setting state
-          if (Array.isArray(data)) {
-            setCategories(data)
+          if (Array.isArray(categoriesArray)) {
+            setCategories(categoriesArray)
           } else {
             console.error('Categories API returned non-array data:', data)
             setCategories([])
