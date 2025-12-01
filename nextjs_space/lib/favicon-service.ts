@@ -1,10 +1,9 @@
 /**
- * Logo Fetching Service - BRANDFETCH ONLY
+ * Simple Favicon Fetching Service
  * 
- * STRATEGY:
- * 1. Domain overrides (curated sources)
- * 2. Brandfetch API (high-quality company logos)
- * 3. NO FALLBACKS - If Brandfetch doesn't have it, return empty string
+ * Uses reliable, free Favicon APIs:
+ * - Google Favicon API
+ * - DuckDuckGo Icons API
  */
 
 const DOMAIN_OVERRIDES: Record<string, string> = {
@@ -14,95 +13,84 @@ const DOMAIN_OVERRIDES: Record<string, string> = {
 }
 
 /**
- * Try Brandfetch - premium logo API with high quality
+ * Google Favicon API - returns favicon for any domain
  */
-async function tryBrandfetch(domain: string): Promise<string | null> {
+function getGoogleFavicon(domain: string, size: number = 128): string {
+  const baseUrl = 'https://www.google.com/s2/favicons';
+  return `${baseUrl}?domain=${domain}&sz=${size}`;
+}
+
+/**
+ * DuckDuckGo Icons API - reliable fallback
+ */
+function getDuckDuckGoFavicon(domain: string): string {
+  const baseUrl = 'https://icons.duckduckgo.com/ip3';
+  return `${baseUrl}/${domain}.ico`;
+}
+
+/**
+ * Verify favicon URL is accessible
+ */
+async function verifyFaviconUrl(url: string): Promise<boolean> {
   try {
-    console.log(`  🔍 Trying Brandfetch for ${domain}...`);
-    
-    // Brandfetch has a free tier API
-    const brandfetchUrl = `https://api.brandfetch.io/v2/brands/${domain}`;
-    
-    const response = await fetch(brandfetchUrl, {
-      headers: {
-        'Accept': 'application/json'
-      },
-      signal: AbortSignal.timeout(10000)
+    const response = await fetch(url, { 
+      method: 'HEAD',
+      signal: AbortSignal.timeout(5000)
     });
-    
-    if (!response.ok) {
-      console.log(`  ❌ Brandfetch returned ${response.status} - NO LOGO AVAILABLE`);
-      return null;
-    }
-    
-    const data = await response.json();
-    
-    // Brandfetch returns multiple logo formats, get the highest quality one
-    if (data.logos && data.logos.length > 0) {
-      // Prefer PNG format, then SVG
-      const pngLogo = data.logos.find((logo: any) => logo.formats?.some((f: any) => f.format === 'png'));
-      const svgLogo = data.logos.find((logo: any) => logo.formats?.some((f: any) => f.format === 'svg'));
-      
-      const chosenLogo = pngLogo || svgLogo || data.logos[0];
-      
-      if (chosenLogo.formats && chosenLogo.formats.length > 0) {
-        // Get the largest format available
-        const format = chosenLogo.formats.sort((a: any, b: any) => 
-          (b.width || 0) - (a.width || 0)
-        )[0];
-        
-        if (format.src) {
-          console.log(`  ✅ Brandfetch found logo: ${format.format} (${format.width}x${format.height})`);
-          return format.src;
-        }
-      }
-    }
-    
-    console.log(`  ❌ No logo found in Brandfetch response - NO LOGO AVAILABLE`);
-    return null;
-  } catch (error) {
-    console.log(`  ❌ Brandfetch error: ${error} - NO LOGO AVAILABLE`);
-    return null;
+    return response.ok;
+  } catch {
+    return false;
   }
 }
 
 /**
- * Get favicon URL - BRANDFETCH ONLY, NO FALLBACKS
+ * Get favicon URL using simple APIs
  */
 export async function getFaviconUrl(url: string): Promise<string> {
   try {
     const urlObj = new URL(url)
     const domain = urlObj.hostname.replace(/^www\./, '')
 
-    console.log(`\n🎯 FAVICON SERVICE - Fetching logo for: ${domain}`);
+    console.log(`\n🎯 FAVICON SERVICE - ${domain}`);
     
-    // Strategy 1: Check overrides
+    // 1. Check curated overrides
     if (DOMAIN_OVERRIDES[domain]) {
       console.log(`  ✅ Using curated override`);
       return DOMAIN_OVERRIDES[domain]
     }
 
-    // Strategy 2: Try Brandfetch ONLY
-    const brandfetchUrl = await tryBrandfetch(domain);
+    // 2. Try Google Favicon API
+    const googleUrl = getGoogleFavicon(domain, 128);
+    console.log(`  🔍 Trying Google Favicon API...`);
     
-    if (brandfetchUrl) {
-      console.log(`  ✅ SUCCESS - Logo from Brandfetch`);
-      return brandfetchUrl;
-    } else {
-      // NO FALLBACKS - Return empty string
-      console.log(`  ❌ FAILED - Brandfetch doesn't have logo for ${domain}`);
-      console.log(`  ⚠️  Returning empty string (no fallbacks)`);
-      return '';
+    const googleWorks = await verifyFaviconUrl(googleUrl);
+    if (googleWorks) {
+      console.log(`  ✅ Google Favicon API`);
+      return googleUrl;
     }
+
+    // 3. Try DuckDuckGo Icons API
+    const duckUrl = getDuckDuckGoFavicon(domain);
+    console.log(`  🔍 Trying DuckDuckGo Icons API...`);
+    
+    const duckWorks = await verifyFaviconUrl(duckUrl);
+    if (duckWorks) {
+      console.log(`  ✅ DuckDuckGo Icons API`);
+      return duckUrl;
+    }
+
+    // No favicon found
+    console.log(`  ❌ No favicon available`);
+    return '';
     
   } catch (error) {
-    console.error('❌ Error in getFaviconUrl:', error);
+    console.error('❌ Error:', error);
     return ''
   }
 }
 
 /**
- * Alias for backwards compatibility
+ * Backwards compatibility
  */
 export async function fetchHighQualityFavicon(url: string): Promise<string | null> {
   return getFaviconUrl(url)
