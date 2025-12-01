@@ -27,7 +27,15 @@ import {
   ChevronUp,
   Download,
   ArrowLeft,
-  History
+  History,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Loader2,
+  Sparkles,
+  FileText,
+  RefreshCw,
+  RotateCcw
 } from "lucide-react"
 
 export default function AILinkPilotPage() {
@@ -52,6 +60,42 @@ export default function AILinkPilotPage() {
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Enhanced Bulk Uploader States
+  type LinkStatus = 'queued' | 'processing' | 'success' | 'failed' | 'perfect'
+  type ParsedLink = {
+    id: string
+    url: string
+    domain: string
+    category: string
+    status: LinkStatus
+    error?: string
+  }
+  
+  const [parsedLinks, setParsedLinks] = useState<ParsedLink[]>([])
+  const [showPreview, setShowPreview] = useState(false)
+  const [selectedLinks, setSelectedLinks] = useState<Set<string>>(new Set())
+  const [previewTab, setPreviewTab] = useState<'all' | 'web'>('all')
+  const [batchSize, setBatchSize] = useState("20")
+  const [importPreset, setImportPreset] = useState("")
+  const [extraTag, setExtraTag] = useState("")
+  const [forceFolder, setForceFolder] = useState("auto")
+  const [privacy, setPrivacy] = useState("private")
+  const [autoCategorize, setAutoCategorize] = useState(true)
+  const [autoPriority, setAutoPriority] = useState(true)
+  const [runInBackground, setRunInBackground] = useState(false)
+  const [duplicateStrategy, setDuplicateStrategy] = useState("auto-merge")
+  
+  // Upload Statistics
+  const [uploadStats, setUploadStats] = useState({
+    total: 0,
+    perfect: 0,
+    queued: 0,
+    processing: 0,
+    success: 0,
+    failed: 0,
+    successRate: 0
+  })
 
   // Auto-Processing States
   const [manualSaves, setManualSaves] = useState(true)
@@ -276,6 +320,236 @@ export default function AILinkPilotPage() {
     } catch (error) {
       toast.error('Please enter a valid URL (e.g., google.com or https://google.com)')
     }
+  }
+
+  // Enhanced Parse Function
+  const handleParseLinks = () => {
+    let urls: string[] = []
+    
+    if (uploadMethod === "paste-text") {
+      urls = extractUrlsFromText(pasteText)
+    } else if (uploadMethod === "single-url") {
+      if (singleUrl.trim()) {
+        const normalized = normalizeUrl(singleUrl)
+        try {
+          new URL(normalized)
+          urls = [normalized]
+        } catch (error) {
+          toast.error('Invalid URL format')
+          return
+        }
+      }
+    }
+
+    if (urls.length === 0) {
+      toast.error('No valid URLs found')
+      return
+    }
+
+    // Parse URLs into structured data
+    const parsed: ParsedLink[] = urls.map((url, index) => {
+      try {
+        const urlObj = new URL(url)
+        return {
+          id: `link-${index}-${Date.now()}`,
+          url,
+          domain: urlObj.hostname.replace('www.', ''),
+          category: 'General',
+          status: 'queued' as LinkStatus
+        }
+      } catch (error) {
+        return {
+          id: `link-${index}-${Date.now()}`,
+          url,
+          domain: url,
+          category: 'General',
+          status: 'failed' as LinkStatus,
+          error: 'Invalid URL format'
+        }
+      }
+    })
+
+    setParsedLinks(parsed)
+    setSelectedLinks(new Set(parsed.map(l => l.id)))
+    setShowPreview(true)
+
+    // Update stats
+    setUploadStats({
+      total: parsed.length,
+      perfect: 0,
+      queued: parsed.filter(l => l.status === 'queued').length,
+      processing: 0,
+      success: 0,
+      failed: parsed.filter(l => l.status === 'failed').length,
+      successRate: 0
+    })
+
+    toast.success(`Parsed ${parsed.length} link${parsed.length > 1 ? 's' : ''}`)
+  }
+
+  // Enhanced Import Function with Status Tracking
+  const handleImportSelectedLinks = async () => {
+    const linksToImport = parsedLinks.filter(link => selectedLinks.has(link.id) && link.status !== 'failed')
+    
+    if (linksToImport.length === 0) {
+      toast.error('No valid links selected')
+      return
+    }
+
+    setIsUploading(true)
+    const loadingToast = toast.loading(`Importing ${linksToImport.length} link${linksToImport.length > 1 ? 's' : ''}...`)
+
+    let successCount = 0
+    let failCount = 0
+    let duplicateCount = 0
+
+    try {
+      // Process links
+      for (const link of linksToImport) {
+        // Update status to processing
+        setParsedLinks(prev => 
+          prev.map(l => l.id === link.id ? { ...l, status: 'processing' as LinkStatus } : l)
+        )
+
+        try {
+          const response = await fetch('/api/bookmarks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              url: link.url,
+              title: link.domain.toUpperCase(),
+              priority: 'MEDIUM',
+              tags: extraTag ? [extraTag] : undefined
+            })
+          })
+
+          if (response.ok) {
+            successCount++
+            setParsedLinks(prev => 
+              prev.map(l => l.id === link.id ? { ...l, status: 'perfect' as LinkStatus } : l)
+            )
+          } else {
+            const errorData = await response.json()
+            if (response.status === 409 || errorData.error?.includes('already exists')) {
+              duplicateCount++
+              setParsedLinks(prev => 
+                prev.map(l => l.id === link.id ? { ...l, status: 'success' as LinkStatus, error: 'Duplicate' } : l)
+              )
+            } else {
+              failCount++
+              setParsedLinks(prev => 
+                prev.map(l => l.id === link.id ? { ...l, status: 'failed' as LinkStatus, error: errorData.error } : l)
+              )
+            }
+          }
+        } catch (error) {
+          failCount++
+          setParsedLinks(prev => 
+            prev.map(l => l.id === link.id ? { ...l, status: 'failed' as LinkStatus, error: 'Network error' } : l)
+          )
+        }
+      }
+
+      toast.dismiss(loadingToast)
+
+      // Update final stats
+      const finalStats = {
+        total: parsedLinks.length,
+        perfect: parsedLinks.filter(l => l.status === 'perfect').length + successCount,
+        queued: parsedLinks.filter(l => l.status === 'queued').length - linksToImport.length,
+        processing: 0,
+        success: successCount,
+        failed: failCount,
+        successRate: Math.round((successCount / linksToImport.length) * 100)
+      }
+      setUploadStats(finalStats)
+
+      if (successCount > 0) {
+        let message = `✅ Successfully imported ${successCount} link${successCount > 1 ? 's' : ''}`
+        if (duplicateCount > 0) {
+          message += `\n⚠️ ${duplicateCount} duplicate${duplicateCount > 1 ? 's' : ''} skipped`
+        }
+        if (failCount > 0) {
+          message += `\n❌ ${failCount} failed`
+        }
+        toast.success(message)
+      } else if (duplicateCount > 0) {
+        toast.warning(`All ${duplicateCount} link${duplicateCount > 1 ? 's were' : ' was'} already in your collection`)
+      } else {
+        toast.error('Failed to import links')
+      }
+    } catch (error) {
+      toast.dismiss(loadingToast)
+      toast.error('Error importing links: ' + (error instanceof Error ? error.message : 'Unknown error'))
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  // Toggle link selection
+  const toggleLinkSelection = (id: string) => {
+    setSelectedLinks(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(id)) {
+        newSet.delete(id)
+      } else {
+        newSet.add(id)
+      }
+      return newSet
+    })
+  }
+
+  // Toggle all links
+  const toggleAllLinks = () => {
+    if (selectedLinks.size === parsedLinks.length) {
+      setSelectedLinks(new Set())
+    } else {
+      setSelectedLinks(new Set(parsedLinks.map(l => l.id)))
+    }
+  }
+
+  // Export functionality
+  const handleExportSummary = () => {
+    const csvContent = [
+      ['URL', 'Domain', 'Category', 'Status', 'Error'],
+      ...parsedLinks.map(link => [
+        link.url,
+        link.domain,
+        link.category,
+        link.status,
+        link.error || ''
+      ])
+    ].map(row => row.join(',')).join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `bulk-upload-summary-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    toast.success('Summary exported successfully')
+  }
+
+  // Retry failed links
+  const handleRetryFailed = () => {
+    const failedLinks = parsedLinks.filter(l => l.status === 'failed')
+    if (failedLinks.length === 0) {
+      toast.info('No failed links to retry')
+      return
+    }
+    
+    setParsedLinks(prev => 
+      prev.map(l => l.status === 'failed' ? { ...l, status: 'queued' as LinkStatus, error: undefined } : l)
+    )
+    
+    setUploadStats(prev => ({
+      ...prev,
+      queued: prev.queued + failedLinks.length,
+      failed: 0
+    }))
+    
+    toast.success(`${failedLinks.length} failed link${failedLinks.length > 1 ? 's' : ''} queued for retry`)
   }
 
   const sidebarItems = [
@@ -915,9 +1189,19 @@ export default function AILinkPilotPage() {
               {activeTab === "bulk-uploader" && (
                 <div className="space-y-4 sm:space-y-6">
                   {/* Header */}
-                  <div>
-                    <h2 className="text-xl sm:text-xl sm:text-2xl font-bold text-gray-900 uppercase">MAGIC BULK LINK UPLOADER</h2>
-                    <p className="text-xs sm:text-xs sm:text-sm text-gray-500 mt-1">Import multiple links at once with intelligent categorization and batch processing</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl sm:text-xl sm:text-2xl font-bold text-gray-900 uppercase">MAGIC BULK LINK UPLOADER</h2>
+                      <p className="text-xs sm:text-xs sm:text-sm text-gray-500 mt-1">Import multiple links at once with intelligent categorization and batch processing</p>
+                    </div>
+                    {showPreview && (
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-yellow-50 border border-yellow-200 rounded-md">
+                        <svg className="h-4 w-4 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <span className="text-sm font-medium text-yellow-700">You have unsaved changes</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -928,7 +1212,11 @@ export default function AILinkPilotPage() {
                       {/* Upload Method Tabs */}
                       <div className="flex gap-4 mb-6 border-b">
                         <button
-                          onClick={() => setUploadMethod("drag-drop")}
+                          onClick={() => {
+                            setUploadMethod("drag-drop")
+                            setShowPreview(false)
+                            setParsedLinks([])
+                          }}
                           className={cn(
                             "flex items-center gap-2 text-sm font-medium pb-2 border-b-2 transition-colors",
                             uploadMethod === "drag-drop"
@@ -940,7 +1228,11 @@ export default function AILinkPilotPage() {
                           Drag & Drop
                         </button>
                         <button
-                          onClick={() => setUploadMethod("paste-text")}
+                          onClick={() => {
+                            setUploadMethod("paste-text")
+                            setShowPreview(false)
+                            setParsedLinks([])
+                          }}
                           className={cn(
                             "flex items-center gap-2 text-sm font-medium pb-2 border-b-2 transition-colors",
                             uploadMethod === "paste-text"
@@ -948,13 +1240,15 @@ export default function AILinkPilotPage() {
                               : "text-gray-500 hover:text-gray-900 border-transparent"
                           )}
                         >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
+                          <FileText className="h-4 w-4" />
                           Paste Text
                         </button>
                         <button
-                          onClick={() => setUploadMethod("single-url")}
+                          onClick={() => {
+                            setUploadMethod("single-url")
+                            setShowPreview(false)
+                            setParsedLinks([])
+                          }}
                           className={cn(
                             "flex items-center gap-2 text-sm font-medium pb-2 border-b-2 transition-colors",
                             uploadMethod === "single-url"
@@ -968,6 +1262,57 @@ export default function AILinkPilotPage() {
                           Single URL
                         </button>
                       </div>
+
+                      {/* Paste Text View */}
+                      {uploadMethod === "paste-text" && (
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium">PASTE URLS</Label>
+                            <Textarea
+                              placeholder="Paste multiple URLs (one per line or space-separated)&#10;&#10;https://example.com&#10;google.com&#10;www.github.com"
+                              value={pasteText}
+                              onChange={(e) => setPasteText(e.target.value)}
+                              className="min-h-[200px] font-mono text-sm bg-gray-50"
+                            />
+                          </div>
+                          <div className="flex justify-end">
+                            <Button
+                              onClick={handleParseLinks}
+                              disabled={!pasteText || isUploading}
+                              className="bg-gradient-to-r from-green-500 to-blue-500 text-white hover:from-green-600 hover:to-blue-600"
+                            >
+                              <Sparkles className="h-4 w-4 mr-2" />
+                              Parse {pasteText ? extractUrlsFromText(pasteText).length : 0} Link{extractUrlsFromText(pasteText).length !== 1 ? 's' : ''}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Single URL View */}
+                      {uploadMethod === "single-url" && (
+                        <div className="space-y-4">
+                          <div>
+                            <Label className="mb-2 block text-sm font-medium">ENTER URL</Label>
+                            <Input
+                              type="url"
+                              placeholder="https://example.com or just example.com"
+                              value={singleUrl}
+                              onChange={(e) => setSingleUrl(e.target.value)}
+                              className="font-mono"
+                            />
+                          </div>
+                          <div className="flex justify-end">
+                            <Button
+                              onClick={handleParseLinks}
+                              disabled={!singleUrl || isUploading}
+                              className="bg-gradient-to-r from-green-500 to-blue-500 text-white hover:from-green-600 hover:to-blue-600"
+                            >
+                              <Sparkles className="h-4 w-4 mr-2" />
+                              Parse 1 Link
+                            </Button>
+                          </div>
+                        </div>
+                      )}
 
                       {/* Drag & Drop View */}
                       {uploadMethod === "drag-drop" && (
@@ -989,103 +1334,162 @@ export default function AILinkPilotPage() {
                             )}
                           >
                             <div className="flex justify-center mb-4">
-                              <div className="relative">
-                                <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
-                                  <Upload className="h-8 w-8 text-white" />
-                                </div>
-                                {!isUploading && (
-                                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                                    <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                    </svg>
-                                  </div>
-                                )}
+                              <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
+                                <Upload className="h-8 w-8 text-white" />
                               </div>
                             </div>
                             <h3 className="text-base sm:text-lg font-semibold text-blue-500 mb-2">
-                              {isUploading ? "UPLOADING..." : "DROP YOUR FILES HERE"}
+                              DROP YOUR FILES HERE
                             </h3>
                             <p className="text-xs sm:text-sm text-gray-500 mb-4">
-                              Drag and drop CSV or TXT files with URLs<br/>
-                              <span className="text-xs text-gray-400">URLs can be with or without https://</span>
+                              Drag and drop CSV or TXT files with URLs
                             </p>
-                            <div className="flex justify-center gap-4 text-xs text-gray-500 mb-6">
-                              <div className="flex items-center gap-1">
-                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                CSV Files
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                TXT Files
-                              </div>
-                            </div>
                             <Button
                               onClick={() => fileInputRef.current?.click()}
                               disabled={isUploading}
-                              className="bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
+                              className="bg-blue-500 text-white hover:bg-blue-600"
                             >
-                              <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                              </svg>
                               Choose Files
                             </Button>
                           </div>
                         </>
                       )}
 
-                      {/* Paste Text View */}
-                      {uploadMethod === "paste-text" && (
-                        <div className="space-y-4">
-                          <Textarea
-                            placeholder="Paste your URLs here (one per line or separated by spaces)&#10;You can paste URLs with or without https://&#10;&#10;Examples:&#10;https://example.com&#10;google.com&#10;www.github.com"
-                            value={pasteText}
-                            onChange={(e) => setPasteText(e.target.value)}
-                            className="min-h-[300px] font-mono text-sm"
-                          />
+                      {/* Preview & Edit Section */}
+                      {showPreview && parsedLinks.length > 0 && (
+                        <div className="mt-6 space-y-4">
+                          <Separator />
+                          
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-semibold text-gray-900">PREVIEW & EDIT</h4>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={toggleAllLinks}
+                              >
+                                {selectedLinks.size === parsedLinks.length ? 'Deselect All' : `Select All (${parsedLinks.length})`}
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Preview Tabs */}
+                          <div className="flex gap-2 border-b">
+                            <button
+                              onClick={() => setPreviewTab('all')}
+                              className={cn(
+                                "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+                                previewTab === 'all'
+                                  ? "text-gray-900 border-blue-500"
+                                  : "text-gray-500 hover:text-gray-900 border-transparent"
+                              )}
+                            >
+                              All ({parsedLinks.length})
+                            </button>
+                            <button
+                              onClick={() => setPreviewTab('web')}
+                              className={cn(
+                                "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+                                previewTab === 'web'
+                                  ? "text-gray-900 border-blue-500"
+                                  : "text-gray-500 hover:text-gray-900 border-transparent"
+                              )}
+                            >
+                              Web ({parsedLinks.length})
+                            </button>
+                          </div>
+
+                          {/* Link List */}
+                          <div className="max-h-[400px] overflow-y-auto space-y-2">
+                            {parsedLinks.map((link) => (
+                              <div
+                                key={link.id}
+                                className={cn(
+                                  "flex items-center gap-3 p-3 rounded-lg border transition-colors",
+                                  selectedLinks.has(link.id) ? "bg-blue-50 border-blue-200" : "bg-gray-50 border-gray-200"
+                                )}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={selectedLinks.has(link.id)}
+                                  onChange={() => toggleLinkSelection(link.id)}
+                                  className="h-4 w-4 rounded border-gray-300"
+                                />
+                                
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium text-sm">{link.domain}</span>
+                                    {link.status === 'queued' && (
+                                      <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
+                                        <Clock className="h-3 w-3 mr-1" />
+                                        queued
+                                      </Badge>
+                                    )}
+                                    {link.status === 'processing' && (
+                                      <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                        processing
+                                      </Badge>
+                                    )}
+                                    {link.status === 'perfect' && (
+                                      <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                                        <CheckCircle className="h-3 w-3 mr-1" />
+                                        perfect
+                                      </Badge>
+                                    )}
+                                    {link.status === 'success' && (
+                                      <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                                        <CheckCircle className="h-3 w-3 mr-1" />
+                                        success
+                                      </Badge>
+                                    )}
+                                    {link.status === 'failed' && (
+                                      <Badge variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200">
+                                        <XCircle className="h-3 w-3 mr-1" />
+                                        failed
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-gray-500 truncate">{link.url}</p>
+                                  {link.error && (
+                                    <p className="text-xs text-red-600 mt-1">{link.error}</p>
+                                  )}
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <Badge variant="secondary" className="text-xs">{link.category}</Badge>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Import Button */}
                           <div className="flex justify-end gap-2">
                             <Button
                               variant="outline"
-                              onClick={() => setPasteText("")}
-                              disabled={!pasteText || isUploading}
-                            >
-                              Clear
-                            </Button>
-                            <Button
-                              onClick={handlePasteTextImport}
-                              disabled={!pasteText || isUploading}
-                              className="bg-blue-500 text-white hover:bg-blue-600"
-                            >
-                              {isUploading ? "Importing..." : "Import URLs"}
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Single URL View */}
-                      {uploadMethod === "single-url" && (
-                        <div className="space-y-4">
-                          <div>
-                            <Label className="mb-2 block">ENTER URL</Label>
-                            <Input
-                              type="url"
-                              placeholder="https://example.com or just example.com"
-                              value={singleUrl}
-                              onChange={(e) => setSingleUrl(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' && !isUploading) {
-                                  e.preventDefault()
-                                  handleSingleUrlImport()
-                                }
+                              onClick={() => {
+                                setShowPreview(false)
+                                setParsedLinks([])
+                                setPasteText("")
+                                setSingleUrl("")
                               }}
-                            />
-                          </div>
-                          <div className="flex justify-end">
-                            <Button
-                              onClick={handleSingleUrlImport}
-                              disabled={!singleUrl || isUploading}
-                              className="bg-blue-500 text-white hover:bg-blue-600"
                             >
-                              {isUploading ? "Adding..." : "Add Bookmark"}
+                              Cancel
+                            </Button>
+                            <Button
+                              onClick={handleImportSelectedLinks}
+                              disabled={selectedLinks.size === 0 || isUploading}
+                              className="bg-black text-white hover:bg-gray-800"
+                            >
+                              {isUploading ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                  Importing...
+                                </>
+                              ) : (
+                                <>
+                                  Import {selectedLinks.size} Link{selectedLinks.size !== 1 ? 's' : ''}
+                                </>
+                              )}
                             </Button>
                           </div>
                         </div>
@@ -1095,16 +1499,14 @@ export default function AILinkPilotPage() {
                     {/* Batch Settings Section */}
                     <Card className="p-4 sm:p-6 bg-white border-gray-200 overflow-hidden">
                       <div className="flex items-center gap-2 mb-4">
-                        <svg className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                        </svg>
+                        <Settings className="h-5 w-5 text-gray-700" />
                         <h3 className="font-semibold text-gray-900">BATCH SETTINGS</h3>
                       </div>
 
                       <div className="space-y-4">
                         <div>
                           <Label className="mb-2 block text-sm">Batch Size</Label>
-                          <Select defaultValue="20">
+                          <Select value={batchSize} onValueChange={setBatchSize}>
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
@@ -1118,19 +1520,16 @@ export default function AILinkPilotPage() {
 
                         <div>
                           <Label className="mb-2 block text-sm">Import Preset</Label>
-                          <Select defaultValue="">
+                          <Select value={importPreset} onValueChange={setImportPreset}>
                             <SelectTrigger>
                               <SelectValue placeholder="Select preset..." />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="default">Default</SelectItem>
+                              <SelectItem value="work">Work</SelectItem>
+                              <SelectItem value="personal">Personal</SelectItem>
                             </SelectContent>
                           </Select>
-                          <Button variant="ghost" size="sm" className="mt-2 w-full">
-                            <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                          </Button>
                         </div>
 
                         <Separator />
@@ -1141,18 +1540,24 @@ export default function AILinkPilotPage() {
                           <div className="space-y-3">
                             <div>
                               <Label className="mb-2 block text-sm">Extra tag for all</Label>
-                              <Input placeholder="e.g., imported-2024" />
+                              <Input 
+                                placeholder="e.g., imported-2024"
+                                value={extraTag}
+                                onChange={(e) => setExtraTag(e.target.value)}
+                              />
                             </div>
 
                             <div>
                               <Label className="mb-2 block text-sm">Force into folder</Label>
-                              <Select defaultValue="auto">
+                              <Select value={forceFolder} onValueChange={setForceFolder}>
                                 <SelectTrigger>
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="auto">Auto-categorize</SelectItem>
                                   <SelectItem value="inbox">Inbox</SelectItem>
+                                  <SelectItem value="work">Work</SelectItem>
+                                  <SelectItem value="personal">Personal</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
@@ -1163,7 +1568,7 @@ export default function AILinkPilotPage() {
 
                         <div>
                           <h4 className="font-medium text-gray-900 mb-3">Privacy</h4>
-                          <RadioGroup defaultValue="private" className="space-y-2">
+                          <RadioGroup value={privacy} onValueChange={setPrivacy} className="space-y-2">
                             <div className="flex items-center space-x-2">
                               <RadioGroupItem value="private" id="private" />
                               <Label htmlFor="private" className="font-normal cursor-pointer flex items-center gap-1">
@@ -1185,9 +1590,140 @@ export default function AILinkPilotPage() {
                             </div>
                           </RadioGroup>
                         </div>
+
+                        <Separator />
+
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-sm">Auto-categorize</Label>
+                            <Switch checked={autoCategorize} onCheckedChange={setAutoCategorize} />
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <Label className="text-sm">Auto-priority</Label>
+                            <Switch checked={autoPriority} onCheckedChange={setAutoPriority} />
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <Label className="text-sm">Run in background</Label>
+                            <Switch checked={runInBackground} onCheckedChange={setRunInBackground} />
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        <div>
+                          <Label className="mb-2 block text-sm">Duplicate strategy</Label>
+                          <Select value={duplicateStrategy} onValueChange={setDuplicateStrategy}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="auto-merge">Auto-merge</SelectItem>
+                              <SelectItem value="skip">Skip duplicates</SelectItem>
+                              <SelectItem value="replace">Replace existing</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </Card>
                   </div>
+
+                  {/* Upload Summary */}
+                  {(uploadStats.total > 0 || parsedLinks.length > 0) && (
+                    <Card className="p-4 sm:p-6 bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200">
+                      <h3 className="font-semibold text-gray-900 mb-4">UPLOAD SUMMARY</h3>
+                      <p className="text-xs text-gray-600 mb-4">Your recent upload activity and statistics</p>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                        <div className="text-center p-3 bg-white rounded-lg border">
+                          <div className="text-2xl font-bold text-green-600">{uploadStats.perfect}</div>
+                          <div className="text-xs text-gray-600">Perfect</div>
+                        </div>
+                        <div className="text-center p-3 bg-white rounded-lg border">
+                          <div className="text-2xl font-bold text-yellow-600">{uploadStats.queued}</div>
+                          <div className="text-xs text-gray-600">Queued</div>
+                        </div>
+                        <div className="text-center p-3 bg-white rounded-lg border">
+                          <div className="text-2xl font-bold text-blue-600">{uploadStats.processing}</div>
+                          <div className="text-xs text-gray-600">Processing</div>
+                        </div>
+                        <div className="text-center p-3 bg-white rounded-lg border">
+                          <div className="text-2xl font-bold text-red-600">{uploadStats.failed}</div>
+                          <div className="text-xs text-gray-600">Failed</div>
+                        </div>
+                      </div>
+
+                      <Separator className="my-4" />
+
+                      <div className="space-y-3 mb-4">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Total Links Processed:</span>
+                          <span className="font-semibold">{uploadStats.total}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Successfully Saved (Complete):</span>
+                          <span className="font-semibold text-green-600">{uploadStats.success}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Overall Success Rate:</span>
+                          <span className={cn(
+                            "font-semibold",
+                            uploadStats.successRate >= 80 ? "text-green-600" : uploadStats.successRate >= 50 ? "text-yellow-600" : "text-red-600"
+                          )}>
+                            {uploadStats.successRate}%
+                          </span>
+                        </div>
+                      </div>
+
+                      <Separator className="my-4" />
+
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">Content Types</h4>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="bg-white">Web ({parsedLinks.length})</Badge>
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">Success Rate</h4>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div 
+                              className={cn(
+                                "h-full transition-all",
+                                uploadStats.successRate >= 80 ? "bg-green-500" : uploadStats.successRate >= 50 ? "bg-yellow-500" : "bg-red-500"
+                              )}
+                              style={{ width: `${uploadStats.successRate}%` }}
+                            />
+                          </div>
+                          <span className="text-sm font-medium">{uploadStats.successRate}%</span>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleExportSummary}
+                          className="flex-1"
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Export Summary
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleRetryFailed}
+                          disabled={uploadStats.failed === 0}
+                          className="flex-1"
+                        >
+                          <RotateCcw className="h-4 w-4 mr-2" />
+                          Retry Failed
+                        </Button>
+                      </div>
+                    </Card>
+                  )}
                 </div>
               )}
 
