@@ -1,36 +1,49 @@
 /**
  * Minimax AI API Client
- * Handles all LLM requests using Minimax's API
+ * Handles all LLM requests using Minimax's official API format
+ * Documentation: https://platform.minimax.io/docs/api-reference/text-post
  */
 
 export interface MinimaxMessage {
-  sender_type: 'USER' | 'BOT'
-  sender_name: string
-  text: string
+  role: 'system' | 'user' | 'assistant'
+  content: string
+  name?: string
 }
 
 export interface MinimaxRequest {
-  model?: string
+  model: string
   messages: MinimaxMessage[]
-  tokens_to_generate?: number
+  max_tokens?: number
   temperature?: number
   top_p?: number
+  stream?: boolean
 }
 
 export interface MinimaxResponse {
+  id: string
+  object: string
+  created: number
+  model: string
   choices: Array<{
-    messages: Array<{
-      sender_type: string
-      text: string
-    }>
+    index: number
+    message: {
+      role: string
+      content: string
+    }
+    finish_reason: string
   }>
   usage?: {
+    prompt_tokens: number
+    completion_tokens: number
     total_tokens: number
   }
 }
 
 /**
- * Send a chat completion request to Minimax API
+ * Send a chat completion request to Minimax API using official format
+ * @param prompt - The user message/prompt
+ * @param options - Optional configuration (model, maxTokens, temperature)
+ * @returns The AI-generated response text
  */
 export async function sendMinimaxRequest(
   prompt: string,
@@ -41,22 +54,23 @@ export async function sendMinimaxRequest(
   } = {}
 ): Promise<string> {
   const apiKey = process.env.MINIMAX_API_KEY
-  const apiEndpoint = process.env.MINIMAX_API_ENDPOINT || 'https://api.minimax.chat/v1/text/chatcompletion_v2'
+  // Use the official Minimax API endpoint
+  const apiEndpoint = process.env.MINIMAX_API_ENDPOINT || 'https://api.minimax.io/v1/text/chatcompletion_v2'
 
   if (!apiKey) {
     throw new Error('MINIMAX_API_KEY is not configured')
   }
 
+  // Use official Minimax request format
   const requestBody: MinimaxRequest = {
-    model: options.model || 'abab6.5s-chat',
+    model: options.model || 'MiniMax-Text-01', // Use official model name
     messages: [
       {
-        sender_type: 'USER',
-        sender_name: 'User',
-        text: prompt,
+        role: 'user',
+        content: prompt,
       },
     ],
-    tokens_to_generate: options.maxTokens || 1024,
+    max_tokens: options.maxTokens || 1024,
     temperature: options.temperature !== undefined ? options.temperature : 0.7,
     top_p: 0.95,
   }
@@ -79,16 +93,17 @@ export async function sendMinimaxRequest(
 
     const data: MinimaxResponse = await response.json()
 
+    // Use official response format: choices[0].message.content
     if (!data.choices || data.choices.length === 0) {
       throw new Error('No response from Minimax API')
     }
 
-    const botMessage = data.choices[0].messages.find((m) => m.sender_type === 'BOT')
-    if (!botMessage) {
-      throw new Error('No bot message in Minimax response')
+    const assistantMessage = data.choices[0]?.message?.content
+    if (!assistantMessage) {
+      throw new Error('No content in Minimax response')
     }
 
-    return botMessage.text
+    return assistantMessage
   } catch (error) {
     console.error('Error calling Minimax API:', error)
     throw error
