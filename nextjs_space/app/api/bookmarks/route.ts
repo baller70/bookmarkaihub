@@ -108,6 +108,61 @@ export async function GET(request: Request) {
   }
 }
 
+// AI-powered description and tags generation
+async function generateMetadataWithAI(title: string, url: string) {
+  try {
+    const prompt = `Given this bookmark:
+Title: ${title}
+URL: ${url}
+
+Generate:
+1. A concise 1-2 sentence description (max 150 characters)
+2. 3-5 relevant tags (comma-separated, lowercase, single words or short phrases)
+
+Format your response EXACTLY like this:
+DESCRIPTION: [your description here]
+TAGS: tag1, tag2, tag3, tag4, tag5`;
+
+    const llmResponse = await fetch(`${process.env.ABACUSAI_API_ENDPOINT || 'https://api.abacus.ai'}/v1/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.ABACUSAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: 'You are a helpful assistant that generates concise descriptions and relevant tags for bookmarks.' },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 200,
+      }),
+    });
+
+    if (!llmResponse.ok) {
+      console.error('AI API error:', await llmResponse.text());
+      return { description: '', tags: [] };
+    }
+
+    const llmData = await llmResponse.json();
+    const content = llmData.choices?.[0]?.message?.content || '';
+
+    // Parse the response
+    const descMatch = content.match(/DESCRIPTION:\s*(.+?)(?=\nTAGS:|$)/s);
+    const tagsMatch = content.match(/TAGS:\s*(.+?)$/s);
+
+    const description = descMatch?.[1]?.trim() || '';
+    const tagsStr = tagsMatch?.[1]?.trim() || '';
+    const tags = tagsStr.split(',').map((t: string) => t.trim().toLowerCase()).filter((t: string) => t.length > 0);
+
+    return { description, tags };
+  } catch (error) {
+    console.error('Error generating metadata with AI:', error);
+    return { description: '', tags: [] };
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -141,6 +196,50 @@ export async function POST(request: Request) {
       finalFavicon = favicon || '';
     }
 
+    // AI-powered description and tags generation (if not provided by user)
+    let finalDescription = description || '';
+    let finalTagIds = tagIds || [];
+
+    if (!description || !tagIds || tagIds.length === 0) {
+      console.log('🤖 Generating AI metadata for:', title);
+      const aiMetadata = await generateMetadataWithAI(title, url);
+      
+      // Use AI description if user didn't provide one
+      if (!description && aiMetadata.description) {
+        finalDescription = aiMetadata.description;
+        console.log('✅ AI Description:', finalDescription);
+      }
+
+      // Create/find tags if user didn't provide them
+      if ((!tagIds || tagIds.length === 0) && aiMetadata.tags.length > 0) {
+        const createdTags = await Promise.all(
+          aiMetadata.tags.map(async (tagName: string) => {
+            // Check if tag exists
+            let tag = await prisma.tag.findFirst({
+              where: { 
+                name: tagName,
+                userId: session.user.id 
+              }
+            });
+
+            // Create if doesn't exist
+            if (!tag) {
+              tag = await prisma.tag.create({
+                data: {
+                  name: tagName,
+                  userId: session.user.id,
+                },
+              });
+            }
+
+            return tag.id;
+          })
+        );
+        finalTagIds = createdTags;
+        console.log('✅ AI Tags:', aiMetadata.tags.join(', '));
+      }
+    }
+
     // Determine which company to assign (use active company if not specified)
     const targetCompanyId = companyIds && companyIds.length > 0 ? companyIds[0] : activeCompanyId;
 
@@ -148,7 +247,7 @@ export async function POST(request: Request) {
       data: {
         title,
         url,
-        description: description || "",
+        description: finalDescription,
         favicon: finalFavicon || "",
         priority: priority || "MEDIUM",
         userId: session.user.id,
@@ -158,8 +257,8 @@ export async function POST(request: Request) {
             categoryId,
           })),
         } : undefined,
-        tags: tagIds?.length > 0 ? {
-          create: tagIds.map((tagId: string) => ({
+        tags: finalTagIds?.length > 0 ? {
+          create: finalTagIds.map((tagId: string) => ({
             tagId,
           })),
         } : undefined,

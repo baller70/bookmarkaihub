@@ -437,6 +437,147 @@ export function BookmarkDetailModal({
     }
   }
 
+  // Custom Logo Upload
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be less than 5MB")
+      return
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file")
+      return
+    }
+
+    const loadingToast = toast.loading("Uploading custom logo...")
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('imageType', 'logo')
+
+      const response = await fetch(`/api/bookmarks/${bookmark.id}/custom-images`, {
+        method: 'PATCH',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error('Upload failed')
+      }
+
+      const data = await response.json()
+      
+      toast.dismiss(loadingToast)
+      toast.success("Custom logo uploaded! Visible instantly.")
+      
+      // Force immediate refresh
+      onUpdate()
+    } catch (error) {
+      toast.dismiss(loadingToast)
+      toast.error("Failed to upload logo")
+      console.error(error)
+    }
+  }
+
+  // Favicon Upload
+  const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be less than 5MB")
+      return
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file")
+      return
+    }
+
+    const loadingToast = toast.loading("Uploading favicon...")
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('imageType', 'favicon')
+
+      const response = await fetch(`/api/bookmarks/${bookmark.id}/custom-images`, {
+        method: 'PATCH',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error('Upload failed')
+      }
+
+      const data = await response.json()
+      
+      toast.dismiss(loadingToast)
+      toast.success("Favicon uploaded! Visible instantly.")
+      
+      // Force immediate refresh
+      onUpdate()
+    } catch (error) {
+      toast.dismiss(loadingToast)
+      toast.error("Failed to upload favicon")
+      console.error(error)
+    }
+  }
+
+  // Background Upload
+  const handleBackgroundUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be less than 5MB")
+      return
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file")
+      return
+    }
+
+    const loadingToast = toast.loading("Uploading background...")
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('imageType', 'background')
+
+      const response = await fetch(`/api/bookmarks/${bookmark.id}/custom-images`, {
+        method: 'PATCH',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error('Upload failed')
+      }
+
+      const data = await response.json()
+      
+      toast.dismiss(loadingToast)
+      toast.success("Background uploaded! Visible instantly.")
+      
+      // Force immediate refresh
+      onUpdate()
+    } catch (error) {
+      toast.dismiss(loadingToast)
+      toast.error("Failed to upload background")
+      console.error(error)
+    }
+  }
+
   const handleViewAnalytics = () => {
     onOpenChange(false)
     router.push("/analytics")
@@ -509,21 +650,21 @@ export function BookmarkDetailModal({
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={handleFileChange}
+          onChange={handleLogoUpload}
         />
         <input
           ref={faviconInputRef}
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={handleFileChange}
+          onChange={handleFaviconUpload}
         />
         <input
           ref={backgroundInputRef}
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={handleFileChange}
+          onChange={handleBackgroundUpload}
         />
         
         {/* Header */}
