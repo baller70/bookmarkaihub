@@ -159,11 +159,12 @@ export async function upscaleImage(imageUrl: string, domain: string): Promise<Up
     const prediction = await response.json();
     console.log(`  🆔 Prediction ID: ${prediction.id}`);
     
-    // Poll for completion
+    // Poll for completion - increased timeout to 90 seconds
     let attempts = 0;
     let result = prediction;
+    const maxAttempts = 45; // 45 attempts × 2s = 90 seconds max
     
-    while (result.status !== 'succeeded' && result.status !== 'failed' && attempts < 20) {
+    while (result.status !== 'succeeded' && result.status !== 'failed' && attempts < maxAttempts) {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       const pollResponse = await fetch(
@@ -173,13 +174,19 @@ export async function upscaleImage(imageUrl: string, domain: string): Promise<Up
       
       result = await pollResponse.json();
       attempts++;
-      process.stdout.write(`\r  ⏳ Processing... ${attempts * 2}s`);
+      console.log(`  ⏳ Processing... ${attempts * 2}s (status: ${result.status})`);
     }
     
     console.log('\n');
     
+    if (result.status === 'failed') {
+      console.error(`  ❌ Replicate prediction failed:`, result.error);
+      throw new Error(`Replicate prediction failed: ${result.error || 'Unknown error'}`);
+    }
+    
     if (result.status !== 'succeeded' || !result.output) {
-      throw new Error('Upscaling failed or timed out');
+      console.error(`  ❌ Upscaling timed out after ${attempts * 2} seconds`);
+      throw new Error(`Upscaling timed out after ${attempts * 2} seconds. The AI model may be under heavy load. Please try again in a few minutes.`);
     }
     
     console.log(`  ✅ AI upscaling complete!`);

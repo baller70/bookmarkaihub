@@ -193,7 +193,12 @@ export function BookmarkCard({
     if (isEnhancing) return
     
     setIsEnhancing(true)
-    toast.loading("Enhancing logo with AI... This may take 20-30 seconds")
+    
+    // Show enhanced loading message with timeout warning
+    const loadingToastId = toast.loading(
+      "🎨 Enhancing logo with AI... This may take 30-90 seconds. Please be patient!",
+      { duration: Infinity }
+    )
     
     try {
       const response = await fetch(`/api/bookmarks/${bookmark.id}/enhance-logo`, {
@@ -202,19 +207,28 @@ export function BookmarkCard({
       
       const data = await response.json()
       
+      // Dismiss loading toast
+      toast.dismiss(loadingToastId)
+      
       if (response.ok && data.success) {
-        toast.success("Logo enhanced successfully!")
+        toast.success(data.message || "Logo enhanced successfully! ✨", { duration: 4000 })
         onUpdate() // Refresh the bookmark to show the new logo
       } else {
-        toast.error(data.message || "Enhancement not needed - logo quality is already good")
+        toast.error(data.message || "Enhancement failed. Please try again.", { duration: 5000 })
       }
     } catch (error) {
       console.error("Error enhancing logo:", error)
-      toast.error("Failed to enhance logo")
+      toast.dismiss(loadingToastId)
+      
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      
+      if (errorMessage.includes('timeout') || errorMessage.includes('aborted')) {
+        toast.error("The enhancement took too long. The AI model might be busy. Please try again in a few minutes.", { duration: 6000 })
+      } else {
+        toast.error("Failed to enhance logo. Please try again later.", { duration: 5000 })
+      }
     } finally {
       setIsEnhancing(false)
-      // Dismiss the loading toast
-      toast.dismiss()
     }
   }
 
