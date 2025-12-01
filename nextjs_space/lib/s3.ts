@@ -13,14 +13,19 @@ export async function uploadFile(buffer: Buffer, fileName: string, isPublic: boo
     ? `${folderPrefix}${fileName}` 
     : `${folderPrefix}${isPublic ? 'public/' : ''}uploads/${Date.now()}-${fileName}`;
   
-  await s3Client.send(
-    new PutObjectCommand({
-      Bucket: bucketName,
-      Key: key,
-      Body: buffer,
-      ContentType: 'image/png'
-    })
-  );
+  const uploadParams: any = {
+    Bucket: bucketName,
+    Key: key,
+    Body: buffer,
+    ContentType: 'image/png'
+  };
+  
+  // Set ACL to public-read if isPublic is true
+  if (isPublic) {
+    uploadParams.ACL = 'public-read';
+  }
+  
+  await s3Client.send(new PutObjectCommand(uploadParams));
   
   return key;
 }

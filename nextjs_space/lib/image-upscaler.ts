@@ -20,6 +20,18 @@ async function getImageDimensions(imageUrl: string): Promise<{ width: number; he
   try {
     console.log(`  🔍 Fetching image to check dimensions...`);
     const response = await fetch(imageUrl);
+    
+    // Check for 403 Forbidden (S3 permission issues) or other HTTP errors
+    if (!response.ok) {
+      console.error(`  ❌ HTTP Error ${response.status}: ${response.statusText}`);
+      console.error(`  📍 URL: ${imageUrl}`);
+      if (response.status === 403) {
+        console.error(`  🔒 File is not publicly accessible (403 Forbidden)`);
+        console.error(`  💡 Tip: This might be an old S3 upload without public ACL`);
+      }
+      return null;
+    }
+    
     const buffer = Buffer.from(await response.arrayBuffer());
     
     console.log(`  📦 Downloaded: ${(buffer.length / 1024).toFixed(1)}KB`);

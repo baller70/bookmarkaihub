@@ -37,10 +37,35 @@ export async function POST(
     }
 
     // Get the current favicon
-    const currentFavicon = bookmark.favicon || '';
+    let currentFavicon = bookmark.favicon || '';
     const domain = new URL(bookmark.url).hostname.replace(/^www\./, '');
 
     console.log(`[ENHANCE-LOGO] Starting enhancement for ${bookmark.title}`);
+    console.log(`[ENHANCE-LOGO] Current favicon: ${currentFavicon}`);
+
+    // If current favicon is empty or inaccessible, fetch a fresh one first
+    if (!currentFavicon) {
+      console.log(`[ENHANCE-LOGO] No favicon found, fetching fresh one...`);
+      const { getFaviconUrl } = await import('@/lib/favicon-service');
+      currentFavicon = await getFaviconUrl(bookmark.url);
+      console.log(`[ENHANCE-LOGO] Fresh favicon obtained: ${currentFavicon}`);
+    } else {
+      // Check if current favicon is accessible
+      try {
+        const checkResponse = await fetch(currentFavicon, { method: 'HEAD' });
+        if (!checkResponse.ok) {
+          console.log(`[ENHANCE-LOGO] Current favicon inaccessible (${checkResponse.status}), fetching fresh one...`);
+          const { getFaviconUrl } = await import('@/lib/favicon-service');
+          currentFavicon = await getFaviconUrl(bookmark.url);
+          console.log(`[ENHANCE-LOGO] Fresh favicon obtained: ${currentFavicon}`);
+        }
+      } catch (error) {
+        console.log(`[ENHANCE-LOGO] Error checking favicon accessibility, fetching fresh one...`);
+        const { getFaviconUrl } = await import('@/lib/favicon-service');
+        currentFavicon = await getFaviconUrl(bookmark.url);
+        console.log(`[ENHANCE-LOGO] Fresh favicon obtained: ${currentFavicon}`);
+      }
+    }
 
     // Upscale the image
     const result = await upscaleImage(currentFavicon, domain);
@@ -70,13 +95,16 @@ export async function POST(
       
       if (result.error?.includes('already good') || result.error?.includes('meets quality')) {
         userMessage = 'This logo is already high quality and doesn\'t need enhancement!';
-      } else if (result.error?.includes('download')) {
-        userMessage = 'Failed to download the original logo. Please try again.';
+      } else if (result.error?.includes('download') || result.error?.includes('fetch')) {
+        userMessage = 'Failed to download the logo. The file might be corrupted or inaccessible. Try again to fetch a fresh copy.';
+      } else if (result.error?.includes('403')) {
+        userMessage = 'The current logo file is not accessible. Fetching a fresh copy...';
       }
       
       return NextResponse.json({
         success: false,
         message: userMessage,
+        error: result.error,
         favicon: currentFavicon,
       }, { status: 400 });
     }
