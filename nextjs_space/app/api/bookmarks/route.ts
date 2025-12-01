@@ -13,8 +13,16 @@ export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
+      console.error('❌ No session found in GET /api/bookmarks');
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+
+    if (!session.user?.id) {
+      console.error('❌ Session found but no user.id in GET /api/bookmarks');
+      return NextResponse.json({ error: "Invalid session" }, { status: 401 })
+    }
+
+    console.log('✅ Session valid for user:', session.user.email || session.user.id);
 
     const { searchParams } = new URL(request.url)
     const search = searchParams.get("search") || ""
@@ -25,15 +33,19 @@ export async function GET(request: Request) {
     // Get active company
     const activeCompanyId = await getActiveCompanyId(session.user.id);
 
-    // DEFENSIVE: If no company found, log warning but continue
+    // DEFENSIVE: If no company found, log warning but DON'T filter by company
     if (!activeCompanyId) {
-      console.warn('⚠️ No active company found for user:', session.user.email);
+      console.warn('⚠️ No active company found for user:', session.user.email, '- Showing ALL bookmarks');
+    } else {
+      console.log('✅ Active company found:', activeCompanyId, 'for user:', session.user.email);
     }
 
     const bookmarks = await prisma.bookmark.findMany({
       where: {
         userId: session.user.id,
-        ...(activeCompanyId && { companyId: activeCompanyId }),
+        // CRITICAL FIX: Only filter by company if we have a valid activeCompanyId
+        // This prevents showing zero bookmarks if company logic fails
+        ...(activeCompanyId ? { companyId: activeCompanyId } : {}),
         ...(search && {
           OR: [
             { title: { contains: search, mode: "insensitive" } },
@@ -106,6 +118,8 @@ export async function GET(request: Request) {
         usagePercentage
       }
     })
+
+    console.log(`📊 Returning ${bookmarksWithUsage.length} bookmarks to frontend for user:`, session.user.email);
 
     return NextResponse.json(bookmarksWithUsage)
   } catch (error) {
