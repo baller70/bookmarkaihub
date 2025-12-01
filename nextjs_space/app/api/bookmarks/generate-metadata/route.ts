@@ -5,9 +5,9 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { sendMinimaxRequest } from "@/lib/minimax-client";
+import { sendAbacusAIRequest } from "@/lib/abacusai-client";
 
-// AI-powered description and tags generation using Minimax
+// AI-powered description and tags generation using Abacus AI
 async function generateMetadataWithAI(title: string, url: string) {
   try {
     const prompt = `Given this bookmark:
@@ -22,7 +22,7 @@ Format your response EXACTLY like this:
 DESCRIPTION: [your description here]
 TAGS: tag1, tag2, tag3, tag4, tag5`;
 
-    const content = await sendMinimaxRequest(prompt, {
+    const content = await sendAbacusAIRequest(prompt, {
       maxTokens: 200,
       temperature: 0.7,
     });
@@ -37,7 +37,7 @@ TAGS: tag1, tag2, tag3, tag4, tag5`;
 
     return { description, tags };
   } catch (error) {
-    console.error('Error generating metadata with Minimax AI:', error);
+    console.error('Error generating metadata with Abacus AI:', error);
     return { description: '', tags: [] };
   }
 }
