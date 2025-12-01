@@ -12,11 +12,8 @@ export function getBucketConfig() {
 export function createS3Client() {
   const region = process.env.AWS_REGION || 'us-west-2';
   
+  // In Abacus.AI hosted environment, use IAM role credentials (no explicit credentials needed)
   return new S3Client({
     region: region,
-    credentials: process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY ? {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    } : undefined,
   });
 }
