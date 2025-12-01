@@ -71,6 +71,16 @@ export function DashboardContent() {
     }
   }, [breakdownOpen])
 
+  // Reset to page 1 when search query changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery])
+
+  // Scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [currentPage])
+
   const fetchBookmarks = async () => {
     try {
       const response = await fetch(`/api/bookmarks${searchQuery ? `?search=${encodeURIComponent(searchQuery)}` : ""}`)
@@ -443,6 +453,57 @@ export function DashboardContent() {
 
       {/* Bookmarks */}
       {renderBookmarkView()}
+
+      {/* Bottom Pagination Controls */}
+      {!loading && bookmarks.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-6 border-t border-gray-200 mt-8">
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-black font-medium">Items per page:</span>
+            <Select value={itemsPerPage.toString()} onValueChange={(value) => {
+              setItemsPerPage(parseInt(value))
+              setCurrentPage(1)
+            }}>
+              <SelectTrigger className="w-[90px] h-10 bg-white border-gray-300">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="25">25</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+            <span className="text-sm text-black">
+              Page {currentPage} of {totalPages || 1}
+            </span>
+            <div className="flex items-center gap-2.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="h-10 text-black bg-white hover:bg-gray-50 px-3 sm:px-4"
+              >
+                <ChevronLeft className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Previous</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="h-10 text-black bg-white hover:bg-gray-50 px-3 sm:px-4"
+              >
+                <span className="hidden sm:inline">Next</span>
+                <ChevronRight className="h-4 w-4 sm:ml-1" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
