@@ -20,10 +20,10 @@ interface UpscaleResult {
 }
 
 /**
- * Get ACTUAL pixel dimensions of an image
+ * Get ACTUAL pixel dimensions of an image AND the buffer
  * CRITICAL: This checks real resolution, not file size
  */
-async function getImageDimensions(imageUrl: string): Promise<{ width: number; height: number } | null> {
+async function getImageDimensions(imageUrl: string): Promise<{ width: number; height: number; buffer: Buffer } | null> {
   try {
     console.log(`  🔍 Fetching image to check dimensions...`);
     const response = await fetch(imageUrl);
@@ -35,7 +35,7 @@ async function getImageDimensions(imageUrl: string): Promise<{ width: number; he
     
     if (metadata.width && metadata.height) {
       console.log(`  📐 Dimensions: ${metadata.width}x${metadata.height}px`);
-      return { width: metadata.width, height: metadata.height };
+      return { width: metadata.width, height: metadata.height, buffer };
     }
     
     console.log(`  ⚠️  Could not extract dimensions`);
@@ -50,28 +50,30 @@ async function getImageDimensions(imageUrl: string): Promise<{ width: number; he
  * Check if an image needs upscaling based on ACTUAL pixel dimensions
  * REQUIREMENT: Images MUST be at least 600px on the smallest side
  */
-async function needsUpscaling(imageUrl: string): Promise<{ needed: boolean; dimensions: { width: number; height: number } | null }> {
+async function needsUpscaling(imageUrl: string): Promise<{ needed: boolean; dimensions: { width: number; height: number } | null; imageBuffer: Buffer | null }> {
   try {
-    const dimensions = await getImageDimensions(imageUrl);
+    const result = await getImageDimensions(imageUrl);
     
-    if (!dimensions) {
+    if (!result) {
       console.log(`  ⚠️  Cannot determine dimensions - will attempt upscale`);
-      return { needed: true, dimensions: null };
+      return { needed: true, dimensions: null, imageBuffer: null };
     }
     
-    const minDimension = Math.min(dimensions.width, dimensions.height);
+    const { width, height, buffer } = result;
+    const dimensions = { width, height };
+    const minDimension = Math.min(width, height);
     const needed = minDimension < 600;
     
     if (needed) {
-      console.log(`  ❌ FAILS 600px requirement: ${dimensions.width}x${dimensions.height}px (min: ${minDimension}px)`);
+      console.log(`  ❌ FAILS 600px requirement: ${width}x${height}px (min: ${minDimension}px)`);
     } else {
-      console.log(`  ✅ MEETS 600px requirement: ${dimensions.width}x${dimensions.height}px (min: ${minDimension}px)`);
+      console.log(`  ✅ MEETS 600px requirement: ${width}x${height}px (min: ${minDimension}px)`);
     }
     
-    return { needed, dimensions };
+    return { needed, dimensions, imageBuffer: buffer };
   } catch (error) {
     console.error('  ❌ Error checking dimensions:', error);
-    return { needed: true, dimensions: null }; // Default to upscaling if we can't check
+    return { needed: true, dimensions: null, imageBuffer: null }; // Default to upscaling if we can't check
   }
 }
 
@@ -101,8 +103,18 @@ export async function upscaleImage(imageUrl: string, domain: string): Promise<Up
       };
     }
     
+    // Verify we have the image buffer
+    if (!check.imageBuffer) {
+      console.error(`\n❌ ERROR: Could not fetch image for upscaling`);
+      return {
+        success: false,
+        error: 'Failed to download image for upscaling',
+        originalDimensions: check.dimensions || undefined
+      };
+    }
+    
     console.log(`\n🚀 UPSCALING REQUIRED - Starting AI enhancement...`);
-    console.log(`⏱️  Estimated time: 20-30 seconds`);
+    console.log(`⏱️  Estimated time: 30-60 seconds`);
     
     // Get Replicate API key
     const secretsPath = '/home/ubuntu/.config/abacusai_auth_secrets.json';
@@ -135,7 +147,12 @@ export async function upscaleImage(imageUrl: string, domain: string): Promise<Up
       console.log(`  📊 Calculated scale factor: ${scaleFactor}x (${minDim}px → ${minDim * scaleFactor}px)`);
     }
     
-    // Call Replicate API
+    // Convert image to base64 data URI to avoid S3 access issues
+    console.log(`  📦 Converting image to base64 data URI for Replicate...`);
+    const base64Image = `data:image/png;base64,${check.imageBuffer.toString('base64')}`;
+    console.log(`  ✓ Base64 conversion complete (${(base64Image.length / 1024).toFixed(1)}KB)`);
+    
+    // Call Replicate API with base64 data URI instead of URL
     const response = await fetch('https://api.replicate.com/v1/predictions', {
       method: 'POST',
       headers: {
@@ -145,7 +162,7 @@ export async function upscaleImage(imageUrl: string, domain: string): Promise<Up
       body: JSON.stringify({
         version: 'f121d640bd286e1fdc67f9799164c1d5be36ff74576ee11c803ae5b665dd46aa',
         input: {
-          image: imageUrl,
+          image: base64Image,  // Use base64 data URI instead of URL
           scale: scaleFactor,
           face_enhance: false,
         }
