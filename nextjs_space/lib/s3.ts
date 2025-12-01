@@ -6,15 +6,19 @@ import { createS3Client, getBucketConfig } from './aws-config';
 const s3Client = createS3Client();
 const { bucketName, folderPrefix } = getBucketConfig();
 
-export async function uploadFile(buffer: Buffer, fileName: string): Promise<string> {
-  const key = `${folderPrefix}uploads/${Date.now()}-${fileName}`;
+export async function uploadFile(buffer: Buffer, fileName: string, isPublic: boolean = true): Promise<string> {
+  // If fileName already includes a path (e.g., "upscaled-logos/file.png"), use it directly
+  // Otherwise, add the default uploads path structure
+  const key = fileName.includes('/') 
+    ? `${folderPrefix}${fileName}` 
+    : `${folderPrefix}${isPublic ? 'public/' : ''}uploads/${Date.now()}-${fileName}`;
   
   await s3Client.send(
     new PutObjectCommand({
       Bucket: bucketName,
       Key: key,
       Body: buffer,
-      ContentType: 'image/*'
+      ContentType: 'image/png'
     })
   );
   

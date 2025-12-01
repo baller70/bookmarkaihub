@@ -207,15 +207,16 @@ export async function upscaleImage(imageUrl: string, domain: string): Promise<Up
       }
     }
     
-    // Upload to S3
-    const fileName = `upscaled-logos/${domain}-${Date.now()}.png`;
-    const s3Key = await uploadFile(imageBuffer, fileName);
+    // Upload to S3 (public folder for CDN access)
+    const fileName = `public/upscaled-logos/${domain}-${Date.now()}.png`;
+    const s3Key = await uploadFile(imageBuffer, fileName, true);
     
     const { bucketName, region } = getBucketConfig();
     const s3Url = `https://${bucketName}.s3.${region}.amazonaws.com/${s3Key}`;
     
     console.log(`  💾 Uploaded to S3: ${s3Key}`);
     console.log(`  🌐 Region: ${region}`);
+    console.log(`  📍 Bucket: ${bucketName}`);
     console.log(`\n✨ SUCCESS: Logo enhanced and uploaded!`);
     console.log(`📸 S3 URL: ${s3Url}\n`);
     
