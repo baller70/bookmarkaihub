@@ -693,6 +693,58 @@ export default function SettingsPage() {
 
                     <Separator />
 
+                    {/* AI Metadata Generation */}
+                    <div>
+                      <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-purple-600" />
+                        AI METADATA GENERATION
+                      </h3>
+                      <div className="space-y-4">
+                        <p className="text-sm text-gray-600">
+                          Automatically generate descriptions and tags for all your existing bookmarks using AI.
+                        </p>
+                        <Button
+                          onClick={async () => {
+                            toast.loading("Generating AI metadata for all bookmarks... This may take a few minutes.", {
+                              id: 'generate-metadata',
+                              duration: Infinity
+                            });
+                            
+                            try {
+                              const response = await fetch('/api/bookmarks/generate-metadata', {
+                                method: 'POST'
+                              });
+                              
+                              const data = await response.json();
+                              
+                              toast.dismiss('generate-metadata');
+                              
+                              if (response.ok) {
+                                toast.success(
+                                  `Successfully generated metadata for ${data.success} bookmarks!${data.errors > 0 ? ` (${data.errors} errors)` : ''}`,
+                                  { duration: 5000 }
+                                );
+                              } else {
+                                toast.error(data.error || 'Failed to generate metadata');
+                              }
+                            } catch (error) {
+                              toast.dismiss('generate-metadata');
+                              toast.error('Failed to generate metadata');
+                              console.error('Error:', error);
+                            }
+                          }}
+                        >
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Generate Descriptions & Tags for All Bookmarks
+                        </Button>
+                        <p className="text-xs text-gray-500">
+                          This will add AI-generated descriptions and tags to all bookmarks that don't have them.
+                        </p>
+                      </div>
+                    </div>
+
+                    <Separator />
+
                     {/* Import & Restore */}
                     <div>
                       <h3 className="font-semibold mb-4">IMPORT & RESTORE</h3>
