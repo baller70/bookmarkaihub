@@ -160,7 +160,14 @@ export default function CompactCategoryPage() {
   return (
     <DashboardAuth>
       <DashboardLayout>
-        <div className="p-4 md:p-8">
+        {/* Full-page dotted background */}
+        <div className="fixed inset-0 pointer-events-none" style={{
+          backgroundImage: 'radial-gradient(circle, #d1d5db 1px, transparent 1px)',
+          backgroundSize: '20px 20px',
+          zIndex: 0
+        }} />
+        
+        <div className="relative p-4 md:p-8" style={{ zIndex: 1 }}>
           {/* Header */}
           <div className="mb-8">
             <Button

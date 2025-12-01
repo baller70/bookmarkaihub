@@ -118,7 +118,7 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {bookmarks.map((bookmark) => {
           const domain = getDomain(bookmark.url)
           const engagementPct = getEngagementPercentage(bookmark.visitCount)
@@ -126,29 +126,29 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
           return (
             <div
               key={bookmark.id}
-              className="relative bg-white border border-black rounded-xl overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-black group aspect-square flex flex-col"
+              className="relative bg-white border border-black rounded-lg overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-black group"
+              style={{ aspectRatio: '1', minHeight: '200px' }}
               onClick={() => openDetailModal(bookmark)}
             >
-              {/* Top Section */}
-              <div className="relative p-4 pb-2 flex items-start justify-between z-10">
-                {/* Favicon - Smaller */}
-                <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  {bookmark.favicon ? (
-                    <Image
-                      src={bookmark.favicon}
-                      alt={bookmark.title}
-                      width={32}
-                      height={32}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <ExternalLink className="w-4 h-4 text-white" />
-                  )}
-                </div>
+              {/* Top Left - Small Favicon */}
+              <div className="absolute top-2.5 left-2.5 w-7 h-7 bg-black rounded-md flex items-center justify-center overflow-hidden z-10">
+                {bookmark.favicon ? (
+                  <Image
+                    src={bookmark.favicon}
+                    alt={bookmark.title}
+                    width={28}
+                    height={28}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <ExternalLink className="w-3.5 h-3.5 text-white" />
+                )}
+              </div>
 
-                {/* Engagement Badge */}
+              {/* Top Right - Engagement Hexagon Badge */}
+              <div className="absolute top-1.5 right-2.5 z-10">
                 <div className="relative">
-                  <svg width="40" height="44" viewBox="0 0 40 44" className="text-red-500">
+                  <svg width="32" height="36" viewBox="0 0 40 44" className="text-red-500">
                     <path
                       d="M20 2 L35 11 L35 29 L20 38 L5 29 L5 11 Z"
                       fill="none"
@@ -157,86 +157,82 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-[10px] font-bold text-red-500">
+                    <span className="text-[9px] font-bold text-red-500">
                       {engagementPct}%
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Middle Section - Title and URL */}
-              <div className="px-4 py-2 flex-shrink-0 z-10 relative">
-                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide line-clamp-1 leading-tight mb-1">
+              {/* Center - Title and URL */}
+              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 px-3 z-10">
+                <h3 className="text-xs font-bold text-gray-900 uppercase tracking-tight text-center line-clamp-2 leading-tight mb-1.5">
                   {bookmark.title}
                 </h3>
-                <p className="text-xs text-blue-600 truncate mb-2">
+                <p className="text-[10px] text-blue-600 truncate text-center mb-1.5">
                   {domain}
                 </p>
                 {bookmark.priority && (
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "text-[10px] px-2 py-0.5 font-medium uppercase",
-                      priorityColors[bookmark.priority.toLowerCase()] || priorityColors.medium
-                    )}
-                  >
-                    {bookmark.priority}
-                  </Badge>
+                  <div className="flex justify-center">
+                    <span className="text-[9px] px-2 py-0.5 rounded font-medium lowercase bg-yellow-100 text-yellow-800 border border-yellow-200">
+                      {bookmark.priority}
+                    </span>
+                  </div>
                 )}
               </div>
 
-              {/* Large Background Logo - Much bigger and covers most of the card */}
-              <div className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-20">
+              {/* Large Background Logo Watermark */}
+              <div className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-10">
                 {bookmark.favicon ? (
                   <Image
                     src={bookmark.favicon}
                     alt={bookmark.title}
-                    width={300}
-                    height={300}
-                    className="w-64 h-64 object-contain"
+                    width={200}
+                    height={200}
+                    className="w-40 h-40 object-contain"
                   />
                 ) : (
-                  <ExternalLink className="w-40 h-40 text-gray-300" />
+                  <ExternalLink className="w-32 h-32 text-gray-300" />
                 )}
               </div>
 
-              {/* Bottom Right Logo - Moved to corner */}
-              <div className="absolute bottom-3 right-3 w-16 h-16 bg-white rounded-xl border-2 border-gray-200 flex items-center justify-center overflow-hidden z-10">
+              {/* Bottom Right - Small Logo */}
+              <div className="absolute bottom-2.5 right-2.5 w-12 h-12 bg-white rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden z-10 shadow-sm">
                 {bookmark.favicon ? (
                   <Image
                     src={bookmark.favicon}
                     alt={bookmark.title}
-                    width={64}
-                    height={64}
+                    width={48}
+                    height={48}
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <ExternalLink className="w-8 h-8 text-gray-400" />
+                  <ExternalLink className="w-6 h-6 text-gray-400" />
                 )}
               </div>
 
-              {/* Bottom Section - Visits */}
-              <div className="relative mt-auto px-4 pb-4 pt-2 z-10">
-                <div className="flex items-center gap-1.5 text-[10px] text-gray-600">
-                  <Eye className="w-3 h-3" />
+              {/* Bottom Left - Visit Count */}
+              <div className="absolute bottom-2.5 left-2.5 z-10">
+                <div className="flex items-center gap-1 text-[9px] text-gray-600">
+                  <Eye className="w-2.5 h-2.5" />
                   <span className="font-medium uppercase tracking-wide">
                     {bookmark.visitCount} VISIT{bookmark.visitCount !== 1 ? 'S' : ''}
                   </span>
-                  <span className="text-green-500">●</span>
+                  <span className="text-green-500 text-xs">●</span>
                 </div>
               </div>
 
-              {/* Hover Actions - Top Right Dropdown */}
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+              {/* Hover Actions - Dropdown */}
+              <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-6 w-6 p-0 bg-white/90 hover:bg-white shadow-sm"
+                      className="h-5 w-5 p-0 bg-white/90 hover:bg-white shadow-sm rounded"
                     >
                       <svg
-                        className="w-3.5 h-3.5 text-gray-600"
+                        className="w-3 h-3 text-gray-600"
                         viewBox="0 0 24 24"
                         fill="currentColor"
                       >
