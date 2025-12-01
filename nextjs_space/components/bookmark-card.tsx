@@ -639,19 +639,19 @@ export function BookmarkCard({
 
             {/* LARGE CENTERED MIDDLE LOGO */}
             <div className="flex items-center justify-center my-3 sm:my-4">
-              <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-[28px] overflow-hidden bg-white shadow-lg p-3">
+              <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-[48px] overflow-hidden bg-white shadow-lg p-3">
                 {(bookmark.customLogo || bookmark.customFavicon || customLogoUrl || bookmark.favicon) ? (
-                  <div className="relative w-full h-full rounded-[20px] overflow-hidden">
+                  <div className="relative w-full h-full rounded-[32px] overflow-hidden">
                     <Image
                       src={bookmark.customLogo || bookmark.customFavicon || customLogoUrl || bookmark.favicon}
                       alt={bookmark.title}
                       fill
-                      className="object-contain rounded-[20px]"
+                      className="object-contain rounded-[32px]"
                       unoptimized
                     />
                   </div>
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white text-3xl sm:text-4xl font-bold uppercase rounded-[20px]">
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white text-3xl sm:text-4xl font-bold uppercase rounded-[32px]">
                     {bookmark.title?.charAt(0)?.toUpperCase()}
                   </div>
                 )}
