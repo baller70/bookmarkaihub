@@ -1,0 +1,118 @@
+🤖 Starting AI metadata generation for existing bookmarks...
+
+Found 12 bookmarks that need metadata
+
+Processing: FACEBOOK.COM
+Error generating metadata with OpenAI: Error: OPENAI_API_KEY is not configured
+    at sendOpenAIRequest (/home/ubuntu/bookmarkhub_clone/nextjs_space/lib/openai-client.ts:51:11)
+    at generateMetadataWithAI (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:20:27)
+    at main (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:76:34)
+Processing: BSKY.APP
+Error generating metadata with OpenAI: Error: OPENAI_API_KEY is not configured
+    at sendOpenAIRequest (/home/ubuntu/bookmarkhub_clone/nextjs_space/lib/openai-client.ts:51:11)
+    at generateMetadataWithAI (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:20:27)
+    at main (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:76:34)
+Processing: THREADS.COM
+Error generating metadata with OpenAI: Error: OPENAI_API_KEY is not configured
+    at sendOpenAIRequest (/home/ubuntu/bookmarkhub_clone/nextjs_space/lib/openai-client.ts:51:11)
+    at generateMetadataWithAI (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:20:27)
+    at main (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:76:34)
+Processing: TIKTOK.COM
+Error generating metadata with OpenAI: Error: OPENAI_API_KEY is not configured
+    at sendOpenAIRequest (/home/ubuntu/bookmarkhub_clone/nextjs_space/lib/openai-client.ts:51:11)
+    at generateMetadataWithAI (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:20:27)
+    at main (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:76:34)
+Processing: GIPPER.COM
+Error generating metadata with OpenAI: Error: OPENAI_API_KEY is not configured
+    at sendOpenAIRequest (/home/ubuntu/bookmarkhub_clone/nextjs_space/lib/openai-client.ts:51:11)
+    at generateMetadataWithAI (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:20:27)
+    at main (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:76:34)
+Processing: INSTAGRAM
+Error generating metadata with OpenAI: Error: OPENAI_API_KEY is not configured
+    at sendOpenAIRequest (/home/ubuntu/bookmarkhub_clone/nextjs_space/lib/openai-client.ts:51:11)
+    at generateMetadataWithAI (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:20:27)
+    at main (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:76:34)
+Processing: X.COM
+Error generating metadata with OpenAI: Error: OPENAI_API_KEY is not configured
+    at sendOpenAIRequest (/home/ubuntu/bookmarkhub_clone/nextjs_space/lib/openai-client.ts:51:11)
+    at generateMetadataWithAI (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:20:27)
+    at main (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:76:34)
+Processing: INSTAGRAM.COM
+Error generating metadata with OpenAI: Error: OPENAI_API_KEY is not configured
+    at sendOpenAIRequest (/home/ubuntu/bookmarkhub_clone/nextjs_space/lib/openai-client.ts:51:11)
+    at generateMetadataWithAI (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:20:27)
+    at main (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:76:34)
+Processing: LINKEDIN.COM
+Error generating metadata with OpenAI: Error: OPENAI_API_KEY is not configured
+    at sendOpenAIRequest (/home/ubuntu/bookmarkhub_clone/nextjs_space/lib/openai-client.ts:51:11)
+    at generateMetadataWithAI (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:20:27)
+    at main (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:76:34)
+Processing: JOGG.AI
+Error generating metadata with OpenAI: Error: OPENAI_API_KEY is not configured
+    at sendOpenAIRequest (/home/ubuntu/bookmarkhub_clone/nextjs_space/lib/openai-client.ts:51:11)
+    at generateMetadataWithAI (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:20:27)
+    at main (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:76:34)
+Processing: G-DRIVE
+Error generating metadata with OpenAI: Error: OPENAI_API_KEY is not configured
+    at sendOpenAIRequest (/home/ubuntu/bookmarkhub_clone/nextjs_space/lib/openai-client.ts:51:11)
+    at generateMetadataWithAI (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:20:27)
+    at main (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:76:34)
+Processing: MEDIUM.COM
+Error generating metadata with OpenAI: Error: OPENAI_API_KEY is not configured
+    at sendOpenAIRequest (/home/ubuntu/bookmarkhub_clone/nextjs_space/lib/openai-client.ts:51:11)
+    at generateMetadataWithAI (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:20:27)
+    at main (/home/ubuntu/bookmarkhub_clone/nextjs_space/generate-metadata-now.ts:76:34)
+
+✅ AI METADATA GENERATION COMPLETE!
+
+📊 Results:
+   • Total bookmarks processed: 12
+   • Successfully generated: 12
+   • Errors: 0
+🤖 Starting AI metadata generation for existing bookmarks...
+
+Found 12 bookmarks that need metadata
+
+Processing: FACEBOOK.COM
+  ✅ Description: Connect with friends, share updates, and discover communities on the world's largest social networking platform.
+  ✅ Tags: networking, social, sharing, friends, community
+Processing: BSKY.APP
+  ✅ Description: Explore the BSKY.APP profile of bballfactoryinc for basketball insights and community engagement.
+  ✅ Tags: insights, community, profile, basketball, sports
+Processing: THREADS.COM
+  ✅ Description: Explore basketball content and community at The Basketball Factory on Threads. Join discussions and share your passion!
+  ✅ Tags: sports, basketball, factory, community, threads
+Processing: TIKTOK.COM
+  ✅ Description: Explore the world of basketball with The Basketball Factory on TikTok for tips, drills, and training insights.
+  ✅ Tags: sports, basketball, tips, drills, training
+Processing: GIPPER.COM
+  ✅ Description: GIPPER.COM offers user-friendly tools for creating and managing social media content for schools and organizations.
+  ✅ Tags: schools, tools, contentcreation, socialmedia, marketing
+Processing: INSTAGRAM
+  ✅ Description: Follow The Basketball Factory on Instagram for training tips, player highlights, and updates on basketball development programs.
+  ✅ Tags: sports, training, basketball, youth, highlights
+Processing: X.COM
+  ✅ Description: X.COM is a social media platform for sharing thoughts and updates in real-time. Connect and engage with a global audience.
+  ✅ Tags: socialmedia, networking, updates, engagement, communication
+Processing: INSTAGRAM.COM
+  ✅ Description: Share photos and videos, connect with friends, and discover new content on the popular social media platform Instagram.
+  ✅ Tags: sharing, networking, socialmedia, lifestyle, photography
+Processing: LINKEDIN.COM
+  ✅ Description: Connect with Kevin Houston on LinkedIn to explore his professional background and network opportunities.
+  ✅ Tags: networking, profile, connections, professional, linkedin
+Processing: JOGG.AI
+  ✅ Description: JOGG.AI offers AI-driven solutions to enhance business productivity and decision-making through data analysis and automation.
+  ✅ Tags: data-analysis, automation, business, ai, productivity
+Processing: G-DRIVE
+  ✅ Description: G-DRIVE is a cloud storage service by Google, offering secure file storage and easy access from anywhere.
+  ✅ Tags: access, files, storage, google, cloud
+Processing: MEDIUM.COM
+  ✅ Description: Medium is a platform for writers and readers to share and discover diverse stories and ideas across various topics.
+  ✅ Tags: blogging, ideas, stories, reading, writing
+
+✅ AI METADATA GENERATION COMPLETE!
+
+📊 Results:
+   • Total bookmarks processed: 12
+   • Successfully generated: 12
+   • Errors: 0
