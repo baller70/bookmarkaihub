@@ -87,6 +87,13 @@ export function DashboardContent() {
       if (response.ok) {
         const data = await response.json()
         setBookmarks(data)
+      } else if (response.status === 401) {
+        // Session expired or user not logged in
+        toast.error("Session expired. Please log in again.")
+        // Redirect to sign-in page after a brief delay
+        setTimeout(() => {
+          window.location.href = "/auth/signin"
+        }, 1500)
       } else {
         toast.error("Failed to load bookmarks")
       }
