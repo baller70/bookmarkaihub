@@ -181,18 +181,18 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
                 )}
               </div>
 
-              {/* Large Background Logo Watermark */}
+              {/* Large Background Logo Watermark - Fills entire card */}
               <div className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-10">
                 {bookmark.favicon ? (
                   <Image
                     src={bookmark.favicon}
                     alt={bookmark.title}
-                    width={200}
-                    height={200}
-                    className="w-40 h-40 object-contain"
+                    fill
+                    className="object-cover"
+                    sizes="200px"
                   />
                 ) : (
-                  <ExternalLink className="w-32 h-32 text-gray-300" />
+                  <ExternalLink className="w-full h-full text-gray-300" />
                 )}
               </div>
 

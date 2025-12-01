@@ -78,20 +78,45 @@ export default function CompactCategoryPage() {
 
   const fetchCategoryData = async () => {
     try {
-      // Fetch category details
-      const categoryRes = await fetch(`/api/categories?id=${categoryId}`)
-      const categoryData = await categoryRes.json()
-      
-      if (Array.isArray(categoryData) && categoryData.length > 0) {
-        setCategory(categoryData[0])
-      } else if (!Array.isArray(categoryData)) {
-        setCategory(categoryData)
-      }
+      // Handle "all" special case
+      if (categoryId === 'all') {
+        setCategory({
+          id: 'all',
+          name: 'ALL BOOKMARKS',
+          color: '#3B82F6',
+          _count: {
+            bookmarks: 0 // Will be set after fetching
+          }
+        })
+        
+        // Fetch all bookmarks (no category filter)
+        const bookmarksRes = await fetch(`/api/bookmarks`)
+        const bookmarksData = await bookmarksRes.json()
+        setBookmarks(bookmarksData)
+        
+        // Update count
+        setCategory(prev => ({
+          ...prev!,
+          _count: {
+            bookmarks: bookmarksData.length
+          }
+        }))
+      } else {
+        // Fetch category details
+        const categoryRes = await fetch(`/api/categories?id=${categoryId}`)
+        const categoryData = await categoryRes.json()
+        
+        if (Array.isArray(categoryData) && categoryData.length > 0) {
+          setCategory(categoryData[0])
+        } else if (!Array.isArray(categoryData)) {
+          setCategory(categoryData)
+        }
 
-      // Fetch bookmarks for this category
-      const bookmarksRes = await fetch(`/api/bookmarks?categoryId=${categoryId}`)
-      const bookmarksData = await bookmarksRes.json()
-      setBookmarks(bookmarksData)
+        // Fetch bookmarks for this specific category
+        const bookmarksRes = await fetch(`/api/bookmarks?category=${categoryId}`)
+        const bookmarksData = await bookmarksRes.json()
+        setBookmarks(bookmarksData)
+      }
     } catch (error) {
       console.error('Failed to fetch category data:', error)
     } finally {

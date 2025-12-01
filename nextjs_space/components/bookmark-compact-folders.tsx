@@ -72,6 +72,51 @@ export function BookmarkCompactFolders({ bookmarks, onUpdate }: BookmarkCompactF
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {/* ALL BOOKMARKS Folder - Always first */}
+      <div
+        onClick={() => handleFolderClick('all')}
+        className="bg-white border-2 border-black rounded-lg p-6 hover:shadow-lg transition-all cursor-pointer relative group"
+      >
+        {/* Folder Icon - Top Left */}
+        <div className="flex justify-start mb-5">
+          <div
+            className="rounded-md p-3 flex items-center justify-center"
+            style={{
+              backgroundColor: '#3B82F6'
+            }}
+          >
+            <Folder
+              className="w-16 h-16"
+              style={{
+                color: '#FFFFFF',
+                fill: 'transparent'
+              }}
+              strokeWidth={2}
+            />
+          </div>
+        </div>
+
+        {/* Category Name */}
+        <div className="mb-4">
+          <h3 className="text-lg font-bold uppercase tracking-wide text-gray-900 truncate">
+            ALL BOOKMARKS
+          </h3>
+        </div>
+
+        {/* Bottom Section - User Icon & Bookmark Count */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-gray-600">
+            <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
+              <User className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-sm font-medium">
+              {bookmarks.length} BOOKMARK{bookmarks.length !== 1 ? 'S' : ''}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Regular Category Folders */}
       {categories.map((category) => (
         <div
           key={category.id}
