@@ -701,10 +701,10 @@ export function BookmarkDetailModal({
         <div className="border-b px-3 sm:px-6 py-3 sm:py-4 bg-white">
           <div className="flex flex-col gap-3 sm:gap-0 sm:flex-row items-start justify-between">
             <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 w-full sm:w-auto">
-              {bookmark.favicon && (
+              {(bookmark.customFavicon || bookmark.customLogo || bookmark.favicon) && (
                 <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-lg overflow-hidden bg-black flex-shrink-0">
                   <Image
-                    src={bookmark.favicon}
+                    src={bookmark.customFavicon || bookmark.customLogo || bookmark.favicon}
                     alt=""
                     fill
                     className="object-contain"
@@ -799,9 +799,9 @@ export function BookmarkDetailModal({
               {/* Left Column - Logo */}
               <div className="space-y-6">
                 <div className="relative aspect-square bg-gray-100 rounded-lg flex items-center justify-center group">
-                  {bookmark.favicon ? (
+                  {(bookmark.customLogo || bookmark.customFavicon || bookmark.favicon) ? (
                     <Image
-                      src={bookmark.favicon}
+                      src={bookmark.customLogo || bookmark.customFavicon || bookmark.favicon}
                       alt={bookmark.title}
                       fill
                       className="object-contain p-8"
