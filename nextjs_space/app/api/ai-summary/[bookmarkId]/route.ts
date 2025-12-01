@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { sendMinimaxRequest } from '@/lib/minimax-client';
 
 // GET: Fetch AI summaries for a bookmark
 export async function GET(
@@ -85,24 +86,14 @@ export async function POST(
         prompt = `Provide a comprehensive summary of the content at ${bookmark.url}. Title: ${bookmark.title}. Description: ${bookmark.description || 'N/A'}`;
     }
 
-    // Call LLM API
-    const llmResponse = await fetch(`${process.env.ABACUSAI_API_ENDPOINT || 'https://api.abacus.ai'}/v1/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.ABACUSAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: 'You are a helpful assistant that summarizes web content.' },
-          { role: 'user', content: prompt }
-        ],
-      }),
-    });
-
-    const llmData = await llmResponse.json();
-    const generatedContent = llmData.choices?.[0]?.message?.content || 'Unable to generate summary.';
+    // Call Minimax AI
+    const generatedContent = await sendMinimaxRequest(
+      `You are a helpful assistant that summarizes web content.\n\n${prompt}`,
+      {
+        maxTokens: 1024,
+        temperature: 0.7,
+      }
+    );
 
     // Parse content based on type
     let keyPoints: string[] = [];

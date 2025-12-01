@@ -7,6 +7,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { getFaviconUrl } from "@/lib/favicon-service"
 import { getActiveCompanyId } from "@/lib/company"
+import { sendMinimaxRequest } from "@/lib/minimax-client"
 
 export async function GET(request: Request) {
   try {
@@ -108,7 +109,7 @@ export async function GET(request: Request) {
   }
 }
 
-// AI-powered description and tags generation
+// AI-powered description and tags generation using Minimax
 async function generateMetadataWithAI(title: string, url: string) {
   try {
     const prompt = `Given this bookmark:
@@ -123,30 +124,10 @@ Format your response EXACTLY like this:
 DESCRIPTION: [your description here]
 TAGS: tag1, tag2, tag3, tag4, tag5`;
 
-    const llmResponse = await fetch(`${process.env.ABACUSAI_API_ENDPOINT || 'https://api.abacus.ai'}/v1/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.ABACUSAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: 'You are a helpful assistant that generates concise descriptions and relevant tags for bookmarks.' },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 200,
-      }),
+    const content = await sendMinimaxRequest(prompt, {
+      maxTokens: 200,
+      temperature: 0.7,
     });
-
-    if (!llmResponse.ok) {
-      console.error('AI API error:', await llmResponse.text());
-      return { description: '', tags: [] };
-    }
-
-    const llmData = await llmResponse.json();
-    const content = llmData.choices?.[0]?.message?.content || '';
 
     // Parse the response
     const descMatch = content.match(/DESCRIPTION:\s*(.+?)(?=\nTAGS:|$)/s);
@@ -158,7 +139,7 @@ TAGS: tag1, tag2, tag3, tag4, tag5`;
 
     return { description, tags };
   } catch (error) {
-    console.error('Error generating metadata with AI:', error);
+    console.error('Error generating metadata with Minimax AI:', error);
     return { description: '', tags: [] };
   }
 }
