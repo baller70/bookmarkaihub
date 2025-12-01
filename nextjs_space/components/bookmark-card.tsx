@@ -617,14 +617,17 @@ export function BookmarkCard({
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1 group/url">
-                    <p className="text-xs sm:text-sm text-blue-600 font-medium truncate font-saira">
+                  <div className="flex items-center gap-1 group/url min-w-0">
+                    <p 
+                      className="text-xs sm:text-sm text-blue-600 font-medium truncate font-saira flex-1 min-w-0"
+                      title={bookmark.url}
+                    >
                       {bookmark.url?.replace(/^https?:\/\/(www\.)?/, '')}
                     </p>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-5 w-5 p-0 opacity-0 group-hover/url:opacity-100 transition-opacity"
+                      className="h-5 w-5 p-0 flex-shrink-0 opacity-0 group-hover/url:opacity-100 transition-opacity"
                       onClick={(e) => {
                         e.stopPropagation()
                         setIsEditingUrl(true)

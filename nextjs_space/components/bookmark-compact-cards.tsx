@@ -169,7 +169,7 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
                 <h3 className="text-xs font-bold text-gray-900 uppercase tracking-tight text-left line-clamp-2 leading-tight mb-1.5">
                   {bookmark.title}
                 </h3>
-                <p className="text-[10px] text-blue-600 truncate text-left mb-1.5">
+                <p className="text-[10px] text-blue-600 truncate text-left mb-1.5" title={bookmark.url}>
                   {domain}
                 </p>
                 {bookmark.priority && (

@@ -458,15 +458,16 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
                             )}
 
                             {/* URL */}
-                            <div className="flex items-center gap-2">
-                              <div className="w-4 h-4 bg-gray-300 rounded-full flex items-center justify-center">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="w-4 h-4 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
                                 <div className="w-2 h-2 bg-gray-500 rounded-full" />
                               </div>
                               <a
                                 href={bookmark.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-sm text-gray-500 hover:text-indigo-600 truncate"
+                                title={bookmark.url}
+                                className="text-sm text-gray-500 hover:text-indigo-600 truncate flex-1 min-w-0 block"
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 {bookmark.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}

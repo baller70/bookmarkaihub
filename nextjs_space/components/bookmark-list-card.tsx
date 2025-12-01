@@ -106,7 +106,8 @@ export function BookmarkListCard({ bookmark, onUpdate }: BookmarkListCardProps) 
               href={bookmark.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-blue-600 hover:text-blue-700 font-medium inline-block"
+              title={bookmark.url}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium block truncate max-w-full"
               onClick={(e) => e.stopPropagation()}
             >
               {bookmark.url?.replace(/^https?:\/\/(www\.)?/, '')}

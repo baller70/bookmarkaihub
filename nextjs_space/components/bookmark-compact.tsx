@@ -481,7 +481,7 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
 
                   {/* URL - BIGGER Blue link text */}
                   <div className="relative z-10 mb-1.5">
-                    <p className="text-[11px] text-blue-600 truncate">
+                    <p className="text-[11px] text-blue-600 truncate" title={bookmark.url}>
                       {cleanUrl}
                     </p>
                   </div>

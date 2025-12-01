@@ -448,7 +448,8 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                     href={bookmark.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-blue-600 hover:underline inline-flex items-center gap-1"
+                    title={bookmark.url}
+                    className="text-sm text-blue-600 hover:underline block truncate max-w-full"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {bookmark.url?.replace(/^https?:\/\/(www\.)?/, "")}
