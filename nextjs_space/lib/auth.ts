@@ -54,6 +54,21 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        // CRITICAL FIX: Ensure user has at least one company on login
+        const existingCompany = await prisma.company.findFirst({
+          where: { ownerId: user.id },
+        });
+        
+        if (!existingCompany) {
+          console.log('⚠️ Creating default company for user:', user.email);
+          await prisma.company.create({
+            data: {
+              name: 'My Company',
+              ownerId: user.id,
+            },
+          });
+        }
+        
         return {
           ...token,
           isAdmin: (user as any).isAdmin,

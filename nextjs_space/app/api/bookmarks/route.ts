@@ -25,6 +25,11 @@ export async function GET(request: Request) {
     // Get active company
     const activeCompanyId = await getActiveCompanyId(session.user.id);
 
+    // DEFENSIVE: If no company found, log warning but continue
+    if (!activeCompanyId) {
+      console.warn('⚠️ No active company found for user:', session.user.email);
+    }
+
     const bookmarks = await prisma.bookmark.findMany({
       where: {
         userId: session.user.id,

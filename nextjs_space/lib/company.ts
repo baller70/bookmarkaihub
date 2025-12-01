@@ -22,5 +22,15 @@ export async function getActiveCompanyId(userId: string): Promise<string | null>
     orderBy: { createdAt: 'asc' },
   });
 
+  // CRITICAL FIX: Auto-set the cookie if missing to prevent bookmark disappearance
+  if (firstCompany && !activeCompanyId) {
+    cookieStore.set('activeCompanyId', firstCompany.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+    });
+  }
+
   return firstCompany?.id || null;
 }
