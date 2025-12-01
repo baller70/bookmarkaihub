@@ -639,13 +639,13 @@ export function BookmarkCard({
 
             {/* LARGE CENTERED MIDDLE LOGO */}
             <div className="flex items-center justify-center my-3 sm:my-4">
-              <div className={`relative w-24 h-24 sm:w-32 sm:h-32 rounded-3xl overflow-hidden ${(bookmark.customLogo || bookmark.customFavicon || customLogoUrl) ? '' : 'bg-white shadow-lg border-4 border-white'}`}>
+              <div className={`relative w-24 h-24 sm:w-32 sm:h-32 overflow-hidden ${(bookmark.customLogo || bookmark.customFavicon || customLogoUrl) ? '' : 'bg-white shadow-lg border-4 border-white'}`}>
                 {(bookmark.customLogo || bookmark.customFavicon || customLogoUrl || bookmark.favicon) ? (
                   <Image
                     src={bookmark.customLogo || bookmark.customFavicon || customLogoUrl || bookmark.favicon}
                     alt={bookmark.title}
                     fill
-                    className="object-cover"
+                    className="object-contain"
                     unoptimized
                   />
                 ) : (

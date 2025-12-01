@@ -52,7 +52,9 @@ import {
   Clock4,
   PlusCircle,
   Folder,
-  Target
+  Target,
+  Save,
+  Pencil
 } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -99,6 +101,10 @@ export function BookmarkDetailModal({
   const [isEditingDescription, setIsEditingDescription] = useState(false)
   const [isEditingNotes, setIsEditingNotes] = useState(false)
   const [isEditingTags, setIsEditingTags] = useState(false)
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
+  const [editedTitle, setEditedTitle] = useState(bookmark?.title || "")
+  const [isEditingUrl, setIsEditingUrl] = useState(false)
+  const [editedUrl, setEditedUrl] = useState(bookmark?.url || "")
   
   // Timer state
   const [timerTime, setTimerTime] = useState(25 * 60) // 25 minutes in seconds
@@ -143,6 +149,8 @@ export function BookmarkDetailModal({
     if (bookmark) {
       setIsFavorite(bookmark.isFavorite || false)
       setDescription(bookmark.description || "")
+      setEditedTitle(bookmark.title || "")
+      setEditedUrl(bookmark.url || "")
       // Convert tags array to comma-separated string
       const tagNames = bookmark.tags?.map((t: any) => t.tag.name).join(", ") || ""
       setTags(tagNames)
@@ -239,6 +247,91 @@ export function BookmarkDetailModal({
       console.error('Error unlinking goal:', error)
       toast.error('Failed to unlink goal')
     }
+  }
+
+  // Handle title editing
+  const handleSaveTitle = async () => {
+    if (!editedTitle.trim()) {
+      toast.error("Title cannot be empty")
+      setEditedTitle(bookmark.title)
+      setIsEditingTitle(false)
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: editedTitle.trim() }),
+      })
+      
+      if (response.ok) {
+        toast.success("Title updated successfully")
+        setIsEditingTitle(false)
+        onUpdate()
+      } else {
+        toast.error("Failed to update title")
+        setEditedTitle(bookmark.title)
+        setIsEditingTitle(false)
+      }
+    } catch (error) {
+      console.error("Error updating title:", error)
+      toast.error("Failed to update title")
+      setEditedTitle(bookmark.title)
+      setIsEditingTitle(false)
+    }
+  }
+
+  const handleCancelEditTitle = () => {
+    setEditedTitle(bookmark.title)
+    setIsEditingTitle(false)
+  }
+
+  // Handle URL editing
+  const handleSaveUrl = async () => {
+    if (!editedUrl.trim()) {
+      toast.error("URL cannot be empty")
+      setEditedUrl(bookmark.url)
+      setIsEditingUrl(false)
+      return
+    }
+
+    // Basic URL validation
+    try {
+      new URL(editedUrl.trim())
+    } catch (error) {
+      toast.error("Please enter a valid URL")
+      return
+    }
+
+    try {
+      toast.loading("Updating URL and fetching favicon...", { id: 'url-update' })
+      const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: editedUrl.trim() }),
+      })
+      
+      if (response.ok) {
+        toast.success("URL updated and favicon refreshed", { id: 'url-update' })
+        setIsEditingUrl(false)
+        onUpdate()
+      } else {
+        toast.error("Failed to update URL", { id: 'url-update' })
+        setEditedUrl(bookmark.url)
+        setIsEditingUrl(false)
+      }
+    } catch (error) {
+      console.error("Error updating URL:", error)
+      toast.error("Failed to update URL", { id: 'url-update' })
+      setEditedUrl(bookmark.url)
+      setIsEditingUrl(false)
+    }
+  }
+
+  const handleCancelEditUrl = () => {
+    setEditedUrl(bookmark.url)
+    setIsEditingUrl(false)
   }
 
   // Timer effect
@@ -713,16 +806,87 @@ export function BookmarkDetailModal({
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <h2 className="text-sm sm:text-xl font-bold text-gray-900 flex items-center gap-2 truncate uppercase">
-                  <span className="truncate">{bookmark.title}</span>
-                  <button 
-                    className="p-1 hover:bg-gray-100 rounded flex-shrink-0"
-                    onClick={() => {}}
-                  >
-                    <Edit className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
-                  </button>
-                </h2>
-                <p className="text-xs sm:text-sm text-gray-500 truncate">{bookmark.url}</p>
+                {isEditingTitle ? (
+                  <div className="flex items-center gap-1 mb-1" onClick={(e) => e.stopPropagation()}>
+                    <Input
+                      value={editedTitle}
+                      onChange={(e) => setEditedTitle(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveTitle()
+                        if (e.key === 'Escape') handleCancelEditTitle()
+                      }}
+                      className="text-sm sm:text-lg font-bold text-gray-900 uppercase h-8 sm:h-10 px-2"
+                      autoFocus
+                    />
+                    <Button
+                      size="sm"
+                      className="h-8 w-8 p-0 bg-green-600 hover:bg-green-700 flex-shrink-0"
+                      onClick={handleSaveTitle}
+                    >
+                      <Save className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0 bg-red-100 hover:bg-red-200 flex-shrink-0"
+                      onClick={handleCancelEditTitle}
+                    >
+                      <X className="h-3 w-3 sm:h-4 sm:w-4 text-red-600" />
+                    </Button>
+                  </div>
+                ) : (
+                  <h2 className="text-sm sm:text-xl font-bold text-gray-900 flex items-center gap-2 truncate uppercase">
+                    <span className="truncate">{bookmark.title}</span>
+                    <button 
+                      className="p-1 hover:bg-gray-100 rounded flex-shrink-0"
+                      onClick={() => setIsEditingTitle(true)}
+                    >
+                      <Pencil className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
+                    </button>
+                  </h2>
+                )}
+                
+                {isEditingUrl ? (
+                  <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    <Input
+                      type="url"
+                      value={editedUrl}
+                      onChange={(e) => setEditedUrl(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveUrl()
+                        if (e.key === 'Escape') handleCancelEditUrl()
+                      }}
+                      className="h-7 text-xs sm:text-sm"
+                      placeholder="https://example.com"
+                      autoFocus
+                    />
+                    <Button
+                      size="sm"
+                      className="h-7 w-7 p-0 bg-green-600 hover:bg-green-700 flex-shrink-0"
+                      onClick={handleSaveUrl}
+                    >
+                      <Save className="h-3 w-3 text-white" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 w-7 p-0 bg-red-100 hover:bg-red-200 flex-shrink-0"
+                      onClick={handleCancelEditUrl}
+                    >
+                      <X className="h-3 w-3 text-red-600" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 group/url">
+                    <p className="text-xs sm:text-sm text-gray-500 truncate">{bookmark.url}</p>
+                    <button 
+                      className="p-1 hover:bg-gray-100 rounded flex-shrink-0 opacity-0 group-hover/url:opacity-100 transition-opacity"
+                      onClick={() => setIsEditingUrl(true)}
+                    >
+                      <Pencil className="h-3 w-3 text-gray-400" />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
             
