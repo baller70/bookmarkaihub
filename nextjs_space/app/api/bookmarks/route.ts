@@ -177,48 +177,43 @@ export async function POST(request: Request) {
       finalFavicon = favicon || '';
     }
 
-    // AI-powered description and tags generation (if not provided by user)
-    let finalDescription = description || '';
+    // ✨ ALWAYS AUTO-GENERATE AI DESCRIPTIONS AND TAGS ✨
+    console.log('🤖 Auto-generating AI metadata for:', title);
+    const aiMetadata = await generateMetadataWithAI(title, url);
+    
+    // Always use AI-generated description (user can edit later if needed)
+    const finalDescription = aiMetadata.description || description || '';
+    console.log('✅ AI Description:', finalDescription);
+
+    // Always create/find AI-generated tags (user can add more later)
     let finalTagIds = tagIds || [];
-
-    if (!description || !tagIds || tagIds.length === 0) {
-      console.log('🤖 Generating AI metadata for:', title);
-      const aiMetadata = await generateMetadataWithAI(title, url);
-      
-      // Use AI description if user didn't provide one
-      if (!description && aiMetadata.description) {
-        finalDescription = aiMetadata.description;
-        console.log('✅ AI Description:', finalDescription);
-      }
-
-      // Create/find tags if user didn't provide them
-      if ((!tagIds || tagIds.length === 0) && aiMetadata.tags.length > 0) {
-        const createdTags = await Promise.all(
-          aiMetadata.tags.map(async (tagName: string) => {
-            // Check if tag exists
-            let tag = await prisma.tag.findFirst({
-              where: { 
-                name: tagName,
-                userId: session.user.id 
-              }
-            });
-
-            // Create if doesn't exist
-            if (!tag) {
-              tag = await prisma.tag.create({
-                data: {
-                  name: tagName,
-                  userId: session.user.id,
-                },
-              });
+    if (aiMetadata.tags.length > 0) {
+      const createdTags = await Promise.all(
+        aiMetadata.tags.map(async (tagName: string) => {
+          // Check if tag exists
+          let tag = await prisma.tag.findFirst({
+            where: { 
+              name: tagName,
+              userId: session.user.id 
             }
+          });
 
-            return tag.id;
-          })
-        );
-        finalTagIds = createdTags;
-        console.log('✅ AI Tags:', aiMetadata.tags.join(', '));
-      }
+          // Create if doesn't exist
+          if (!tag) {
+            tag = await prisma.tag.create({
+              data: {
+                name: tagName,
+                userId: session.user.id,
+              },
+            });
+          }
+
+          return tag.id;
+        })
+      );
+      // Merge AI tags with any manually provided tags
+      finalTagIds = [...new Set([...createdTags, ...(tagIds || [])])];
+      console.log('✅ AI Tags:', aiMetadata.tags.join(', '));
     }
 
     // Determine which company to assign (use active company if not specified)
