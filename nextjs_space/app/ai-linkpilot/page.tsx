@@ -76,10 +76,21 @@ export default function AILinkPilotPage() {
   const [draftExpiration, setDraftExpiration] = useState("7-days")
 
   // Bulk Uploader Functions
+  const normalizeUrl = (url: string): string => {
+    let normalized = url.trim()
+    // Auto-add https:// if missing protocol
+    if (!normalized.match(/^https?:\/\//i)) {
+      normalized = 'https://' + normalized
+    }
+    return normalized
+  }
+
   const extractUrlsFromText = (text: string): string[] => {
-    const urlRegex = /(https?:\/\/[^\s]+)/g
+    // Match URLs with or without protocol
+    const urlRegex = /(https?:\/\/[^\s]+|(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}[^\s]*)/g
     const matches = text.match(urlRegex) || []
-    return [...new Set(matches)] // Remove duplicates
+    const normalized = matches.map(url => normalizeUrl(url))
+    return [...new Set(normalized)] // Remove duplicates
   }
 
   const parseCSV = (text: string): string[] => {
@@ -90,8 +101,9 @@ export default function AILinkPilotPage() {
       const cells = line.split(',')
       cells.forEach(cell => {
         const trimmed = cell.trim().replace(/["']/g, '')
-        if (trimmed.match(/^https?:\/\//)) {
-          urls.push(trimmed)
+        // Check if it looks like a URL
+        if (trimmed.match(/^(?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/)) {
+          urls.push(normalizeUrl(trimmed))
         }
       })
     })
@@ -254,12 +266,16 @@ export default function AILinkPilotPage() {
       return
     }
     
-    if (!singleUrl.match(/^https?:\/\//)) {
-      toast.error('Please enter a valid URL starting with http:// or https://')
-      return
+    // Normalize the URL (auto-add https:// if missing)
+    const normalizedUrl = normalizeUrl(singleUrl)
+    
+    // Validate it's a proper URL
+    try {
+      new URL(normalizedUrl)
+      createBookmarksFromUrls([normalizedUrl])
+    } catch (error) {
+      toast.error('Please enter a valid URL (e.g., google.com or https://google.com)')
     }
-
-    createBookmarksFromUrls([singleUrl])
   }
 
   const sidebarItems = [
@@ -990,7 +1006,8 @@ export default function AILinkPilotPage() {
                               {isUploading ? "UPLOADING..." : "DROP YOUR FILES HERE"}
                             </h3>
                             <p className="text-xs sm:text-sm text-gray-500 mb-4">
-                              Drag and drop CSV or TXT files with URLs
+                              Drag and drop CSV or TXT files with URLs<br/>
+                              <span className="text-xs text-gray-400">URLs can be with or without https://</span>
                             </p>
                             <div className="flex justify-center gap-4 text-xs text-gray-500 mb-6">
                               <div className="flex items-center gap-1">
@@ -1020,7 +1037,7 @@ export default function AILinkPilotPage() {
                       {uploadMethod === "paste-text" && (
                         <div className="space-y-4">
                           <Textarea
-                            placeholder="Paste your URLs here (one per line or separated by spaces)&#10;Example:&#10;https://example.com&#10;https://another-site.com&#10;https://yet-another.com"
+                            placeholder="Paste your URLs here (one per line or separated by spaces)&#10;You can paste URLs with or without https://&#10;&#10;Examples:&#10;https://example.com&#10;google.com&#10;www.github.com"
                             value={pasteText}
                             onChange={(e) => setPasteText(e.target.value)}
                             className="min-h-[300px] font-mono text-sm"
@@ -1051,11 +1068,12 @@ export default function AILinkPilotPage() {
                             <Label className="mb-2 block">ENTER URL</Label>
                             <Input
                               type="url"
-                              placeholder="https://example.com"
+                              placeholder="https://example.com or just example.com"
                               value={singleUrl}
                               onChange={(e) => setSingleUrl(e.target.value)}
-                              onKeyPress={(e) => {
+                              onKeyDown={(e) => {
                                 if (e.key === 'Enter' && !isUploading) {
+                                  e.preventDefault()
                                   handleSingleUrlImport()
                                 }
                               }}
