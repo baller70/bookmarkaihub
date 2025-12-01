@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { DashboardAuth } from "@/components/dashboard-auth"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -15,6 +15,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { 
@@ -76,15 +77,22 @@ export default function AILinkPilotPage() {
   const [showPreview, setShowPreview] = useState(false)
   const [selectedLinks, setSelectedLinks] = useState<Set<string>>(new Set())
   const [previewTab, setPreviewTab] = useState<'all' | 'web'>('all')
-  const [batchSize, setBatchSize] = useState("20")
-  const [importPreset, setImportPreset] = useState("")
-  const [extraTag, setExtraTag] = useState("")
-  const [forceFolder, setForceFolder] = useState("auto")
-  const [privacy, setPrivacy] = useState("private")
-  const [autoCategorize, setAutoCategorize] = useState(true)
-  const [autoPriority, setAutoPriority] = useState(true)
-  const [runInBackground, setRunInBackground] = useState(false)
-  const [duplicateStrategy, setDuplicateStrategy] = useState("auto-merge")
+  
+  // Relevant Bulk Upload Settings
+  const [validateUrls, setValidateUrls] = useState(true)
+  const [checkDuplicates, setCheckDuplicates] = useState(true)
+  const [fetchMetadata, setFetchMetadata] = useState(true)
+  const [fetchFavicons, setFetchFavicons] = useState(true)
+  const [autoRetryFailed, setAutoRetryFailed] = useState(false)
+  const [maxRetries, setMaxRetries] = useState("3")
+  const [processingMode, setProcessingMode] = useState<"sequential" | "parallel">("parallel")
+  const [concurrentLimit, setConcurrentLimit] = useState("5")
+  const [defaultPriority, setDefaultPriority] = useState("MEDIUM")
+  const [defaultPrivacy, setDefaultPrivacy] = useState("PRIVATE")
+  const [defaultCategory, setDefaultCategory] = useState("")
+  const [autoApplyTags, setAutoApplyTags] = useState("")
+  const [skipExisting, setSkipExisting] = useState(true)
+  const [logImports, setLogImports] = useState(true)
   
   // Upload Statistics
   const [uploadStats, setUploadStats] = useState({
@@ -96,6 +104,53 @@ export default function AILinkPilotPage() {
     failed: 0,
     successRate: 0
   })
+
+  // Categories for default category dropdown
+  const [categories, setCategories] = useState<Array<{id: string, name: string}>>([])
+  
+  // Upload history
+  const [showUploadHistory, setShowUploadHistory] = useState(false)
+  const [uploadHistory, setUploadHistory] = useState<any[]>([])
+  const [loadingHistory, setLoadingHistory] = useState(false)
+
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/categories')
+        if (response.ok) {
+          const data = await response.json()
+          setCategories(data.categories || [])
+        }
+      } catch (error) {
+        console.error('Failed to fetch categories:', error)
+      }
+    }
+    fetchCategories()
+  }, [])
+
+  // Fetch upload history
+  const fetchUploadHistory = async () => {
+    setLoadingHistory(true)
+    try {
+      const response = await fetch('/api/ai-linkpilot/bulk-upload-log?limit=20')
+      if (response.ok) {
+        const data = await response.json()
+        setUploadHistory(data.logs || [])
+      }
+    } catch (error) {
+      console.error('Failed to fetch upload history:', error)
+      toast.error('Failed to load upload history')
+    } finally {
+      setLoadingHistory(false)
+    }
+  }
+
+  // Open history modal
+  const handleShowHistory = () => {
+    setShowUploadHistory(true)
+    fetchUploadHistory()
+  }
 
   // Auto-Processing States
   const [manualSaves, setManualSaves] = useState(true)
@@ -402,10 +457,35 @@ export default function AILinkPilotPage() {
     let successCount = 0
     let failCount = 0
     let duplicateCount = 0
+    let skippedCount = 0
+
+    // Prepare tags from autoApplyTags setting
+    const tagsToApply = autoApplyTags
+      ? autoApplyTags.split(',').map(t => t.trim()).filter(t => t.length > 0)
+      : []
 
     try {
       // Process links
       for (const link of linksToImport) {
+        // Skip if duplicates should be skipped and URL exists
+        if (skipExisting && checkDuplicates) {
+          try {
+            const checkResponse = await fetch(`/api/bookmarks?search=${encodeURIComponent(link.url)}`)
+            if (checkResponse.ok) {
+              const checkData = await checkResponse.json()
+              if (checkData.bookmarks?.some((b: any) => b.url === link.url)) {
+                skippedCount++
+                setParsedLinks(prev => 
+                  prev.map(l => l.id === link.id ? { ...l, status: 'success' as LinkStatus, error: 'Skipped (exists)' } : l)
+                )
+                continue
+              }
+            }
+          } catch (error) {
+            // If check fails, continue with import
+          }
+        }
+
         // Update status to processing
         setParsedLinks(prev => 
           prev.map(l => l.id === link.id ? { ...l, status: 'processing' as LinkStatus } : l)
@@ -418,8 +498,8 @@ export default function AILinkPilotPage() {
             body: JSON.stringify({
               url: link.url,
               title: link.domain.toUpperCase(),
-              priority: 'MEDIUM',
-              tags: extraTag ? [extraTag] : undefined
+              priority: defaultPriority,
+              tags: tagsToApply.length > 0 ? tagsToApply : undefined
             })
           })
 
@@ -464,17 +544,57 @@ export default function AILinkPilotPage() {
       }
       setUploadStats(finalStats)
 
+      // Log the upload if enabled
+      if (logImports) {
+        try {
+          await fetch('/api/ai-linkpilot/bulk-upload-log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              totalLinks: linksToImport.length,
+              successCount,
+              failedCount: failCount,
+              duplicateCount,
+              skippedCount,
+              settings: {
+                validateUrls,
+                checkDuplicates,
+                fetchMetadata,
+                fetchFavicons,
+                autoRetryFailed,
+                maxRetries,
+                processingMode,
+                concurrentLimit,
+                defaultPriority,
+                defaultPrivacy,
+                defaultCategory,
+                autoApplyTags,
+                skipExisting
+              },
+              source: 'bulk_uploader',
+              importMethod: uploadMethod,
+              linksData: parsedLinks
+            })
+          })
+        } catch (logError) {
+          console.error('Failed to log upload:', logError)
+        }
+      }
+
       if (successCount > 0) {
         let message = `✅ Successfully imported ${successCount} link${successCount > 1 ? 's' : ''}`
+        if (skippedCount > 0) {
+          message += `\n⏭️ ${skippedCount} skipped (already exist)`
+        }
         if (duplicateCount > 0) {
-          message += `\n⚠️ ${duplicateCount} duplicate${duplicateCount > 1 ? 's' : ''} skipped`
+          message += `\n⚠️ ${duplicateCount} duplicate${duplicateCount > 1 ? 's' : ''}`
         }
         if (failCount > 0) {
           message += `\n❌ ${failCount} failed`
         }
         toast.success(message)
-      } else if (duplicateCount > 0) {
-        toast.warning(`All ${duplicateCount} link${duplicateCount > 1 ? 's were' : ' was'} already in your collection`)
+      } else if (duplicateCount > 0 || skippedCount > 0) {
+        toast.warning(`All ${duplicateCount + skippedCount} link${(duplicateCount + skippedCount) > 1 ? 's were' : ' was'} already in your collection`)
       } else {
         toast.error('Failed to import links')
       }
@@ -1497,133 +1617,190 @@ export default function AILinkPilotPage() {
                     </Card>
 
                     {/* Batch Settings Section */}
+                    {/* Batch Settings Section - RELEVANT TO BULK UPLOAD */}
                     <Card className="p-4 sm:p-6 bg-white border-gray-200 overflow-hidden">
                       <div className="flex items-center gap-2 mb-4">
                         <Settings className="h-5 w-5 text-gray-700" />
-                        <h3 className="font-semibold text-gray-900">BATCH SETTINGS</h3>
+                        <h3 className="font-semibold text-gray-900">IMPORT SETTINGS</h3>
                       </div>
 
                       <div className="space-y-4">
+                        {/* URL Validation */}
                         <div>
-                          <Label className="mb-2 block text-sm">Batch Size</Label>
-                          <Select value={batchSize} onValueChange={setBatchSize}>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="20">20 links</SelectItem>
-                              <SelectItem value="50">50 links</SelectItem>
-                              <SelectItem value="100">100 links</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div>
-                          <Label className="mb-2 block text-sm">Import Preset</Label>
-                          <Select value={importPreset} onValueChange={setImportPreset}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select preset..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="default">Default</SelectItem>
-                              <SelectItem value="work">Work</SelectItem>
-                              <SelectItem value="personal">Personal</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <h4 className="font-medium text-gray-900 mb-3 text-sm">URL Validation</h4>
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <Label className="text-sm">Validate URLs</Label>
+                              <Switch checked={validateUrls} onCheckedChange={setValidateUrls} />
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <Label className="text-sm">Check for duplicates</Label>
+                              <Switch checked={checkDuplicates} onCheckedChange={setCheckDuplicates} />
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <Label className="text-sm">Skip existing URLs</Label>
+                              <Switch checked={skipExisting} onCheckedChange={setSkipExisting} />
+                            </div>
+                          </div>
                         </div>
 
                         <Separator />
 
+                        {/* Content Fetching */}
                         <div>
-                          <h4 className="font-medium text-gray-900 mb-3">Overrides</h4>
-                          
+                          <h4 className="font-medium text-gray-900 mb-3 text-sm">Content Fetching</h4>
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <Label className="text-sm">Auto-fetch metadata</Label>
+                              <Switch checked={fetchMetadata} onCheckedChange={setFetchMetadata} />
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <Label className="text-sm">Fetch favicons/logos</Label>
+                              <Switch checked={fetchFavicons} onCheckedChange={setFetchFavicons} />
+                            </div>
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        {/* Processing Mode */}
+                        <div>
+                          <h4 className="font-medium text-gray-900 mb-3 text-sm">Processing</h4>
                           <div className="space-y-3">
                             <div>
-                              <Label className="mb-2 block text-sm">Extra tag for all</Label>
-                              <Input 
-                                placeholder="e.g., imported-2024"
-                                value={extraTag}
-                                onChange={(e) => setExtraTag(e.target.value)}
-                              />
-                            </div>
-
-                            <div>
-                              <Label className="mb-2 block text-sm">Force into folder</Label>
-                              <Select value={forceFolder} onValueChange={setForceFolder}>
+                              <Label className="mb-2 block text-sm">Processing mode</Label>
+                              <Select value={processingMode} onValueChange={(value: "sequential" | "parallel") => setProcessingMode(value)}>
                                 <SelectTrigger>
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="auto">Auto-categorize</SelectItem>
-                                  <SelectItem value="inbox">Inbox</SelectItem>
-                                  <SelectItem value="work">Work</SelectItem>
-                                  <SelectItem value="personal">Personal</SelectItem>
+                                  <SelectItem value="parallel">Parallel (Faster)</SelectItem>
+                                  <SelectItem value="sequential">Sequential (Safer)</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
+
+                            {processingMode === "parallel" && (
+                              <div>
+                                <Label className="mb-2 block text-sm">Concurrent limit</Label>
+                                <Select value={concurrentLimit} onValueChange={setConcurrentLimit}>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="3">3 at a time</SelectItem>
+                                    <SelectItem value="5">5 at a time</SelectItem>
+                                    <SelectItem value="10">10 at a time</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            )}
                           </div>
                         </div>
 
                         <Separator />
 
+                        {/* Retry Settings */}
                         <div>
-                          <h4 className="font-medium text-gray-900 mb-3">Privacy</h4>
-                          <RadioGroup value={privacy} onValueChange={setPrivacy} className="space-y-2">
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="private" id="private" />
-                              <Label htmlFor="private" className="font-normal cursor-pointer flex items-center gap-1">
-                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                </svg>
-                                Private
-                              </Label>
+                          <h4 className="font-medium text-gray-900 mb-3 text-sm">Error Handling</h4>
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <Label className="text-sm">Auto-retry failed</Label>
+                              <Switch checked={autoRetryFailed} onCheckedChange={setAutoRetryFailed} />
                             </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="public" id="public" />
-                              <Label htmlFor="public" className="font-normal cursor-pointer flex items-center gap-1">
-                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                                Public
-                              </Label>
-                            </div>
-                          </RadioGroup>
-                        </div>
-
-                        <Separator />
-
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <Label className="text-sm">Auto-categorize</Label>
-                            <Switch checked={autoCategorize} onCheckedChange={setAutoCategorize} />
-                          </div>
-
-                          <div className="flex items-center justify-between">
-                            <Label className="text-sm">Auto-priority</Label>
-                            <Switch checked={autoPriority} onCheckedChange={setAutoPriority} />
-                          </div>
-
-                          <div className="flex items-center justify-between">
-                            <Label className="text-sm">Run in background</Label>
-                            <Switch checked={runInBackground} onCheckedChange={setRunInBackground} />
+                            
+                            {autoRetryFailed && (
+                              <div>
+                                <Label className="mb-2 block text-sm">Max retries</Label>
+                                <Select value={maxRetries} onValueChange={setMaxRetries}>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="1">1 retry</SelectItem>
+                                    <SelectItem value="3">3 retries</SelectItem>
+                                    <SelectItem value="5">5 retries</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            )}
                           </div>
                         </div>
 
                         <Separator />
 
+                        {/* Default Bookmark Settings */}
                         <div>
-                          <Label className="mb-2 block text-sm">Duplicate strategy</Label>
-                          <Select value={duplicateStrategy} onValueChange={setDuplicateStrategy}>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="auto-merge">Auto-merge</SelectItem>
-                              <SelectItem value="skip">Skip duplicates</SelectItem>
-                              <SelectItem value="replace">Replace existing</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <h4 className="font-medium text-gray-900 mb-3 text-sm">Default Bookmark Settings</h4>
+                          <div className="space-y-3">
+                            <div>
+                              <Label className="mb-2 block text-sm">Default priority</Label>
+                              <Select value={defaultPriority} onValueChange={setDefaultPriority}>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="HIGH">High</SelectItem>
+                                  <SelectItem value="MEDIUM">Medium</SelectItem>
+                                  <SelectItem value="LOW">Low</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div>
+                              <Label className="mb-2 block text-sm">Default privacy</Label>
+                              <Select value={defaultPrivacy} onValueChange={setDefaultPrivacy}>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="PRIVATE">Private</SelectItem>
+                                  <SelectItem value="PUBLIC">Public</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div>
+                              <Label className="mb-2 block text-sm">Default category</Label>
+                              <Select value={defaultCategory} onValueChange={setDefaultCategory}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="None (uncategorized)" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="">None</SelectItem>
+                                  {categories.map((cat) => (
+                                    <SelectItem key={cat.id} value={cat.id}>
+                                      {cat.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div>
+                              <Label className="mb-2 block text-sm">Auto-apply tags</Label>
+                              <Input 
+                                placeholder="e.g., imported, 2024"
+                                value={autoApplyTags}
+                                onChange={(e) => setAutoApplyTags(e.target.value)}
+                              />
+                              <p className="text-xs text-gray-500 mt-1">Comma-separated tags</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        {/* Logging */}
+                        <div>
+                          <h4 className="font-medium text-gray-900 mb-3 text-sm">History & Logging</h4>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <Label className="text-sm">Keep upload history</Label>
+                              <p className="text-xs text-gray-500">Track when links were added</p>
+                            </div>
+                            <Switch checked={logImports} onCheckedChange={setLogImports} />
+                          </div>
                         </div>
                       </div>
                     </Card>
@@ -1724,6 +1901,99 @@ export default function AILinkPilotPage() {
                       </div>
                     </Card>
                   )}
+
+                  {/* Upload History Button */}
+                  <div className="flex justify-center">
+                    <Button
+                      variant="outline"
+                      onClick={handleShowHistory}
+                      className="flex items-center gap-2"
+                    >
+                      <History className="h-4 w-4" />
+                      View Upload History
+                    </Button>
+                  </div>
+
+                  {/* Upload History Dialog */}
+                  <Dialog open={showUploadHistory} onOpenChange={setShowUploadHistory}>
+                    <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Bulk Upload History</DialogTitle>
+                      </DialogHeader>
+                      
+                      {loadingHistory ? (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                        </div>
+                      ) : uploadHistory.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500">
+                          <History className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                          <p>No upload history found</p>
+                          <p className="text-sm text-gray-400">Your bulk upload logs will appear here</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {uploadHistory.map((log) => (
+                            <Card key={log.id} className="p-4 border-l-4 border-l-blue-500">
+                              <div className="flex items-start justify-between mb-2">
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <Badge variant="outline" className="text-xs">
+                                      {log.source}
+                                    </Badge>
+                                    {log.importMethod && (
+                                      <Badge variant="secondary" className="text-xs">
+                                        {log.importMethod}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {new Date(log.createdAt).toLocaleString()}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-2xl font-bold text-gray-900">
+                                    {log.totalLinks}
+                                  </div>
+                                  <div className="text-xs text-gray-500">Total Links</div>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+                                <div className="text-center p-2 bg-green-50 rounded border border-green-200">
+                                  <div className="text-lg font-bold text-green-600">{log.successCount}</div>
+                                  <div className="text-xs text-gray-600">Success</div>
+                                </div>
+                                <div className="text-center p-2 bg-red-50 rounded border border-red-200">
+                                  <div className="text-lg font-bold text-red-600">{log.failedCount}</div>
+                                  <div className="text-xs text-gray-600">Failed</div>
+                                </div>
+                                <div className="text-center p-2 bg-yellow-50 rounded border border-yellow-200">
+                                  <div className="text-lg font-bold text-yellow-600">{log.duplicateCount}</div>
+                                  <div className="text-xs text-gray-600">Duplicates</div>
+                                </div>
+                                <div className="text-center p-2 bg-gray-50 rounded border border-gray-200">
+                                  <div className="text-lg font-bold text-gray-600">{log.skippedCount}</div>
+                                  <div className="text-xs text-gray-600">Skipped</div>
+                                </div>
+                              </div>
+
+                              {log.settings && Object.keys(log.settings).length > 0 && (
+                                <details className="mt-4">
+                                  <summary className="text-xs text-gray-600 cursor-pointer hover:text-gray-900">
+                                    View Settings Used
+                                  </summary>
+                                  <div className="mt-2 p-2 bg-gray-50 rounded text-xs font-mono overflow-x-auto">
+                                    <pre>{JSON.stringify(log.settings, null, 2)}</pre>
+                                  </div>
+                                </details>
+                              )}
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+                    </DialogContent>
+                  </Dialog>
                 </div>
               )}
 

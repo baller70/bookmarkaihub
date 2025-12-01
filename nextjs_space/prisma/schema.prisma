@@ -64,6 +64,7 @@ model User {
   timeCapsules  TimeCapsule[]
   ownedCompanies    Company[] @relation("CompanyOwner")
   companies         UserCompany[]
+  bulkUploadLogs    BulkUploadLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -106,6 +107,7 @@ model Company {
   notificationPreferences NotificationPreference[]
   timerSettings           TimerSettings[]
   timerQueues             TimerQueue[]
+  bulkUploadLogs          BulkUploadLog[]
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
 
@@ -1308,4 +1310,37 @@ enum SharePermission {
   VIEW
   COMMENT
   EDIT
+}
+
+// Bulk Upload History Log
+model BulkUploadLog {
+  id              String   @id @default(cuid())
+  userId          String
+  companyId       String?
+  
+  // Upload Details
+  totalLinks      Int
+  successCount    Int      @default(0)
+  failedCount     Int      @default(0)
+  duplicateCount  Int      @default(0)
+  skippedCount    Int      @default(0)
+  
+  // Upload Settings (JSON)
+  settings        Json?    // Stores all the settings used for this upload
+  
+  // Metadata
+  source          String   @default("bulk_uploader") // bulk_uploader, paste_text, drag_drop, single_url
+  importMethod    String?  // paste, file, single
+  
+  // Links data
+  linksData       Json?    // Stores array of {url, status, error, domain, etc}
+  
+  // User reference
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company         Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([userId, createdAt])
+  @@index([companyId, createdAt])
 }
