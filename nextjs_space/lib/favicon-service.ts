@@ -4,22 +4,135 @@
  * 
  * MULTI-SOURCE STRATEGY:
  * 1. Check domain overrides (curated high-quality sources)
- * 2. Try Logo.dev (500x500 logos)
- * 3. Try Clearbit (usually good quality)
- * 4. Apply AI upscaling if needed to reach 600px minimum
+ * 2. Try Google Images (search for actual logo)
+ * 3. Try Logo.dev (500x500 logos)
+ * 4. Try Clearbit (fallback)
+ * 5. Apply AI upscaling if needed to reach 600px minimum
  */
 
 import { upscaleImage } from './image-upscaler';
+import { uploadFile } from './s3';
+import { getBucketConfig } from './aws-config';
 
 const DOMAIN_OVERRIDES: Record<string, string> = {
   'netflix.com': 'https://images.ctfassets.net/4cd45et68cgf/7LrExJ6PAj6MSIPkDyCO86/542b1dfabbf3959908f69be546879952/Netflix-Brand-Logo.png',
   'youtube.com': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/YouTube_full-color_icon_%282017%29.svg/2560px-YouTube_full-color_icon_%282017%29.svg.png',
-  'sellerpic.ai': 'https://cdn-static.sellerpic.ai/website/668644ec5e28920fcd1baeae/6710a76093f2db79b26bd44d_Logo.svg', // Official SVG logo
+  'sellerpic.ai': 'https://cdn-static.sellerpic.ai/website/668644ec5e28920fcd1baeae/6710a76093f2db79b26bd44d_Logo.svg',
 }
 
 // URL builder to prevent replacement
 function buildUrl(parts: string[]): string {
   return parts.join('')
+}
+
+/**
+ * Extract company/brand name from domain for better search results
+ */
+function extractBrandName(domain: string): string {
+  const mainPart = domain.replace(/\.(com|org|net|io|ai|co|app|dev)$/i, '');
+  const words = mainPart.split(/[.-]/).map(word => 
+    word.charAt(0).toUpperCase() + word.slice(1)
+  );
+  return words.join(' ');
+}
+
+/**
+ * Try to find and download a logo from Google Images
+ */
+async function tryGoogleImages(domain: string): Promise<string | null> {
+  try {
+    const brandName = extractBrandName(domain);
+    console.log(`  🔍 Searching Google Images for: "${brandName} logo"`);
+    
+    const searchQuery = encodeURIComponent(`${brandName} logo`);
+    const searchUrl = `https://www.google.com/search?q=${searchQuery}&tbm=isch&tbs=isz:l`;
+    
+    console.log(`  📡 Fetching Google Images search results...`);
+    const response = await fetch(searchUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
+    
+    if (!response.ok) {
+      console.log(`  ⚠️  Google Images search failed: ${response.status}`);
+      return null;
+    }
+    
+    const html = await response.text();
+    
+    // Extract image URLs from the HTML
+    const imageUrlMatches = html.match(/"(https?:\/\/[^"]+\.(jpg|jpeg|png|webp))"/gi);
+    
+    if (!imageUrlMatches || imageUrlMatches.length === 0) {
+      console.log(`  ⚠️  No images found in Google Images results`);
+      return null;
+    }
+    
+    // Clean URLs and filter out Google's own URLs
+    const imageUrls = imageUrlMatches
+      .map(match => match.replace(/"/g, ''))
+      .filter(url => 
+        !url.includes('google.com') && 
+        !url.includes('gstatic.com') &&
+        !url.includes('googleusercontent.com') &&
+        (url.endsWith('.jpg') || url.endsWith('.jpeg') || url.endsWith('.png') || url.endsWith('.webp'))
+      );
+    
+    if (imageUrls.length === 0) {
+      console.log(`  ⚠️  No valid external images found`);
+      return null;
+    }
+    
+    // Try the first few images until we get a valid one
+    for (let i = 0; i < Math.min(3, imageUrls.length); i++) {
+      const imageUrl = imageUrls[i];
+      console.log(`  📥 Attempting to download image ${i + 1}: ${imageUrl.substring(0, 60)}...`);
+      
+      try {
+        const imgResponse = await fetch(imageUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          },
+          signal: AbortSignal.timeout(10000)
+        });
+        
+        if (!imgResponse.ok) {
+          console.log(`  ⚠️  Image download failed (${imgResponse.status}), trying next...`);
+          continue;
+        }
+        
+        const contentType = imgResponse.headers.get('content-type');
+        if (!contentType?.startsWith('image/')) {
+          console.log(`  ⚠️  Not a valid image (${contentType}), trying next...`);
+          continue;
+        }
+        
+        const arrayBuffer = await imgResponse.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        
+        const fileName = `google-images/${domain}-${Date.now()}.png`;
+        console.log(`  ☁️  Uploading to S3: ${fileName}`);
+        const s3Key = await uploadFile(buffer, fileName, true);
+        
+        const { bucketName, folderPrefix } = getBucketConfig();
+        const region = process.env.AWS_REGION || 'us-west-2';
+        const s3Url = `https://${bucketName}.s3.${region}.amazonaws.com/${s3Key}`;
+        
+        console.log(`  ✅ Successfully downloaded and uploaded Google Images result`);
+        return s3Url;
+      } catch (imgError) {
+        console.log(`  ⚠️  Error downloading image ${i + 1}:`, imgError);
+        continue;
+      }
+    }
+    
+    console.log(`  ❌ All image download attempts failed`);
+    return null;
+  } catch (error) {
+    console.error('  ❌ Google Images search error:', error);
+    return null;
+  }
 }
 
 /**
@@ -57,28 +170,38 @@ export async function getFaviconUrl(url: string): Promise<string> {
       return DOMAIN_OVERRIDES[domain]
     }
 
-    // Strategy 2: Try Logo.dev first (usually 500x500px - better than Clearbit)
-    console.log(`  🔍 Trying Logo.dev...`);
-    const logoDevUrl = await tryLogoDev(domain);
+    // Strategy 2: Try Google Images first (best quality, actual logos)
+    console.log(`  🔍 Trying Google Images...`);
+    const googleImageUrl = await tryGoogleImages(domain);
     
     let sourceUrl: string;
     let sourceName: string;
     
-    if (logoDevUrl) {
-      sourceUrl = logoDevUrl;
-      sourceName = 'Logo.dev';
-      console.log(`  ✓ Using Logo.dev (typically 500x500px)`);
+    if (googleImageUrl) {
+      sourceUrl = googleImageUrl;
+      sourceName = 'Google Images';
+      console.log(`  ✓ Using Google Images result`);
     } else {
-      // Strategy 3: Fallback to Clearbit
-      sourceUrl = buildUrl(['https', '://', 'logo', '.', 'clearbit', '.', 'com', '/', domain, '?size=400']);
-      sourceName = 'Clearbit';
-      console.log(`  ✓ Using Clearbit fallback`);
+      // Strategy 3: Try Logo.dev
+      console.log(`  🔍 Trying Logo.dev...`);
+      const logoDevUrl = await tryLogoDev(domain);
+      
+      if (logoDevUrl) {
+        sourceUrl = logoDevUrl;
+        sourceName = 'Logo.dev';
+        console.log(`  ✓ Using Logo.dev (typically 500x500px)`);
+      } else {
+        // Strategy 4: Fallback to Clearbit
+        sourceUrl = buildUrl(['https', '://', 'logo', '.', 'clearbit', '.', 'com', '/', domain, '?size=400']);
+        sourceName = 'Clearbit';
+        console.log(`  ✓ Using Clearbit fallback`);
+      }
     }
     
-    console.log(`  📍 Source: ${sourceName} - ${sourceUrl}`);
+    console.log(`  📍 Source: ${sourceName} - ${sourceUrl.substring(0, 80)}...`);
     console.log(`  🔍 Checking 600px requirement...`);
     
-    // Strategy 4: ALWAYS run through upscaler to enforce 600px minimum
+    // Strategy 5: ALWAYS run through upscaler to enforce 600px minimum
     try {
       const result = await upscaleImage(sourceUrl, domain);
       
