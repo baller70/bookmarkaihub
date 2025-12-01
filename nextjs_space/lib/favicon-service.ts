@@ -1,12 +1,12 @@
 /**
- * SIMPLE, RELIABLE Logo Fetching Service
+ * Premium Logo Fetching Service with 600px minimum guarantee
  * 
- * STRATEGY (in order):
+ * STRATEGY:
  * 1. Domain overrides (curated sources)
- * 2. Logo.dev - dedicated logo service
- * 3. Clearbit - another logo service
- * 4. Website scraping (last resort)
- * 5. AI upscaling to 600px minimum
+ * 2. Brandfetch API (high-quality company logos)
+ * 3. Logo.dev (fallback)
+ * 4. Website og:image (last resort)
+ * 5. AI upscaling to ensure 600px minimum
  */
 
 import { upscaleImage } from './image-upscaler';
@@ -18,7 +18,60 @@ const DOMAIN_OVERRIDES: Record<string, string> = {
 }
 
 /**
- * Try Logo.dev - reliable logo service
+ * Try Brandfetch - premium logo API with high quality
+ */
+async function tryBrandfetch(domain: string): Promise<string | null> {
+  try {
+    console.log(`  🔍 Trying Brandfetch for ${domain}...`);
+    
+    // Brandfetch has a free tier API
+    const brandfetchUrl = `https://api.brandfetch.io/v2/brands/${domain}`;
+    
+    const response = await fetch(brandfetchUrl, {
+      headers: {
+        'Accept': 'application/json'
+      },
+      signal: AbortSignal.timeout(5000)
+    });
+    
+    if (!response.ok) {
+      console.log(`  ⚠️  Brandfetch returned ${response.status}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    
+    // Brandfetch returns multiple logo formats, get the highest quality one
+    if (data.logos && data.logos.length > 0) {
+      // Prefer PNG format, then SVG
+      const pngLogo = data.logos.find((logo: any) => logo.formats?.some((f: any) => f.format === 'png'));
+      const svgLogo = data.logos.find((logo: any) => logo.formats?.some((f: any) => f.format === 'svg'));
+      
+      const chosenLogo = pngLogo || svgLogo || data.logos[0];
+      
+      if (chosenLogo.formats && chosenLogo.formats.length > 0) {
+        // Get the largest format available
+        const format = chosenLogo.formats.sort((a: any, b: any) => 
+          (b.width || 0) - (a.width || 0)
+        )[0];
+        
+        if (format.src) {
+          console.log(`  ✅ Brandfetch found logo: ${format.format} (${format.width}x${format.height})`);
+          return format.src;
+        }
+      }
+    }
+    
+    console.log(`  ⚠️  No suitable logo found in Brandfetch response`);
+    return null;
+  } catch (error) {
+    console.log(`  ⚠️  Brandfetch error:`, error);
+    return null;
+  }
+}
+
+/**
+ * Try Logo.dev
  */
 async function tryLogoDev(domain: string): Promise<string | null> {
   try {
@@ -31,7 +84,7 @@ async function tryLogoDev(domain: string): Promise<string | null> {
     });
     
     if (response.ok) {
-      console.log(`  ✅ Logo.dev has logo for ${domain}`);
+      console.log(`  ✅ Logo.dev has logo`);
       return logoDevUrl;
     }
     
@@ -44,19 +97,11 @@ async function tryLogoDev(domain: string): Promise<string | null> {
 }
 
 /**
- * Try Clearbit - another logo service
+ * Try website og:image (last resort)
  */
-function getClearbitUrl(domain: string): string {
-  console.log(`  🔍 Using Clearbit for ${domain}...`);
-  return `https://logo.clearbit.com/${domain}?size=400`;
-}
-
-/**
- * Try scraping website for og:image or favicon
- */
-async function tryWebsiteScrape(url: string, domain: string): Promise<string | null> {
+async function tryWebsiteOgImage(url: string): Promise<string | null> {
   try {
-    console.log(`  🌐 Scraping website ${url}...`);
+    console.log(`  🌐 Trying website og:image...`);
     
     const response = await fetch(url, {
       headers: {
@@ -72,8 +117,9 @@ async function tryWebsiteScrape(url: string, domain: string): Promise<string | n
     
     const html = await response.text();
     
-    // Try og:image first (usually high quality marketing image)
+    // Only look for og:image
     const ogImageMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i);
+    
     if (ogImageMatch && ogImageMatch[1]) {
       let logoUrl = ogImageMatch[1];
       
@@ -93,10 +139,10 @@ async function tryWebsiteScrape(url: string, domain: string): Promise<string | n
       return logoUrl;
     }
     
-    console.log(`  ⚠️  No og:image found on website`);
+    console.log(`  ⚠️  No og:image found`);
     return null;
   } catch (error) {
-    console.error('  ❌ Website scraping error:', error);
+    console.error('  ❌ Website error:', error);
     return null;
   }
 }
@@ -111,55 +157,40 @@ export async function getFaviconUrl(url: string): Promise<string> {
 
     console.log(`\n🎯 FAVICON SERVICE - Fetching logo for: ${domain}`);
     
-    // Strategy 1: Check domain overrides
+    // Strategy 1: Check overrides
     if (DOMAIN_OVERRIDES[domain]) {
       console.log(`  ✅ Using curated override`);
       return DOMAIN_OVERRIDES[domain]
     }
 
-    // Strategy 2: Try Logo.dev (dedicated logo service)
-    const logoDevUrl = await tryLogoDev(domain);
+    // Strategy 2: Try Brandfetch (best quality)
+    const brandfetchUrl = await tryBrandfetch(domain);
     
     let sourceUrl: string;
     let sourceName: string;
     
-    if (logoDevUrl) {
-      sourceUrl = logoDevUrl;
-      sourceName = 'Logo.dev';
+    if (brandfetchUrl) {
+      sourceUrl = brandfetchUrl;
+      sourceName = 'Brandfetch';
     } else {
-      // Strategy 3: Try Clearbit (another logo service)
-      const clearbitUrl = getClearbitUrl(domain);
+      // Strategy 3: Try Logo.dev
+      const logoDevUrl = await tryLogoDev(domain);
       
-      // Test if Clearbit actually has a logo
-      try {
-        const clearbitTest = await fetch(clearbitUrl, { 
-          method: 'HEAD',
-          signal: AbortSignal.timeout(5000)
-        });
+      if (logoDevUrl) {
+        sourceUrl = logoDevUrl;
+        sourceName = 'Logo.dev';
+      } else {
+        // Strategy 4: Try website og:image (last resort)
+        const websiteUrl = await tryWebsiteOgImage(url);
         
-        if (clearbitTest.ok) {
-          sourceUrl = clearbitUrl;
-          sourceName = 'Clearbit';
-          console.log(`  ✅ Clearbit has logo`);
+        if (websiteUrl) {
+          sourceUrl = websiteUrl;
+          sourceName = 'Website og:image';
         } else {
-          // Strategy 4: Try website scraping (last resort)
-          console.log(`  ⚠️  Clearbit returned ${clearbitTest.status}, trying website...`);
-          const websiteLogo = await tryWebsiteScrape(url, domain);
-          
-          if (websiteLogo) {
-            sourceUrl = websiteLogo;
-            sourceName = 'Website';
-          } else {
-            // Absolute fallback
-            console.log(`  ⚠️  All sources failed, using Clearbit anyway`);
-            sourceUrl = clearbitUrl;
-            sourceName = 'Clearbit (fallback)';
-          }
+          // Absolute fallback - empty string
+          console.log(`  ❌ All sources failed`);
+          return '';
         }
-      } catch (error) {
-        console.log(`  ⚠️  Clearbit test failed, using anyway`);
-        sourceUrl = clearbitUrl;
-        sourceName = 'Clearbit (fallback)';
       }
     }
     
