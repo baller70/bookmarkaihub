@@ -4,7 +4,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { createS3Client, getBucketConfig } from './aws-config';
 
 const s3Client = createS3Client();
-const { bucketName, folderPrefix } = getBucketConfig();
+const { bucketName, folderPrefix, region } = getBucketConfig();
 
 export async function uploadFile(buffer: Buffer, fileName: string, isPublic: boolean = true): Promise<string> {
   // If fileName already includes a path (e.g., "upscaled-logos/file.png"), use it directly
@@ -24,6 +24,11 @@ export async function uploadFile(buffer: Buffer, fileName: string, isPublic: boo
   };
   
   await s3Client.send(new PutObjectCommand(uploadParams));
+  
+  // Return public URL if isPublic, otherwise return the key
+  if (isPublic) {
+    return `https://${bucketName}.s3.${region}.amazonaws.com/${key}`;
+  }
   
   return key;
 }

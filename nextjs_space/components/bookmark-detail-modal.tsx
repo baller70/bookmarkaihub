@@ -633,6 +633,36 @@ export function BookmarkDetailModal({
     toast.success("Comment added")
   }
 
+  // Delete bookmark
+  const handleDeleteBookmark = async () => {
+    if (!confirm("Are you sure you want to delete this bookmark? This action cannot be undone.")) {
+      return
+    }
+
+    const loadingToast = toast.loading("Deleting bookmark...")
+
+    try {
+      const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete bookmark')
+      }
+
+      toast.dismiss(loadingToast)
+      toast.success("Bookmark deleted successfully")
+      
+      // Close modal and refresh
+      onOpenChange(false)
+      onUpdate()
+    } catch (error) {
+      toast.dismiss(loadingToast)
+      toast.error("Failed to delete bookmark")
+      console.error(error)
+    }
+  }
+
   if (!bookmark) return null
 
   return (
@@ -1439,6 +1469,17 @@ export function BookmarkDetailModal({
             <BookmarkShareTool bookmarkId={bookmark.id} />
           </TabsContent>
         </Tabs>
+
+        {/* DELETE BUTTON - Always visible at bottom */}
+        <div className="border-t border-gray-200 p-4 sm:p-6 bg-gray-50">
+          <Button
+            variant="outline"
+            className="w-full border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-600 font-semibold uppercase"
+            onClick={handleDeleteBookmark}
+          >
+            Delete
+          </Button>
+        </div>
       </DialogContent>
 
       {/* Manage Tools Modal */}
