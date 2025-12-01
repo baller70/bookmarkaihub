@@ -49,7 +49,7 @@ export function BookmarkCompactFolders({ bookmarks, onUpdate }: BookmarkCompactF
   }
 
   const handleFolderClick = (categoryId: string) => {
-    router.push(`/categories/${categoryId}`)
+    router.push(`/bookmarkai-addons/categories/${categoryId}/compact`)
   }
 
   if (loading) {
