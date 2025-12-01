@@ -4,10 +4,11 @@
  * 
  * MULTI-SOURCE STRATEGY:
  * 1. Check domain overrides (curated high-quality sources)
- * 2. Try Google Images (search for actual logo)
- * 3. Try Logo.dev (500x500 logos)
- * 4. Try Clearbit (fallback)
- * 5. Apply AI upscaling if needed to reach 600px minimum
+ * 2. Try Google Images (search for PNG logos with white/transparent background)
+ * 3. Try Website (scrape for favicon, logo, og:image)
+ * 4. Try Logo.dev (fallback)
+ * 5. Try Clearbit (fallback)
+ * 6. Apply AI upscaling if needed to reach 600px minimum
  */
 
 import { upscaleImage } from './image-upscaler';
@@ -37,20 +38,22 @@ function extractBrandName(domain: string): string {
 }
 
 /**
- * Try to find and download a logo from Google Images
+ * Try to find and download a PNG logo from Google Images
+ * Prioritizes PNG format and large images with white/transparent backgrounds
  */
 async function tryGoogleImages(domain: string): Promise<string | null> {
   try {
     const brandName = extractBrandName(domain);
-    console.log(`  🔍 Searching Google Images for: "${brandName} logo"`);
+    console.log(`  🔍 Searching Google Images for: "${brandName} logo PNG"`);
     
-    const searchQuery = encodeURIComponent(`${brandName} logo`);
-    const searchUrl = `https://www.google.com/search?q=${searchQuery}&tbm=isch&tbs=isz:l`;
+    // Search specifically for PNG logos with large size filter
+    const searchQuery = encodeURIComponent(`${brandName} logo PNG`);
+    const searchUrl = `https://www.google.com/search?q=${searchQuery}&tbm=isch&tbs=isz:l,ift:png`;
     
     console.log(`  📡 Fetching Google Images search results...`);
     const response = await fetch(searchUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
       }
     });
     
@@ -61,33 +64,35 @@ async function tryGoogleImages(domain: string): Promise<string | null> {
     
     const html = await response.text();
     
-    // Extract image URLs from the HTML
-    const imageUrlMatches = html.match(/"(https?:\/\/[^"]+\.(jpg|jpeg|png|webp))"/gi);
+    // Extract PNG image URLs from the HTML
+    const imageUrlMatches = html.match(/"(https?:\/\/[^"]+\.png[^"]*)"/gi);
     
     if (!imageUrlMatches || imageUrlMatches.length === 0) {
-      console.log(`  ⚠️  No images found in Google Images results`);
+      console.log(`  ⚠️  No PNG images found in Google Images results`);
       return null;
     }
     
     // Clean URLs and filter out Google's own URLs
     const imageUrls = imageUrlMatches
-      .map(match => match.replace(/"/g, ''))
+      .map(match => match.replace(/"/g, '').split('?')[0]) // Remove query params
       .filter(url => 
+        url.endsWith('.png') &&
         !url.includes('google.com') && 
         !url.includes('gstatic.com') &&
-        !url.includes('googleusercontent.com') &&
-        (url.endsWith('.jpg') || url.endsWith('.jpeg') || url.endsWith('.png') || url.endsWith('.webp'))
+        !url.includes('googleusercontent.com')
       );
     
     if (imageUrls.length === 0) {
-      console.log(`  ⚠️  No valid external images found`);
+      console.log(`  ⚠️  No valid external PNG images found`);
       return null;
     }
     
+    console.log(`  ✅ Found ${imageUrls.length} PNG logo candidates`);
+    
     // Try the first few images until we get a valid one
-    for (let i = 0; i < Math.min(3, imageUrls.length); i++) {
+    for (let i = 0; i < Math.min(5, imageUrls.length); i++) {
       const imageUrl = imageUrls[i];
-      console.log(`  📥 Attempting to download image ${i + 1}: ${imageUrl.substring(0, 60)}...`);
+      console.log(`  📥 Attempting to download PNG ${i + 1}: ${imageUrl.substring(0, 80)}...`);
       
       try {
         const imgResponse = await fetch(imageUrl, {
@@ -98,12 +103,12 @@ async function tryGoogleImages(domain: string): Promise<string | null> {
         });
         
         if (!imgResponse.ok) {
-          console.log(`  ⚠️  Image download failed (${imgResponse.status}), trying next...`);
+          console.log(`  ⚠️  PNG download failed (${imgResponse.status}), trying next...`);
           continue;
         }
         
         const contentType = imgResponse.headers.get('content-type');
-        if (!contentType?.startsWith('image/')) {
+        if (!contentType?.includes('image')) {
           console.log(`  ⚠️  Not a valid image (${contentType}), trying next...`);
           continue;
         }
@@ -111,15 +116,21 @@ async function tryGoogleImages(domain: string): Promise<string | null> {
         const arrayBuffer = await imgResponse.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         
+        // Verify it's a reasonable size (at least 1KB, not more than 10MB)
+        if (buffer.length < 1000 || buffer.length > 10 * 1024 * 1024) {
+          console.log(`  ⚠️  Image size out of bounds (${buffer.length} bytes), trying next...`);
+          continue;
+        }
+        
         const fileName = `google-images/${domain}-${Date.now()}.png`;
         console.log(`  ☁️  Uploading to S3: ${fileName}`);
         const s3Key = await uploadFile(buffer, fileName, true);
         
-        const { bucketName, folderPrefix } = getBucketConfig();
+        const { bucketName } = getBucketConfig();
         const region = process.env.AWS_REGION || 'us-west-2';
         const s3Url = `https://${bucketName}.s3.${region}.amazonaws.com/${s3Key}`;
         
-        console.log(`  ✅ Successfully downloaded and uploaded Google Images result`);
+        console.log(`  ✅ Successfully downloaded and uploaded PNG from Google Images`);
         return s3Url;
       } catch (imgError) {
         console.log(`  ⚠️  Error downloading image ${i + 1}:`, imgError);
@@ -127,10 +138,133 @@ async function tryGoogleImages(domain: string): Promise<string | null> {
       }
     }
     
-    console.log(`  ❌ All image download attempts failed`);
+    console.log(`  ❌ All PNG download attempts failed`);
     return null;
   } catch (error) {
     console.error('  ❌ Google Images search error:', error);
+    return null;
+  }
+}
+
+/**
+ * Try to scrape the website for its favicon or logo
+ * Looks for:
+ * 1. <link rel="icon"> or <link rel="shortcut icon">
+ * 2. <link rel="apple-touch-icon">
+ * 3. <meta property="og:image">
+ * 4. /favicon.ico
+ */
+async function tryWebsiteScrape(url: string, domain: string): Promise<string | null> {
+  try {
+    console.log(`  🌐 Scraping website for logo: ${url}`);
+    
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      signal: AbortSignal.timeout(15000)
+    });
+    
+    if (!response.ok) {
+      console.log(`  ⚠️  Website fetch failed: ${response.status}`);
+      return null;
+    }
+    
+    const html = await response.text();
+    
+    // Try to find icon/logo links in HTML
+    const iconPatterns = [
+      /<link[^>]*rel=["'](?:shortcut )?icon["'][^>]*href=["']([^"']+)["']/i,
+      /<link[^>]*href=["']([^"']+)["'][^>]*rel=["'](?:shortcut )?icon["']/i,
+      /<link[^>]*rel=["']apple-touch-icon["'][^>]*href=["']([^"']+)["']/i,
+      /<link[^>]*href=["']([^"']+)["'][^>]*rel=["']apple-touch-icon["']/i,
+      /<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i,
+      /<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i,
+    ];
+    
+    let logoUrl: string | null = null;
+    
+    for (const pattern of iconPatterns) {
+      const match = html.match(pattern);
+      if (match && match[1]) {
+        logoUrl = match[1];
+        console.log(`  🎯 Found logo in HTML: ${logoUrl}`);
+        break;
+      }
+    }
+    
+    // If no logo found in HTML, try /favicon.ico
+    if (!logoUrl) {
+      const urlObj = new URL(url);
+      logoUrl = `${urlObj.protocol}//${urlObj.host}/favicon.ico`;
+      console.log(`  🎯 Trying default favicon.ico: ${logoUrl}`);
+    }
+    
+    // Make URL absolute if it's relative
+    if (logoUrl && !logoUrl.startsWith('http')) {
+      const urlObj = new URL(url);
+      if (logoUrl.startsWith('//')) {
+        logoUrl = `${urlObj.protocol}${logoUrl}`;
+      } else if (logoUrl.startsWith('/')) {
+        logoUrl = `${urlObj.protocol}//${urlObj.host}${logoUrl}`;
+      } else {
+        logoUrl = `${urlObj.protocol}//${urlObj.host}/${logoUrl}`;
+      }
+    }
+    
+    if (!logoUrl) {
+      console.log(`  ⚠️  No logo found on website`);
+      return null;
+    }
+    
+    // Try to download the logo
+    console.log(`  📥 Downloading website logo: ${logoUrl.substring(0, 80)}...`);
+    const logoResponse = await fetch(logoUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      signal: AbortSignal.timeout(10000)
+    });
+    
+    if (!logoResponse.ok) {
+      console.log(`  ⚠️  Website logo download failed: ${logoResponse.status}`);
+      return null;
+    }
+    
+    const contentType = logoResponse.headers.get('content-type');
+    if (!contentType?.includes('image')) {
+      console.log(`  ⚠️  Website logo is not an image (${contentType})`);
+      return null;
+    }
+    
+    const arrayBuffer = await logoResponse.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    
+    // Verify size
+    if (buffer.length < 100 || buffer.length > 10 * 1024 * 1024) {
+      console.log(`  ⚠️  Website logo size out of bounds (${buffer.length} bytes)`);
+      return null;
+    }
+    
+    // Determine file extension from content type
+    let ext = 'png';
+    if (contentType.includes('jpeg') || contentType.includes('jpg')) ext = 'jpg';
+    else if (contentType.includes('svg')) ext = 'svg';
+    else if (contentType.includes('webp')) ext = 'webp';
+    else if (contentType.includes('ico')) ext = 'ico';
+    
+    const fileName = `website-logos/${domain}-${Date.now()}.${ext}`;
+    console.log(`  ☁️  Uploading website logo to S3: ${fileName}`);
+    const s3Key = await uploadFile(buffer, fileName, true);
+    
+    const { bucketName } = getBucketConfig();
+    const region = process.env.AWS_REGION || 'us-west-2';
+    const s3Url = `https://${bucketName}.s3.${region}.amazonaws.com/${s3Key}`;
+    
+    console.log(`  ✅ Successfully scraped and uploaded website logo`);
+    return s3Url;
+  } catch (error) {
+    console.error('  ❌ Website scraping error:', error);
     return null;
   }
 }
@@ -170,8 +304,8 @@ export async function getFaviconUrl(url: string): Promise<string> {
       return DOMAIN_OVERRIDES[domain]
     }
 
-    // Strategy 2: Try Google Images first (best quality, actual logos)
-    console.log(`  🔍 Trying Google Images...`);
+    // Strategy 2: Try Google Images FIRST (best quality, actual PNG logos)
+    console.log(`  🔍 Step 1: Trying Google Images for PNG logo...`);
     const googleImageUrl = await tryGoogleImages(domain);
     
     let sourceUrl: string;
@@ -179,29 +313,39 @@ export async function getFaviconUrl(url: string): Promise<string> {
     
     if (googleImageUrl) {
       sourceUrl = googleImageUrl;
-      sourceName = 'Google Images';
-      console.log(`  ✓ Using Google Images result`);
+      sourceName = 'Google Images (PNG)';
+      console.log(`  ✓ Using Google Images PNG result`);
     } else {
-      // Strategy 3: Try Logo.dev
-      console.log(`  🔍 Trying Logo.dev...`);
-      const logoDevUrl = await tryLogoDev(domain);
+      // Strategy 3: Try scraping the website
+      console.log(`  🔍 Step 2: Trying website scraping...`);
+      const websiteUrl = await tryWebsiteScrape(url, domain);
       
-      if (logoDevUrl) {
-        sourceUrl = logoDevUrl;
-        sourceName = 'Logo.dev';
-        console.log(`  ✓ Using Logo.dev (typically 500x500px)`);
+      if (websiteUrl) {
+        sourceUrl = websiteUrl;
+        sourceName = 'Website';
+        console.log(`  ✓ Using website logo`);
       } else {
-        // Strategy 4: Fallback to Clearbit
-        sourceUrl = buildUrl(['https', '://', 'logo', '.', 'clearbit', '.', 'com', '/', domain, '?size=400']);
-        sourceName = 'Clearbit';
-        console.log(`  ✓ Using Clearbit fallback`);
+        // Strategy 4: Try Logo.dev
+        console.log(`  🔍 Step 3: Trying Logo.dev...`);
+        const logoDevUrl = await tryLogoDev(domain);
+        
+        if (logoDevUrl) {
+          sourceUrl = logoDevUrl;
+          sourceName = 'Logo.dev';
+          console.log(`  ✓ Using Logo.dev (typically 500x500px)`);
+        } else {
+          // Strategy 5: Fallback to Clearbit
+          sourceUrl = buildUrl(['https', '://', 'logo', '.', 'clearbit', '.', 'com', '/', domain, '?size=400']);
+          sourceName = 'Clearbit';
+          console.log(`  ✓ Using Clearbit fallback`);
+        }
       }
     }
     
     console.log(`  📍 Source: ${sourceName} - ${sourceUrl.substring(0, 80)}...`);
     console.log(`  🔍 Checking 600px requirement...`);
     
-    // Strategy 5: ALWAYS run through upscaler to enforce 600px minimum
+    // Strategy 6: ALWAYS run through upscaler to enforce 600px minimum
     try {
       const result = await upscaleImage(sourceUrl, domain);
       
