@@ -673,6 +673,22 @@ export function BookmarkCard({
               >
                 {bookmark.priority?.toLowerCase() || "medium"}
               </Badge>
+              
+              {/* Category Badge */}
+              {bookmark.categories && bookmark.categories.length > 0 && bookmark.categories[0].category && (
+                <Badge
+                  className="text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium flex items-center gap-1"
+                  style={{ 
+                    backgroundColor: `${bookmark.categories[0].category.color || '#6B7280'}20`,
+                    color: bookmark.categories[0].category.color || '#6B7280',
+                    border: `1px solid ${bookmark.categories[0].category.color || '#6B7280'}40`
+                  }}
+                >
+                  <Folder className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                  {bookmark.categories[0].category.name}
+                </Badge>
+              )}
+              
               {bookmark.tags?.slice(0, 1).map((tag: any) => (
                 <Badge
                   key={tag.tag.id}
