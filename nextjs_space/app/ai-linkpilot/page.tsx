@@ -105,43 +105,91 @@ export default function AILinkPilotPage() {
       return
     }
 
+    // Show progress toast
+    const loadingToast = toast.loading(`Importing ${urls.length} bookmark${urls.length > 1 ? 's' : ''}...`)
     setIsUploading(true)
+    
     let successCount = 0
     let failCount = 0
+    let duplicateCount = 0
+    const errors: string[] = []
 
     try {
-      for (const url of urls) {
-        try {
-          const response = await fetch('/api/bookmarks', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              url,
-              title: new URL(url).hostname.replace('www.', '').toUpperCase(),
-              priority: 'MEDIUM'
+      // Process in batches of 5 for better performance
+      const batchSize = 5
+      for (let i = 0; i < urls.length; i += batchSize) {
+        const batch = urls.slice(i, i + batchSize)
+        const promises = batch.map(async (url) => {
+          try {
+            // Validate URL format
+            new URL(url) // Throws if invalid
+            
+            const response = await fetch('/api/bookmarks', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                url,
+                title: new URL(url).hostname.replace('www.', '').toUpperCase(),
+                priority: 'MEDIUM'
+              })
             })
-          })
 
-          if (response.ok) {
-            successCount++
-          } else {
+            if (response.ok) {
+              successCount++
+              return { success: true }
+            } else {
+              const errorData = await response.json()
+              
+              // Check if it's a duplicate error
+              if (response.status === 409 || errorData.error?.includes('already exists') || errorData.error?.includes('duplicate')) {
+                duplicateCount++
+                return { success: false, duplicate: true }
+              }
+              
+              failCount++
+              errors.push(`${url}: ${errorData.error || 'Unknown error'}`)
+              return { success: false, error: errorData.error }
+            }
+          } catch (error: any) {
             failCount++
+            const errorMsg = error instanceof Error ? error.message : 'Invalid URL'
+            errors.push(`${url}: ${errorMsg}`)
+            return { success: false, error: errorMsg }
           }
-        } catch (error) {
-          failCount++
-        }
+        })
+
+        await Promise.all(promises)
+        
+        // Update progress toast
+        const processed = Math.min(i + batchSize, urls.length)
+        toast.loading(`Imported ${processed}/${urls.length} bookmarks...`, { id: loadingToast })
       }
 
+      // Dismiss loading toast
+      toast.dismiss(loadingToast)
+
+      // Show detailed results
       if (successCount > 0) {
-        toast.success(`Successfully imported ${successCount} bookmark${successCount > 1 ? 's' : ''}${failCount > 0 ? `. ${failCount} failed.` : ''}`)
+        let message = `✅ Successfully imported ${successCount} bookmark${successCount > 1 ? 's' : ''}`
+        if (duplicateCount > 0) {
+          message += `\n⚠️ ${duplicateCount} duplicate${duplicateCount > 1 ? 's' : ''} skipped`
+        }
+        if (failCount > 0) {
+          message += `\n❌ ${failCount} failed`
+        }
+        toast.success(message)
+        
         // Reset forms
         setPasteText("")
         setSingleUrl("")
+      } else if (duplicateCount > 0) {
+        toast.warning(`All ${duplicateCount} bookmark${duplicateCount > 1 ? 's were' : ' was'} already in your collection`)
       } else {
-        toast.error('Failed to import bookmarks')
+        toast.error(`Failed to import bookmarks. ${errors.length > 0 ? errors.slice(0, 3).join('\n') : 'Please check the URLs and try again.'}`)
       }
     } catch (error) {
-      toast.error('Error importing bookmarks')
+      toast.dismiss(loadingToast)
+      toast.error('Error importing bookmarks: ' + (error instanceof Error ? error.message : 'Unknown error'))
     } finally {
       setIsUploading(false)
     }
