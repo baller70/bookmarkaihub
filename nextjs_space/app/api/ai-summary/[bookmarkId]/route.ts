@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { sendAbacusAIRequest } from '@/lib/abacusai-client';
+import { sendOpenAIRequest } from '@/lib/openai-client';
 
 // GET: Fetch AI summaries for a bookmark
 export async function GET(
@@ -86,8 +86,8 @@ export async function POST(
         prompt = `Provide a comprehensive summary of the content at ${bookmark.url}. Title: ${bookmark.title}. Description: ${bookmark.description || 'N/A'}`;
     }
 
-    // Call Abacus AI
-    const generatedContent = await sendAbacusAIRequest(
+    // Call OpenAI
+    const generatedContent = await sendOpenAIRequest(
       `You are a helpful assistant that summarizes web content.\n\n${prompt}`,
       {
         maxTokens: 1024,

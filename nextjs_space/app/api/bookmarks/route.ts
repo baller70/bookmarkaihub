@@ -7,7 +7,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { getFaviconUrl } from "@/lib/favicon-service"
 import { getActiveCompanyId } from "@/lib/company"
-import { sendAbacusAIRequest } from "@/lib/abacusai-client"
+import { sendOpenAIRequest } from "@/lib/openai-client"
 
 export async function GET(request: Request) {
   try {
@@ -124,7 +124,7 @@ Format your response EXACTLY like this:
 DESCRIPTION: [your description here]
 TAGS: tag1, tag2, tag3, tag4, tag5`;
 
-    const content = await sendAbacusAIRequest(prompt, {
+    const content = await sendOpenAIRequest(prompt, {
       maxTokens: 200,
       temperature: 0.7,
     });
