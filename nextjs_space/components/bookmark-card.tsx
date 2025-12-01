@@ -639,17 +639,19 @@ export function BookmarkCard({
 
             {/* LARGE CENTERED MIDDLE LOGO */}
             <div className="flex items-center justify-center my-3 sm:my-4">
-              <div className={`relative w-24 h-24 sm:w-32 sm:h-32 rounded-3xl overflow-hidden ${(bookmark.customLogo || bookmark.customFavicon || customLogoUrl) ? '' : 'bg-white shadow-lg border-4 border-white'}`}>
+              <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-3xl overflow-hidden bg-white shadow-lg p-3">
                 {(bookmark.customLogo || bookmark.customFavicon || customLogoUrl || bookmark.favicon) ? (
-                  <Image
-                    src={bookmark.customLogo || bookmark.customFavicon || customLogoUrl || bookmark.favicon}
-                    alt={bookmark.title}
-                    fill
-                    className="object-contain rounded-3xl"
-                    unoptimized
-                  />
+                  <div className="relative w-full h-full rounded-2xl overflow-hidden">
+                    <Image
+                      src={bookmark.customLogo || bookmark.customFavicon || customLogoUrl || bookmark.favicon}
+                      alt={bookmark.title}
+                      fill
+                      className="object-contain rounded-2xl"
+                      unoptimized
+                    />
+                  </div>
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white text-3xl sm:text-4xl font-bold uppercase rounded-3xl">
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white text-3xl sm:text-4xl font-bold uppercase rounded-2xl">
                     {bookmark.title?.charAt(0)?.toUpperCase()}
                   </div>
                 )}
