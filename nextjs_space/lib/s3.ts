@@ -13,17 +13,15 @@ export async function uploadFile(buffer: Buffer, fileName: string, isPublic: boo
     ? `${folderPrefix}${fileName}` 
     : `${folderPrefix}${isPublic ? 'public/' : ''}uploads/${Date.now()}-${fileName}`;
   
-  const uploadParams: any = {
+  // NOTE: ACL is NOT set here because the bucket has ACLs disabled.
+  // Public access is controlled by the bucket policy, which should allow
+  // public read access to objects with the "public/" prefix in their key.
+  const uploadParams = {
     Bucket: bucketName,
     Key: key,
     Body: buffer,
     ContentType: 'image/png'
   };
-  
-  // Set ACL to public-read if isPublic is true
-  if (isPublic) {
-    uploadParams.ACL = 'public-read';
-  }
   
   await s3Client.send(new PutObjectCommand(uploadParams));
   
