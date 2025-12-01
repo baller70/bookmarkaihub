@@ -164,16 +164,16 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
                 </div>
               </div>
 
-              {/* Center - Title and URL */}
+              {/* Left - Title and URL */}
               <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 px-3 z-10">
-                <h3 className="text-xs font-bold text-gray-900 uppercase tracking-tight text-center line-clamp-2 leading-tight mb-1.5">
+                <h3 className="text-xs font-bold text-gray-900 uppercase tracking-tight text-left line-clamp-2 leading-tight mb-1.5">
                   {bookmark.title}
                 </h3>
-                <p className="text-[10px] text-blue-600 truncate text-center mb-1.5">
+                <p className="text-[10px] text-blue-600 truncate text-left mb-1.5">
                   {domain}
                 </p>
                 {bookmark.priority && (
-                  <div className="flex justify-center">
+                  <div className="flex justify-start">
                     <span className="text-[9px] px-2 py-0.5 rounded font-medium lowercase bg-yellow-100 text-yellow-800 border border-yellow-200">
                       {bookmark.priority}
                     </span>

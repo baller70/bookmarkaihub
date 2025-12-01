@@ -22,9 +22,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Folder, Search, RefreshCw, Plus, Pencil, Trash2, FileText } from "lucide-react"
+import { Folder, Search, RefreshCw, Plus, Pencil, Trash2, FileText, Upload, Image as ImageIcon, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import Image from "next/image"
 
 interface CategoryFolder {
   id: string
@@ -39,6 +40,7 @@ interface Category {
   name: string
   color: string
   icon: string
+  logo?: string | null
   folderId: string | null
   folder?: CategoryFolder | null
   _count?: {
@@ -57,10 +59,14 @@ export default function CategoriesPage() {
   const [isAddFolderModalOpen, setIsAddFolderModalOpen] = useState(false)
   const [newCategory, setNewCategory] = useState({ name: "", description: "", color: "#3b82f6" })
   const [newFolder, setNewFolder] = useState({ name: "" })
+  const [globalLogo, setGlobalLogo] = useState<string | null>(null)
+  const [uploadingGlobalLogo, setUploadingGlobalLogo] = useState(false)
+  const [uploadingCategoryLogos, setUploadingCategoryLogos] = useState<Set<string>>(new Set())
   const router = useRouter()
 
   useEffect(() => {
     fetchData()
+    fetchGlobalLogo()
   }, [])
 
   const fetchData = async () => {
@@ -79,6 +85,129 @@ export default function CategoriesPage() {
       toast.error('Failed to load categories')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchGlobalLogo = async () => {
+    try {
+      const res = await fetch('/api/user/custom-logo')
+      if (res.ok) {
+        const data = await res.json()
+        setGlobalLogo(data.customLogoUrl || null)
+      }
+    } catch (error) {
+      console.error('Failed to fetch global logo:', error)
+    }
+  }
+
+  const handleGlobalLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file')
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size must be less than 5MB')
+      return
+    }
+
+    setUploadingGlobalLogo(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const res = await fetch('/api/user/custom-logo', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!res.ok) throw new Error('Upload failed')
+
+      const data = await res.json()
+      setGlobalLogo(data.customLogoUrl)
+      toast.success('Global category logo uploaded successfully')
+    } catch (error) {
+      console.error('Error uploading logo:', error)
+      toast.error('Failed to upload logo')
+    } finally {
+      setUploadingGlobalLogo(false)
+      e.target.value = '' // Reset input
+    }
+  }
+
+  const handleRemoveGlobalLogo = async () => {
+    try {
+      const res = await fetch('/api/user/custom-logo', {
+        method: 'DELETE'
+      })
+
+      if (!res.ok) throw new Error('Delete failed')
+
+      setGlobalLogo(null)
+      toast.success('Global logo removed')
+    } catch (error) {
+      console.error('Error removing logo:', error)
+      toast.error('Failed to remove logo')
+    }
+  }
+
+  const handleCategoryLogoUpload = async (categoryId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file')
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size must be less than 5MB')
+      return
+    }
+
+    setUploadingCategoryLogos(prev => new Set(prev).add(categoryId))
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const res = await fetch(`/api/categories/${categoryId}/logo`, {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!res.ok) throw new Error('Upload failed')
+
+      toast.success('Category logo uploaded successfully')
+      fetchData() // Refresh categories to show new logo
+    } catch (error) {
+      console.error('Error uploading category logo:', error)
+      toast.error('Failed to upload category logo')
+    } finally {
+      setUploadingCategoryLogos(prev => {
+        const next = new Set(prev)
+        next.delete(categoryId)
+        return next
+      })
+      e.target.value = '' // Reset input
+    }
+  }
+
+  const handleRemoveCategoryLogo = async (categoryId: string) => {
+    try {
+      const res = await fetch(`/api/categories/${categoryId}/logo`, {
+        method: 'DELETE'
+      })
+
+      if (!res.ok) throw new Error('Delete failed')
+
+      toast.success('Category logo removed')
+      fetchData() // Refresh categories
+    } catch (error) {
+      console.error('Error removing category logo:', error)
+      toast.error('Failed to remove category logo')
     }
   }
 
@@ -261,6 +390,66 @@ export default function CategoriesPage() {
             </div>
           </div>
 
+          {/* Global Category Logo Section */}
+          <Card className="mb-6 p-6 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-gray-900 mb-2 uppercase flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5" />
+                  GLOBAL CATEGORY FOLDER LOGO
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Upload a default logo that will be used for all category folders. You can override this with individual logos for each category.
+                </p>
+                <div className="flex items-center gap-3">
+                  <label htmlFor="global-logo-upload">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={uploadingGlobalLogo}
+                      className="cursor-pointer"
+                      onClick={() => document.getElementById('global-logo-upload')?.click()}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {uploadingGlobalLogo ? 'Uploading...' : 'Upload Global Logo'}
+                    </Button>
+                    <input
+                      id="global-logo-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleGlobalLogoUpload}
+                      className="hidden"
+                    />
+                  </label>
+                  {globalLogo && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRemoveGlobalLogo}
+                      className="text-red-600 hover:bg-red-50"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Remove Logo
+                    </Button>
+                  )}
+                </div>
+              </div>
+              {globalLogo && (
+                <div className="ml-4 flex-shrink-0">
+                  <div className="w-20 h-20 bg-white rounded-lg border-2 border-blue-300 overflow-hidden flex items-center justify-center">
+                    <Image
+                      src={globalLogo}
+                      alt="Global category logo"
+                      width={80}
+                      height={80}
+                      className="object-contain"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
+
           {/* Folders */}
           {folders.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -318,8 +507,19 @@ export default function CategoriesPage() {
                   key={category.id}
                   className="p-3 bg-white border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-200 rounded-xl"
                 >
-                  {/* Top Row: Color, Name, and Actions */}
+                  {/* Top Row: Logo Preview, Color, Name, and Actions */}
                   <div className="flex items-start gap-2 mb-2">
+                    {(category.logo || globalLogo) && (
+                      <div className="w-10 h-10 bg-gray-100 rounded-md overflow-hidden flex items-center justify-center flex-shrink-0">
+                        <Image
+                          src={category.logo || globalLogo || ''}
+                          alt={`${category.name} logo`}
+                          width={40}
+                          height={40}
+                          className="object-contain"
+                        />
+                      </div>
+                    )}
                     <div
                       className="w-3 h-3 rounded-full flex-shrink-0 mt-0.5"
                       style={{ backgroundColor: category.color || '#3b82f6' }}
@@ -354,6 +554,39 @@ export default function CategoriesPage() {
                     <span className="text-xs text-gray-600 font-medium">
                       {bookmarkCount} bookmark{bookmarkCount !== 1 ? 's' : ''}
                     </span>
+                  </div>
+
+                  {/* Logo Upload Section */}
+                  <div className="mb-2 flex items-center gap-2">
+                    <label htmlFor={`logo-upload-${category.id}`}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={uploadingCategoryLogos.has(category.id)}
+                        className="h-7 text-xs cursor-pointer"
+                        onClick={() => document.getElementById(`logo-upload-${category.id}`)?.click()}
+                      >
+                        <Upload className="h-3 w-3 mr-1" />
+                        {uploadingCategoryLogos.has(category.id) ? 'Uploading...' : category.logo ? 'Change Logo' : 'Add Logo'}
+                      </Button>
+                      <input
+                        id={`logo-upload-${category.id}`}
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleCategoryLogoUpload(category.id, e)}
+                        className="hidden"
+                      />
+                    </label>
+                    {category.logo && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveCategoryLogo(category.id)}
+                        className="h-7 text-xs text-red-600 hover:bg-red-50"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
                   </div>
 
                   {/* Folder Assignment Dropdown */}

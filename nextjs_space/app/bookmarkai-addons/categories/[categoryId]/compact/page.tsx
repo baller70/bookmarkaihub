@@ -15,7 +15,9 @@ import {
   Star,
   SortAsc,
   ExternalLink,
-  Folder
+  Folder,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react"
 import {
   Select,
@@ -69,6 +71,8 @@ export default function CompactCategoryPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState<SortBy>("recent")
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 25
 
   useEffect(() => {
     if (categoryId) {
@@ -151,6 +155,17 @@ export default function CompactCategoryPage() {
         return 0
     }
   })
+
+  // Pagination
+  const totalPages = Math.ceil(sortedBookmarks.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedBookmarks = sortedBookmarks.slice(startIndex, endIndex)
+
+  // Reset to page 1 when search or sort changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, sortBy])
 
   if (loading) {
     return (
@@ -276,7 +291,53 @@ export default function CompactCategoryPage() {
 
           {/* Bookmarks in Compact View */}
           {sortedBookmarks.length > 0 ? (
-            <BookmarkCompactCards bookmarks={sortedBookmarks} onUpdate={handleUpdate} />
+            <>
+              <BookmarkCompactCards bookmarks={paginatedBookmarks} onUpdate={handleUpdate} />
+              
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="mt-8 flex items-center justify-between border-t border-gray-200 pt-6">
+                  <div className="text-sm text-gray-600">
+                    Showing {startIndex + 1}-{Math.min(endIndex, sortedBookmarks.length)} of {sortedBookmarks.length} bookmarks
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="flex items-center gap-1"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(page)}
+                          className="min-w-[40px]"
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                      className="flex items-center gap-1"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-12">
               <div className="w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center bg-gray-100">

@@ -214,6 +214,7 @@ model Category {
   color           String?   // Optional folder outline color
   backgroundColor String?   // Optional folder background color
   icon            String    @default("folder")
+  logo            String?   // Custom logo image URL (S3 path)
   
   userId      String
   user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
