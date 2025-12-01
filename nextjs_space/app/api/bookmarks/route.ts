@@ -160,6 +160,33 @@ export async function POST(request: Request) {
     // Get active company for default assignment
     const activeCompanyId = await getActiveCompanyId(session.user.id);
 
+    // ⚠️ CHECK FOR DUPLICATE URLs - Prevent duplicates in the same company
+    const existingBookmark = await prisma.bookmark.findFirst({
+      where: {
+        userId: session.user.id,
+        url: url,
+        ...(activeCompanyId && { companyId: activeCompanyId }),
+      },
+      select: {
+        id: true,
+        title: true,
+        url: true,
+        createdAt: true,
+      },
+    });
+
+    if (existingBookmark) {
+      return NextResponse.json(
+        { 
+          error: "Duplicate bookmark",
+          message: `This URL already exists in your bookmarks: "${existingBookmark.title}"`,
+          duplicate: true,
+          existingBookmark: existingBookmark,
+        }, 
+        { status: 409 } // 409 Conflict
+      );
+    }
+
     // Auto-fetch high-quality favicon (always prioritize high-quality PNG sources)
     // Even if favicon is provided from metadata, we try to get a better quality one
     let finalFavicon = '';

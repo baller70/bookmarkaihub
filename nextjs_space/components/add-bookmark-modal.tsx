@@ -153,7 +153,16 @@ export function AddBookmarkModal({ open, onOpenChange, onSuccess }: AddBookmarkM
         onOpenChange(false)
       } else {
         const error = await response.json()
-        toast.error(error.error || "Failed to create bookmark")
+        
+        // Handle duplicate bookmark with specific warning
+        if (response.status === 409 && error.duplicate) {
+          toast.warning(
+            error.message || "This URL already exists in your bookmarks",
+            { duration: 5000 }
+          )
+        } else {
+          toast.error(error.error || "Failed to create bookmark")
+        }
       }
     } catch (error) {
       console.error("Error creating bookmark:", error)
