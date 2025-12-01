@@ -5,7 +5,9 @@
  */
 
 import { uploadFile } from './s3';
+import { getBucketConfig } from './aws-config';
 import sharp from 'sharp';
+import fs from 'fs';
 
 interface UpscaleResult {
   success: boolean;
@@ -107,18 +109,19 @@ export async function upscaleImage(imageUrl: string, domain: string): Promise<Up
     let replicateApiKey: string;
     
     try {
-      const fs = require('fs');
       const secrets = JSON.parse(fs.readFileSync(secretsPath, 'utf-8'));
       replicateApiKey = secrets?.replicate?.secrets?.api_key?.value;
       
       if (!replicateApiKey) {
-        throw new Error('Replicate API key not found');
+        throw new Error('Replicate API key not found in secrets file');
       }
+      
+      console.log(`  ✓ Replicate API key loaded successfully`);
     } catch (error) {
       console.error('❌ Failed to read Replicate API key:', error);
       return { 
         success: false, 
-        error: 'API key not configured',
+        error: 'Replicate API key not configured. Please ensure the API key is set up correctly.',
         originalDimensions: check.dimensions || undefined
       };
     }
@@ -208,11 +211,11 @@ export async function upscaleImage(imageUrl: string, domain: string): Promise<Up
     const fileName = `upscaled-logos/${domain}-${Date.now()}.png`;
     const s3Key = await uploadFile(imageBuffer, fileName);
     
-    const bucketName = process.env.AWS_BUCKET_NAME;
-    const region = process.env.AWS_REGION || 'us-east-1';
+    const { bucketName, region } = getBucketConfig();
     const s3Url = `https://${bucketName}.s3.${region}.amazonaws.com/${s3Key}`;
     
     console.log(`  💾 Uploaded to S3: ${s3Key}`);
+    console.log(`  🌐 Region: ${region}`);
     console.log(`\n✨ SUCCESS: Logo enhanced and uploaded!`);
     console.log(`📸 S3 URL: ${s3Url}\n`);
     
