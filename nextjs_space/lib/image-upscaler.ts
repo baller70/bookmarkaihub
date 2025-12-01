@@ -1,15 +1,8 @@
-/**
- * AI-Powered Image Upscaler Service with 600px Minimum Guarantee
- * Enforces minimum 600px resolution for all logos
- * Uses Replicate API to enhance low-quality logos
- */
-
+import sharp from 'sharp';
 import { uploadFile } from './s3';
 import { getBucketConfig } from './aws-config';
-import sharp from 'sharp';
-import fs from 'fs';
 
-interface UpscaleResult {
+export interface UpscaleResult {
   success: boolean;
   upscaledUrl?: string;
   s3Key?: string;
@@ -78,13 +71,15 @@ async function needsUpscaling(imageUrl: string): Promise<{ needed: boolean; dime
 }
 
 /**
- * Upscale an image using Replicate AI
+ * Upscale an image using Sharp (FREE, no external APIs)
  * GUARANTEE: Output will be at least 600px minimum
+ * Uses Lanczos3 resampling for best quality
  */
 export async function upscaleImage(imageUrl: string, domain: string): Promise<UpscaleResult> {
   try {
     console.log(`\n╔═══════════════════════════════════════════════════════════╗`);
-    console.log(`║  AI LOGO UPSCALER - 600PX MINIMUM GUARANTEE              ║`);
+    console.log(`║  HIGH-QUALITY LOGO UPSCALER - 600PX MINIMUM GUARANTEE    ║`);
+    console.log(`║  Method: Sharp with Lanczos3 (FREE, LOCAL PROCESSING)   ║`);
     console.log(`╚═══════════════════════════════════════════════════════════╝`);
     console.log(`\n🔎 Analyzing: ${domain}`);
     console.log(`📍 Source: ${imageUrl}\n`);
@@ -113,109 +108,47 @@ export async function upscaleImage(imageUrl: string, domain: string): Promise<Up
       };
     }
     
-    console.log(`\n🚀 UPSCALING REQUIRED - Starting AI enhancement...`);
-    console.log(`⏱️  Estimated time: 30-60 seconds`);
+    console.log(`\n🚀 UPSCALING REQUIRED - Starting high-quality enhancement...`);
+    console.log(`⏱️  Estimated time: 2-5 seconds (local processing, 100% FREE!)`);
     
-    // Get Replicate API key
-    const secretsPath = '/home/ubuntu/.config/abacusai_auth_secrets.json';
-    let replicateApiKey: string;
+    // Calculate target dimensions to reach 600px minimum
+    let targetWidth = 600;
+    let targetHeight = 600;
     
-    try {
-      const secrets = JSON.parse(fs.readFileSync(secretsPath, 'utf-8'));
-      replicateApiKey = secrets?.replicate?.secrets?.api_key?.value;
-      
-      if (!replicateApiKey) {
-        throw new Error('Replicate API key not found in secrets file');
-      }
-      
-      console.log(`  ✓ Replicate API key loaded successfully`);
-    } catch (error) {
-      console.error('❌ Failed to read Replicate API key:', error);
-      return { 
-        success: false, 
-        error: 'Replicate API key not configured. Please ensure the API key is set up correctly.',
-        originalDimensions: check.dimensions || undefined
-      };
-    }
-    
-    // Calculate required scale factor to reach 600px
-    let scaleFactor = 4; // Default 4x
     if (check.dimensions) {
-      const minDim = Math.min(check.dimensions.width, check.dimensions.height);
-      scaleFactor = Math.ceil(600 / minDim);
-      scaleFactor = Math.min(scaleFactor, 4); // Cap at 4x
-      console.log(`  📊 Calculated scale factor: ${scaleFactor}x (${minDim}px → ${minDim * scaleFactor}px)`);
+      const { width, height } = check.dimensions;
+      const minDim = Math.min(width, height);
+      const scaleFactor = Math.ceil(600 / minDim);
+      
+      targetWidth = width * scaleFactor;
+      targetHeight = height * scaleFactor;
+      
+      console.log(`  📊 Original: ${width}x${height}px`);
+      console.log(`  🎯 Target: ${targetWidth}x${targetHeight}px`);
+      console.log(`  🔢 Scale factor: ${scaleFactor}x`);
     }
     
-    // Convert image to base64 data URI to avoid S3 access issues
-    console.log(`  📦 Converting image to base64 data URI for Replicate...`);
-    const base64Image = `data:image/png;base64,${check.imageBuffer.toString('base64')}`;
-    console.log(`  ✓ Base64 conversion complete (${(base64Image.length / 1024).toFixed(1)}KB)`);
+    console.log(`  🎨 Processing with Lanczos3 resampling (highest quality)...`);
     
-    // Call Replicate API with base64 data URI instead of URL
-    const response = await fetch('https://api.replicate.com/v1/predictions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Token ${replicateApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        version: 'f121d640bd286e1fdc67f9799164c1d5be36ff74576ee11c803ae5b665dd46aa',
-        input: {
-          image: base64Image,  // Use base64 data URI instead of URL
-          scale: scaleFactor,
-          face_enhance: false,
-        }
+    // Upscale using Sharp with Lanczos3 kernel (best quality for enlarging)
+    const upscaledBuffer = await sharp(check.imageBuffer)
+      .resize(targetWidth, targetHeight, {
+        kernel: 'lanczos3',  // Best quality for upscaling
+        fit: 'fill',         // Fill the exact dimensions
+        background: { r: 255, g: 255, b: 255, alpha: 0 }  // Transparent background
       })
-    });
+      .png({
+        quality: 100,        // Maximum PNG quality
+        compressionLevel: 6, // Balance between size and speed
+        adaptiveFiltering: true,
+        palette: false       // Use full color depth
+      })
+      .toBuffer();
     
-    if (!response.ok) {
-      throw new Error(`Replicate API error: ${response.status}`);
-    }
-    
-    const prediction = await response.json();
-    console.log(`  🆔 Prediction ID: ${prediction.id}`);
-    
-    // Poll for completion - increased timeout to 90 seconds
-    let attempts = 0;
-    let result = prediction;
-    const maxAttempts = 45; // 45 attempts × 2s = 90 seconds max
-    
-    while (result.status !== 'succeeded' && result.status !== 'failed' && attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const pollResponse = await fetch(
-        `https://api.replicate.com/v1/predictions/${prediction.id}`,
-        { headers: { 'Authorization': `Token ${replicateApiKey}` } }
-      );
-      
-      result = await pollResponse.json();
-      attempts++;
-      console.log(`  ⏳ Processing... ${attempts * 2}s (status: ${result.status})`);
-    }
-    
-    console.log('\n');
-    
-    if (result.status === 'failed') {
-      console.error(`  ❌ Replicate prediction failed:`, result.error);
-      throw new Error(`Replicate prediction failed: ${result.error || 'Unknown error'}`);
-    }
-    
-    if (result.status !== 'succeeded' || !result.output) {
-      console.error(`  ❌ Upscaling timed out after ${attempts * 2} seconds`);
-      throw new Error(`Upscaling timed out after ${attempts * 2} seconds. The AI model may be under heavy load. Please try again in a few minutes.`);
-    }
-    
-    console.log(`  ✅ AI upscaling complete!`);
-    
-    // Download upscaled image
-    const imageResponse = await fetch(result.output);
-    const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
-    
-    console.log(`  📦 Downloaded: ${(imageBuffer.length / 1024).toFixed(1)}KB`);
+    console.log(`  📦 Upscaled image size: ${(upscaledBuffer.length / 1024).toFixed(1)}KB`);
     
     // Verify final dimensions
-    const finalMeta = await sharp(imageBuffer).metadata();
+    const finalMeta = await sharp(upscaledBuffer).metadata();
     const finalDimensions = finalMeta.width && finalMeta.height 
       ? { width: finalMeta.width, height: finalMeta.height }
       : undefined;
@@ -224,65 +157,75 @@ export async function upscaleImage(imageUrl: string, domain: string): Promise<Up
       const finalMin = Math.min(finalDimensions.width, finalDimensions.height);
       console.log(`  📐 Final dimensions: ${finalDimensions.width}x${finalDimensions.height}px`);
       
-      if (finalMin < 600) {
-        console.log(`  ⚠️  WARNING: Still below 600px (${finalMin}px)`);
-      } else {
+      if (finalMin >= 600) {
         console.log(`  ✅ MEETS 600px requirement (${finalMin}px)`);
+      } else {
+        console.log(`  ⚠️  Below 600px after upscale (${finalMin}px) - retrying with fixed 600px`);
+        
+        // If we somehow didn't meet the requirement, force it to exactly 600px
+        const retryBuffer = await sharp(check.imageBuffer)
+          .resize(600, 600, {
+            kernel: 'lanczos3',
+            fit: 'contain',
+            background: { r: 255, g: 255, b: 255, alpha: 0 }
+          })
+          .png({ quality: 100 })
+          .toBuffer();
+        
+        const retryMeta = await sharp(retryBuffer).metadata();
+        console.log(`  ✅ Retry successful: ${retryMeta.width}x${retryMeta.height}px`);
+        
+        // Use the retry buffer instead
+        return await uploadAndReturn(retryBuffer, domain, check.dimensions, retryMeta);
       }
     }
     
-    // Upload to S3 (public folder for CDN access)
-    const fileName = `public/upscaled-logos/${domain}-${Date.now()}.png`;
-    const s3Key = await uploadFile(imageBuffer, fileName, true);
-    
-    const { bucketName, region } = getBucketConfig();
-    const s3Url = `https://${bucketName}.s3.${region}.amazonaws.com/${s3Key}`;
-    
-    console.log(`  💾 Uploaded to S3: ${s3Key}`);
-    console.log(`  🌐 Region: ${region}`);
-    console.log(`  📍 Bucket: ${bucketName}`);
-    console.log(`\n✨ SUCCESS: Logo enhanced and uploaded!`);
-    console.log(`📸 S3 URL: ${s3Url}\n`);
-    
-    return {
-      success: true,
-      upscaledUrl: s3Url,
-      s3Key: s3Key,
-      originalDimensions: check.dimensions || undefined,
-      finalDimensions,
-      wasUpscaled: true
-    };
+    return await uploadAndReturn(upscaledBuffer, domain, check.dimensions, finalMeta);
     
   } catch (error) {
-    console.error('\n❌ UPSCALE ERROR:', error);
+    console.error('\n❌ UPSCALING ERROR:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      upscaledUrl: imageUrl
+      error: error instanceof Error ? error.message : 'Unknown error during upscaling'
     };
   }
 }
 
 /**
- * Get enhanced favicon with optional AI upscaling
+ * Helper function to upload upscaled image to S3 and return result
  */
-export async function getEnhancedFavicon(url: string): Promise<string> {
-  try {
-    const urlObj = new URL(url);
-    const domain = urlObj.hostname.replace(/^www\./, '');
-    
-    // Build Clearbit URL
-    const clearbitUrl = `https://logo.clearbit.com/${domain}?size=400`;
-    
-    // Try to upscale if needed
-    const result = await upscaleImage(clearbitUrl, domain);
-    
-    return result.upscaledUrl || clearbitUrl;
-  } catch (error) {
-    console.error('[UPSCALER] Failed to get enhanced favicon:', error);
-    // Fallback to basic Clearbit
-    const urlObj = new URL(url);
-    const domain = urlObj.hostname.replace(/^www\./, '');
-    return `https://logo.clearbit.com/${domain}?size=400`;
-  }
+async function uploadAndReturn(
+  imageBuffer: Buffer,
+  domain: string,
+  originalDimensions: { width: number; height: number } | null,
+  finalMeta: sharp.Metadata
+): Promise<UpscaleResult> {
+  // Upload to S3
+  const timestamp = Date.now();
+  const fileName = `public/upscaled-logos/${domain}-${timestamp}.png`;
+  
+  console.log(`  💾 Uploading to S3...`);
+  const s3Key = await uploadFile(imageBuffer, fileName, true);
+  
+  // Get bucket config for URL construction
+  const { bucketName, region } = getBucketConfig();
+  const s3Url = `https://${bucketName}.s3.${region}.amazonaws.com/${s3Key}`;
+  
+  console.log(`  🌐 Region: ${region}`);
+  console.log(`  📍 Bucket: ${bucketName}`);
+  console.log(`\n✨ SUCCESS: Logo enhanced and uploaded!`);
+  console.log(`📸 S3 URL: ${s3Url}\n`);
+  
+  const finalDimensions = finalMeta.width && finalMeta.height 
+    ? { width: finalMeta.width, height: finalMeta.height }
+    : undefined;
+  
+  return {
+    success: true,
+    upscaledUrl: s3Url,
+    s3Key: s3Key,
+    originalDimensions: originalDimensions || undefined,
+    finalDimensions,
+    wasUpscaled: true
+  };
 }

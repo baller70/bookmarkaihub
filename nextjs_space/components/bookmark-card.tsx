@@ -194,9 +194,9 @@ export function BookmarkCard({
     
     setIsEnhancing(true)
     
-    // Show enhanced loading message with timeout warning
+    // Show loading message for fast local processing
     const loadingToastId = toast.loading(
-      "🎨 Enhancing logo with AI... This may take 30-90 seconds. Please be patient!",
+      "✨ Enhancing logo with high-quality upscaling... This should only take a few seconds!",
       { duration: Infinity }
     )
     

@@ -4,12 +4,13 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { upscaleImage } from '@/lib/image-upscaler';
 
-// Extend timeout for AI upscaling (default is 60 seconds)
-export const maxDuration = 120; // 120 seconds = 2 minutes
+// No extended timeout needed - Sharp processes locally in seconds
+export const maxDuration = 30; // 30 seconds is more than enough for local processing
 
 /**
  * POST /api/bookmarks/[id]/enhance-logo
- * Manually trigger AI upscaling for a bookmark's logo
+ * Manually trigger high-quality upscaling for a bookmark's logo
+ * Uses Sharp with Lanczos3 algorithm (FREE, local processing)
  */
 export async function POST(
   req: NextRequest,
@@ -67,12 +68,10 @@ export async function POST(
       // Provide user-friendly error messages
       let userMessage = result.error || 'Enhancement failed';
       
-      if (result.error?.includes('timeout')) {
-        userMessage = 'The AI enhancement took too long. The AI model might be under heavy load. Please try again in a few minutes.';
-      } else if (result.error?.includes('API key')) {
-        userMessage = 'AI enhancement service is temporarily unavailable. Please contact support.';
-      } else if (result.error?.includes('already good')) {
+      if (result.error?.includes('already good') || result.error?.includes('meets quality')) {
         userMessage = 'This logo is already high quality and doesn\'t need enhancement!';
+      } else if (result.error?.includes('download')) {
+        userMessage = 'Failed to download the original logo. Please try again.';
       }
       
       return NextResponse.json({
@@ -88,10 +87,10 @@ export async function POST(
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     let userFriendlyMessage = 'Failed to enhance logo. Please try again.';
     
-    if (errorMessage.includes('timeout')) {
-      userFriendlyMessage = 'The AI enhancement took too long. Please try again in a few minutes.';
-    } else if (errorMessage.includes('API')) {
-      userFriendlyMessage = 'The AI enhancement service is temporarily unavailable. Please try again later.';
+    if (errorMessage.includes('download') || errorMessage.includes('fetch')) {
+      userFriendlyMessage = 'Failed to download the original logo. Please check the URL and try again.';
+    } else if (errorMessage.includes('upload') || errorMessage.includes('S3')) {
+      userFriendlyMessage = 'Failed to save the enhanced logo. Please try again.';
     }
     
     return NextResponse.json(
