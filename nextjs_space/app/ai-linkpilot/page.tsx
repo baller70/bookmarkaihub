@@ -248,6 +248,14 @@ export default function AILinkPilotPage() {
     let duplicateCount = 0
     const errors: string[] = []
 
+    // Prepare tags from autoApplyTags setting
+    const tagsToApply = autoApplyTags
+      ? autoApplyTags.split(',').map(t => t.trim()).filter(t => t.length > 0)
+      : []
+
+    // Prepare category IDs array (only if a category is selected)
+    const categoryIdsToApply = defaultCategory && defaultCategory !== "none" ? [defaultCategory] : []
+
     try {
       // Process in batches of 5 for better performance
       const batchSize = 5
@@ -263,8 +271,10 @@ export default function AILinkPilotPage() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 url,
-                title: new URL(url).hostname.replace('www.', '').toUpperCase(),
-                priority: 'MEDIUM'
+                title: removeTLD(new URL(url).hostname.replace('www.', '')).toUpperCase(),
+                priority: defaultPriority,
+                categoryIds: categoryIdsToApply.length > 0 ? categoryIdsToApply : undefined,
+                tags: tagsToApply.length > 0 ? tagsToApply : undefined
               })
             })
 
@@ -487,6 +497,9 @@ export default function AILinkPilotPage() {
       ? autoApplyTags.split(',').map(t => t.trim()).filter(t => t.length > 0)
       : []
 
+    // Prepare category IDs array (only if a category is selected)
+    const categoryIdsToApply = defaultCategory && defaultCategory !== "none" ? [defaultCategory] : []
+
     try {
       // Process links
       for (const link of linksToImport) {
@@ -522,6 +535,7 @@ export default function AILinkPilotPage() {
               url: link.url,
               title: removeTLD(link.domain).toUpperCase(),
               priority: defaultPriority,
+              categoryIds: categoryIdsToApply.length > 0 ? categoryIdsToApply : undefined,
               tags: tagsToApply.length > 0 ? tagsToApply : undefined
             })
           })
