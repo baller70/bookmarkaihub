@@ -504,6 +504,7 @@ export function BookmarkGoals({ bookmarks, onUpdate }: BookmarkGoalsProps) {
           onSuccess={fetchFolders}
           goal={editingGoal}
           folders={folders}
+          selectedFolderId={undefined}
         />
       </div>
     );
@@ -647,6 +648,7 @@ export function BookmarkGoals({ bookmarks, onUpdate }: BookmarkGoalsProps) {
         onSuccess={fetchFolders}
         goal={editingGoal}
         folders={folders}
+        selectedFolderId={selectedFolder.id}
       />
     </div>
   );

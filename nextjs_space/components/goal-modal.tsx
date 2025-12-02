@@ -62,6 +62,7 @@ interface GoalModalProps {
   onSuccess: () => void;
   goal?: Goal;
   folders: GoalFolder[];
+  selectedFolderId?: string;
 }
 
 const GOAL_TYPES = [
@@ -75,7 +76,7 @@ const GOAL_TYPES = [
   'Academic',
 ];
 
-export function GoalModal({ open, onClose, onSuccess, goal, folders }: GoalModalProps) {
+export function GoalModal({ open, onClose, onSuccess, goal, folders, selectedFolderId }: GoalModalProps) {
   const isEditing = !!goal;
 
   // Basic Info State
@@ -87,7 +88,7 @@ export function GoalModal({ open, onClose, onSuccess, goal, folders }: GoalModal
   const [status, setStatus] = useState('NOT_STARTED');
   const [deadline, setDeadline] = useState('');
   const [progress, setProgress] = useState(0);
-  const [folderId, setFolderId] = useState('');
+  const [folderId, setFolderId] = useState(selectedFolderId || '');
 
   // Advanced Settings State
   const [tags, setTags] = useState<string[]>([]);
@@ -102,9 +103,10 @@ export function GoalModal({ open, onClose, onSuccess, goal, folders }: GoalModal
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
 
-  // Load existing data when editing
+  // Load existing data when editing OR set selectedFolderId when creating
   useEffect(() => {
     if (goal) {
+      // Editing existing goal
       setTitle(goal.title);
       setDescription(goal.description || '');
       setGoalType(goal.goalType);
@@ -117,8 +119,14 @@ export function GoalModal({ open, onClose, onSuccess, goal, folders }: GoalModal
       setTags(goal.tags || []);
       setNotes(goal.notes || '');
       setSelectedBookmarkIds(goal.bookmarks.map((b) => b.bookmarkId));
+    } else if (open && selectedFolderId) {
+      // Creating new goal in a specific folder
+      setFolderId(selectedFolderId);
+    } else if (open && !selectedFolderId) {
+      // Creating new goal without a selected folder
+      setFolderId('');
     }
-  }, [goal]);
+  }, [goal, open, selectedFolderId]);
 
   // Fetch all bookmarks for connection
   useEffect(() => {
