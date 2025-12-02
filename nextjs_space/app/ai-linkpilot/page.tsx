@@ -434,6 +434,11 @@ export default function AILinkPilotPage() {
       return
     }
 
+    // Get the category name for display in preview
+    const categoryName = defaultCategory && defaultCategory !== "none" 
+      ? categories.find(c => c.id === defaultCategory)?.name || 'General'
+      : 'General'
+
     // Parse URLs into structured data
     const parsed: ParsedLink[] = urls.map((url, index) => {
       try {
@@ -442,7 +447,7 @@ export default function AILinkPilotPage() {
           id: `link-${index}-${Date.now()}`,
           url,
           domain: urlObj.hostname.replace('www.', ''),
-          category: 'General',
+          category: categoryName,
           status: 'queued' as LinkStatus
         }
       } catch (error) {
@@ -450,7 +455,7 @@ export default function AILinkPilotPage() {
           id: `link-${index}-${Date.now()}`,
           url,
           domain: url,
-          category: 'General',
+          category: categoryName,
           status: 'failed' as LinkStatus,
           error: 'Invalid URL format'
         }

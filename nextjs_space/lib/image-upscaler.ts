@@ -217,11 +217,14 @@ async function uploadAndReturn(
   const fileName = `public/upscaled-logos/${domain}-${timestamp}.png`;
   
   console.log(`  💾 Uploading to S3...`);
-  const s3Key = await uploadFile(imageBuffer, fileName, true);
   
-  // Get bucket config for URL construction
+  // uploadFile returns the FULL URL when isPublic=true, so use it directly
+  const s3Url = await uploadFile(imageBuffer, fileName, true);
+  
+  // Extract just the S3 key from the URL for logging/reference
   const { bucketName, region } = getBucketConfig();
-  const s3Url = `https://${bucketName}.s3.${region}.amazonaws.com/${s3Key}`;
+  const s3KeyMatch = s3Url.match(/\.amazonaws\.com\/(.+)$/);
+  const s3Key = s3KeyMatch ? s3KeyMatch[1] : fileName;
   
   console.log(`  🌐 Region: ${region}`);
   console.log(`  📍 Bucket: ${bucketName}`);
