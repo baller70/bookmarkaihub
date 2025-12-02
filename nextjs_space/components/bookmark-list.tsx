@@ -452,7 +452,11 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                     className="text-sm text-blue-600 hover:underline block truncate max-w-full"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {bookmark.url?.replace(/^https?:\/\/(www\.)?/, "")}
+                    {(() => {
+                      const cleanUrl = bookmark.url?.replace(/^https?:\/\/(www\.)?/, "") || '';
+                      // Truncate to max 80 characters if too long (list view has more space)
+                      return cleanUrl.length > 80 ? cleanUrl.substring(0, 77) + '...' : cleanUrl;
+                    })()}
                   </a>
 
                   {/* Description */}

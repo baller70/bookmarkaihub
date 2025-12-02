@@ -619,10 +619,14 @@ export function BookmarkCard({
                 ) : (
                   <div className="flex items-center gap-1 group/url min-w-0">
                     <p 
-                      className="text-xs sm:text-sm text-blue-600 font-medium truncate font-saira flex-1 min-w-0"
+                      className="text-xs sm:text-sm text-blue-600 font-medium truncate font-saira flex-1 min-w-0 max-w-full"
                       title={bookmark.url}
                     >
-                      {bookmark.url?.replace(/^https?:\/\/(www\.)?/, '')}
+                      {(() => {
+                        const cleanUrl = bookmark.url?.replace(/^https?:\/\/(www\.)?/, '') || '';
+                        // Truncate to max 60 characters if too long
+                        return cleanUrl.length > 60 ? cleanUrl.substring(0, 57) + '...' : cleanUrl;
+                      })()}
                     </p>
                     <Button
                       variant="ghost"

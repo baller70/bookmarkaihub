@@ -91,9 +91,12 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
   const getDomain = (url: string) => {
     try {
       const domain = new URL(url).hostname.replace("www.", "")
-      return domain
+      // Truncate if too long
+      return domain.length > 35 ? domain.substring(0, 32) + '...' : domain
     } catch {
-      return url
+      // If URL parsing fails, return truncated URL
+      const truncated = url.replace(/^https?:\/\/(www\.)?/, '')
+      return truncated.length > 35 ? truncated.substring(0, 32) + '...' : truncated
     }
   }
 

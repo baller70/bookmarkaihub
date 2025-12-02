@@ -146,7 +146,8 @@ export function BookmarkDetailModal({
   const backgroundInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (bookmark) {
+    // Only initialize form values when modal opens or when viewing a different bookmark
+    if (bookmark && open) {
       setIsFavorite(bookmark.isFavorite || false)
       setDescription(bookmark.description || "")
       setEditedTitle(bookmark.title || "")
@@ -162,7 +163,7 @@ export function BookmarkDetailModal({
       fetchRelatedBookmarks()
       fetchLinkedGoals()
     }
-  }, [bookmark])
+  }, [bookmark?.id, open])
 
   // Fetch available tools for this bookmark
   const fetchTools = async () => {

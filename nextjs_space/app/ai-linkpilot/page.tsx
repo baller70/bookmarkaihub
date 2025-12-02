@@ -184,6 +184,29 @@ export default function AILinkPilotPage() {
     return normalized
   }
 
+  // Helper function to remove TLD from domain for cleaner titles
+  const removeTLD = (domain: string): string => {
+    // Remove common TLDs
+    const tlds = ['.com', '.org', '.net', '.edu', '.gov', '.co', '.io', '.ai', '.app', '.dev', '.tech', '.cloud', '.store', '.shop', '.online', '.site', '.website', '.info', '.biz', '.us', '.uk', '.ca', '.au']
+    let cleanDomain = domain.replace('www.', '')
+    
+    for (const tld of tlds) {
+      if (cleanDomain.endsWith(tld)) {
+        cleanDomain = cleanDomain.slice(0, -tld.length)
+        break
+      }
+    }
+    
+    // Handle country-specific TLDs like .co.uk, .com.au
+    const parts = cleanDomain.split('.')
+    if (parts.length > 1) {
+      // If there's still a dot, take the first part (e.g., "google" from "google.co")
+      return parts[0]
+    }
+    
+    return cleanDomain
+  }
+
   const extractUrlsFromText = (text: string): string[] => {
     // Match URLs with or without protocol
     const urlRegex = /(https?:\/\/[^\s]+|(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}[^\s]*)/g
@@ -497,7 +520,7 @@ export default function AILinkPilotPage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               url: link.url,
-              title: link.domain.toUpperCase(),
+              title: removeTLD(link.domain).toUpperCase(),
               priority: defaultPriority,
               tags: tagsToApply.length > 0 ? tagsToApply : undefined
             })
@@ -771,9 +794,14 @@ export default function AILinkPilotPage() {
                           <SelectItem value="english">English</SelectItem>
                         </SelectContent>
                       </Select>
-                      <Button variant="outline" size="sm" className="hidden sm:flex">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="hidden sm:flex"
+                        onClick={handleShowHistory}
+                      >
                         <History className="h-4 w-4 mr-2" />
-                        autoProcessing.history
+                        View History
                       </Button>
                     </div>
                   </div>
@@ -1103,7 +1131,10 @@ export default function AILinkPilotPage() {
                       <div className="px-4 sm:px-6 pb-6 bg-white">
                         <div className="text-center py-8">
                           <p className="text-xs sm:text-xs sm:text-sm text-gray-500 mb-4">0 rules configured</p>
-                          <Button className="bg-black text-white hover:bg-gray-800 text-sm">
+                          <Button 
+                            className="bg-black text-white hover:bg-gray-800 text-sm"
+                            onClick={() => toast.info('Auto-processing rules feature coming soon! Use bulk uploader settings for now.')}
+                          >
                             <span className="mr-2">+</span>
                             Add Rule
                           </Button>
@@ -1117,11 +1148,78 @@ export default function AILinkPilotPage() {
                     <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2">IMPORT / EXPORT SETTINGS</h3>
                     <p className="text-xs sm:text-xs sm:text-sm text-gray-500 mb-4">Backup or restore your auto-processing configuration</p>
                     <div className="flex flex-col sm:flex-row gap-3">
-                      <Button variant="outline" className="flex-1">
+                      <Button 
+                        variant="outline" 
+                        className="flex-1"
+                        onClick={() => {
+                          // Export current settings as JSON
+                          const settings = {
+                            validateUrls,
+                            checkDuplicates,
+                            fetchMetadata,
+                            fetchFavicons,
+                            autoRetryFailed,
+                            maxRetries,
+                            processingMode,
+                            concurrentLimit,
+                            defaultPriority,
+                            defaultCategory,
+                            autoApplyTags,
+                            skipExisting,
+                            logImports
+                          }
+                          const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' })
+                          const url = URL.createObjectURL(blob)
+                          const a = document.createElement('a')
+                          a.href = url
+                          a.download = 'bulk-uploader-settings.json'
+                          a.click()
+                          URL.revokeObjectURL(url)
+                          toast.success('Settings exported successfully')
+                        }}
+                      >
                         <Download className="h-4 w-4 mr-2" />
                         Export JSON
                       </Button>
-                      <Button variant="outline" className="flex-1">
+                      <Button 
+                        variant="outline" 
+                        className="flex-1"
+                        onClick={() => {
+                          const input = document.createElement('input')
+                          input.type = 'file'
+                          input.accept = 'application/json'
+                          input.onchange = (e: any) => {
+                            const file = e.target.files?.[0]
+                            if (file) {
+                              const reader = new FileReader()
+                              reader.onload = (event) => {
+                                try {
+                                  const settings = JSON.parse(event.target?.result as string)
+                                  // Apply imported settings
+                                  if (settings.validateUrls !== undefined) setValidateUrls(settings.validateUrls)
+                                  if (settings.checkDuplicates !== undefined) setCheckDuplicates(settings.checkDuplicates)
+                                  if (settings.fetchMetadata !== undefined) setFetchMetadata(settings.fetchMetadata)
+                                  if (settings.fetchFavicons !== undefined) setFetchFavicons(settings.fetchFavicons)
+                                  if (settings.autoRetryFailed !== undefined) setAutoRetryFailed(settings.autoRetryFailed)
+                                  if (settings.maxRetries !== undefined) setMaxRetries(settings.maxRetries)
+                                  if (settings.processingMode !== undefined) setProcessingMode(settings.processingMode)
+                                  if (settings.concurrentLimit !== undefined) setConcurrentLimit(settings.concurrentLimit)
+                                  if (settings.defaultPriority !== undefined) setDefaultPriority(settings.defaultPriority)
+                                  if (settings.defaultCategory !== undefined) setDefaultCategory(settings.defaultCategory)
+                                  if (settings.autoApplyTags !== undefined) setAutoApplyTags(settings.autoApplyTags)
+                                  if (settings.skipExisting !== undefined) setSkipExisting(settings.skipExisting)
+                                  if (settings.logImports !== undefined) setLogImports(settings.logImports)
+                                  toast.success('Settings imported successfully')
+                                } catch (error) {
+                                  toast.error('Invalid JSON file')
+                                }
+                              }
+                              reader.readAsText(file)
+                            }
+                          }
+                          input.click()
+                        }}
+                      >
                         <Upload className="h-4 w-4 mr-2" />
                         Import JSON
                       </Button>
@@ -1762,12 +1860,12 @@ export default function AILinkPilotPage() {
 
                             <div>
                               <Label className="mb-2 block text-sm">Default category</Label>
-                              <Select value={defaultCategory} onValueChange={setDefaultCategory}>
+                              <Select value={defaultCategory || "none"} onValueChange={(val) => setDefaultCategory(val === "none" ? "" : val)}>
                                 <SelectTrigger>
                                   <SelectValue placeholder="None (uncategorized)" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="">None</SelectItem>
+                                  <SelectItem value="none">None</SelectItem>
                                   {categories.map((cat) => (
                                     <SelectItem key={cat.id} value={cat.id}>
                                       {cat.name}

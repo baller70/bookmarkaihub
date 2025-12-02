@@ -21,9 +21,12 @@ export async function GET() {
     }
 
     if (user.customLogo) {
-      // Generate signed URL for the custom logo
-      const signedUrl = await downloadFile(user.customLogo);
-      return NextResponse.json({ customLogoUrl: signedUrl });
+      // Check if customLogo is already a full URL (starts with http)
+      // If so, return it directly. Otherwise, generate a signed URL
+      const logoUrl = user.customLogo.startsWith('http') 
+        ? user.customLogo 
+        : await downloadFile(user.customLogo);
+      return NextResponse.json({ customLogoUrl: logoUrl });
     }
 
     return NextResponse.json({ customLogoUrl: null });
@@ -86,13 +89,15 @@ export async function POST(req: NextRequest) {
       data: { customLogo: cloudStoragePath }
     });
 
-    // Generate signed URL for immediate display
-    const signedUrl = await downloadFile(cloudStoragePath);
+    // Return the logo URL (already public if uploaded with isPublic=true)
+    const logoUrl = cloudStoragePath.startsWith('http') 
+      ? cloudStoragePath 
+      : await downloadFile(cloudStoragePath);
 
     return NextResponse.json({ 
       success: true, 
       customLogo: updatedUser.customLogo,
-      customLogoUrl: signedUrl
+      customLogoUrl: logoUrl
     });
   } catch (error) {
     console.error('Error uploading custom logo:', error);
