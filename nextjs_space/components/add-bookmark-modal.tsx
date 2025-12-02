@@ -55,10 +55,11 @@ export function AddBookmarkModal({ open, onOpenChange, onSuccess }: AddBookmarkM
       const response = await fetch("/api/categories")
       if (response.ok) {
         const data = await response.json()
-        setCategories(data)
+        setCategories(Array.isArray(data) ? data : (data.categories || []))
       }
     } catch (error) {
       console.error("Error fetching categories:", error)
+      setCategories([])
     }
   }
 

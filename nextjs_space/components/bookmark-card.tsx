@@ -499,9 +499,9 @@ export function BookmarkCard({
 
         <div className="relative flex h-full">
           {/* Main Content Area */}
-          <div className="flex-1 min-w-0 p-4 sm:p-6 flex flex-col">
+          <div className="flex-1 min-w-0 p-4 sm:p-6 flex flex-col overflow-hidden">
             {/* Header with logo and title */}
-            <div className="flex items-start space-x-3 sm:space-x-4 mb-3 sm:mb-4 min-w-0">
+            <div className="flex items-start space-x-3 sm:space-x-4 mb-3 sm:mb-4 min-w-0 overflow-hidden">
               {/* Small Header Logo */}
               <div className="relative w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0 bg-white rounded-[20px] overflow-hidden shadow-lg border-2 border-gray-100">
                 {(bookmark.customFavicon || bookmark.customLogo || bookmark.favicon) ? (
@@ -551,14 +551,14 @@ export function BookmarkCard({
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1 mb-0.5 group/title">
-                    <h3 className="text-base sm:text-lg font-bold text-gray-900 truncate tracking-tight font-audiowide">
+                  <div className="flex items-center gap-1 mb-0.5 group/title min-w-0 overflow-hidden">
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900 truncate tracking-tight font-audiowide flex-1 min-w-0">
                       {bookmark.title}
                     </h3>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-5 w-5 p-0 opacity-0 group-hover/title:opacity-100 transition-opacity"
+                      className="h-5 w-5 p-0 flex-shrink-0 opacity-0 group-hover/title:opacity-100 transition-opacity"
                       onClick={(e) => {
                         e.stopPropagation()
                         setIsEditingTitle(true)
@@ -601,9 +601,9 @@ export function BookmarkCard({
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1 group/url min-w-0">
+                  <div className="flex items-center gap-1 group/url min-w-0 overflow-hidden">
                     <p 
-                      className="text-xs sm:text-sm text-blue-600 font-medium truncate font-saira flex-1 min-w-0 max-w-full"
+                      className="text-xs sm:text-sm text-blue-600 font-medium truncate font-saira flex-1 min-w-0"
                       title={bookmark.url}
                     >
                       {(() => {
