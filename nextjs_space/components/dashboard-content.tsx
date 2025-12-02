@@ -57,13 +57,14 @@ export function DashboardContent() {
   const [selectedBookmarks, setSelectedBookmarks] = useState<Set<string>>(new Set())
   const [categories, setCategories] = useState<Category[]>([])
   const [breakdownOpen, setBreakdownOpen] = useState(false)
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
 
   useEffect(() => {
     if (session) {
       fetchBookmarks()
       fetchAnalytics()
     }
-  }, [session, searchQuery])
+  }, [session, searchQuery, categoryFilter])
 
   useEffect(() => {
     if (breakdownOpen && categories.length === 0) {
@@ -83,7 +84,11 @@ export function DashboardContent() {
 
   const fetchBookmarks = async () => {
     try {
-      const response = await fetch(`/api/bookmarks${searchQuery ? `?search=${encodeURIComponent(searchQuery)}` : ""}`)
+      const params = new URLSearchParams()
+      if (searchQuery) params.append('search', searchQuery)
+      if (categoryFilter) params.append('category', categoryFilter)
+      
+      const response = await fetch(`/api/bookmarks${params.toString() ? `?${params.toString()}` : ""}`)
       if (response.ok) {
         const data = await response.json()
         setBookmarks(data)
@@ -363,6 +368,7 @@ export function DashboardContent() {
         bulkSelectMode={bulkSelectMode}
         onBulkSelectToggle={handleBulkSelectToggle}
         selectedCount={selectedBookmarks.size}
+        onCategoryFilter={setCategoryFilter}
       />
 
       {/* Analytics Chart */}

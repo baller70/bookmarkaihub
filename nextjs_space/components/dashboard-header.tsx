@@ -2,7 +2,7 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -17,11 +17,19 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 
+interface Category {
+  id: string
+  name: string
+  color: string | null
+  backgroundColor: string | null
+}
+
 interface DashboardHeaderProps {
   onBookmarkCreated: () => void
   bulkSelectMode?: boolean
   onBulkSelectToggle?: () => void
   selectedCount?: number
+  onCategoryFilter?: (categoryId: string | null) => void
 }
 
 export function DashboardHeader({
@@ -29,8 +37,35 @@ export function DashboardHeader({
   bulkSelectMode = false,
   onBulkSelectToggle,
   selectedCount = 0,
+  onCategoryFilter,
 }: DashboardHeaderProps) {
   const [showAddModal, setShowAddModal] = useState(false)
+  const [categories, setCategories] = useState<Category[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<string>("all")
+
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/categories')
+        if (response.ok) {
+          const data = await response.json()
+          const categoriesArray = Array.isArray(data) ? data : (data.categories || [])
+          setCategories(categoriesArray)
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error)
+      }
+    }
+    fetchCategories()
+  }, [])
+
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value)
+    if (onCategoryFilter) {
+      onCategoryFilter(value === "all" ? null : value)
+    }
+  }
 
   return (
     <>
@@ -73,15 +108,17 @@ export function DashboardHeader({
           </div>
 
           {/* All Categories Dropdown */}
-          <Select defaultValue="all">
+          <Select value={selectedCategory} onValueChange={handleCategoryChange}>
             <SelectTrigger className="w-[150px] h-9 text-xs text-gray-900 bg-white border-gray-300">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              <SelectItem value="work">Work</SelectItem>
-              <SelectItem value="personal">Personal</SelectItem>
-              <SelectItem value="entertainment">Entertainment</SelectItem>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
 
@@ -147,15 +184,17 @@ export function DashboardHeader({
         </div>
 
         {/* Category Selector */}
-        <Select defaultValue="all">
+        <Select value={selectedCategory} onValueChange={handleCategoryChange}>
           <SelectTrigger className="w-full h-10 text-xs text-gray-900 bg-white border-gray-300">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="work">Work</SelectItem>
-            <SelectItem value="personal">Personal</SelectItem>
-            <SelectItem value="entertainment">Entertainment</SelectItem>
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                {category.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 

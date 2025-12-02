@@ -237,35 +237,23 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
               </div>
             )}
 
-            {/* Large Folder Icon with Customizable Colors or Custom Logo */}
+            {/* Large Folder Icon with Customizable Colors */}
             <div className="flex justify-start mb-5">
-              {category.logo || globalCustomLogo ? (
-                <div className="relative w-20 h-20 rounded-md overflow-hidden bg-white border-2 border-gray-200 p-2">
-                  <Image
-                    src={category.logo || globalCustomLogo || ''}
-                    alt={category.name}
-                    fill
-                    className="object-contain"
-                    unoptimized
-                  />
-                </div>
-              ) : (
-                <div 
-                  className="rounded-md p-3 flex items-center justify-center"
-                  style={{
-                    backgroundColor: category.backgroundColor || '#1F2937'
+              <div 
+                className="rounded-md p-3 flex items-center justify-center"
+                style={{
+                  backgroundColor: category.backgroundColor || '#1F2937'
+                }}
+              >
+                <Folder
+                  className="w-16 h-16"
+                  style={{ 
+                    color: category.color || '#FFFFFF',
+                    fill: category.backgroundColor || 'transparent'
                   }}
-                >
-                  <Folder
-                    className="w-16 h-16"
-                    style={{ 
-                      color: category.color || '#FFFFFF',
-                      fill: category.backgroundColor || 'transparent'
-                    }}
-                    strokeWidth={2}
-                  />
-                </div>
-              )}
+                  strokeWidth={2}
+                />
+              </div>
             </div>
 
             {/* Category Name - Editable */}
@@ -453,11 +441,23 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
               {category.name} related bookmarks
             </p>
 
-            {/* Bookmark Count */}
+            {/* Bookmark Count with Logo */}
             <div className="flex items-center justify-start gap-2 text-sm text-gray-500">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-              </svg>
+              {category.logo || globalCustomLogo ? (
+                <div className="relative w-5 h-5 rounded-full overflow-hidden bg-white border border-gray-300 flex-shrink-0">
+                  <Image
+                    src={category.logo || globalCustomLogo || ''}
+                    alt={category.name}
+                    fill
+                    className="object-contain p-0.5"
+                    unoptimized
+                  />
+                </div>
+              ) : (
+                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                </svg>
+              )}
               <span>{categoryBookmarks.length} bookmark{categoryBookmarks.length !== 1 ? 's' : ''}</span>
             </div>
           </div>
