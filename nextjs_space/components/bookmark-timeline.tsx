@@ -54,25 +54,6 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
   const [draggedBookmarkId, setDraggedBookmarkId] = useState<string | null>(null);
   const [orderedBookmarks, setOrderedBookmarks] = useState<Bookmark[]>(bookmarks);
-  const [customLogoUrl, setCustomLogoUrl] = useState<string | null>(null);
-
-  // Fetch custom logo on mount
-  useEffect(() => {
-    const fetchCustomLogo = async () => {
-      try {
-        const response = await fetch('/api/user/custom-logo')
-        if (response.ok) {
-          const data = await response.json()
-          if (data.customLogoUrl) {
-            setCustomLogoUrl(data.customLogoUrl)
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching custom logo:', error)
-      }
-    }
-    fetchCustomLogo()
-  }, [])
 
   // Update ordered bookmarks when bookmarks prop changes
   React.useEffect(() => {
@@ -338,10 +319,10 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
                         } bg-gradient-to-br from-pink-50/30 via-purple-50/20 to-blue-50/30`}
                       >
                         {/* Full Background Faded Logo - Stretched to Cover Every Inch */}
-                        {(customLogoUrl || bookmark.favicon) && (
+                        {(bookmark.favicon) && (
                           <div className="absolute inset-0 opacity-[0.08] pointer-events-none overflow-hidden">
                             <Image
-                              src={customLogoUrl || bookmark.favicon}
+                              src={bookmark.favicon}
                               alt=""
                               fill
                               className="object-cover"
@@ -352,10 +333,10 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
                         <div className="flex gap-4 relative z-10">
                           {/* Logo */}
                           <div className="flex-shrink-0">
-                            <div className={`relative w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden ${customLogoUrl ? '' : 'bg-white shadow-sm'}`}>
-                              {(customLogoUrl || bookmark.favicon) ? (
+                            <div className={`relative w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden ${'bg-white shadow-sm'}`}>
+                              {(bookmark.favicon) ? (
                                 <Image
-                                  src={customLogoUrl || bookmark.favicon}
+                                  src={bookmark.favicon}
                                   alt={bookmark.title}
                                   fill
                                   className="object-contain p-2"

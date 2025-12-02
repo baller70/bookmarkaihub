@@ -43,26 +43,7 @@ interface BookmarkHierarchyProps {
 export function BookmarkHierarchy({ bookmarks }: BookmarkHierarchyProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBookmark, setSelectedBookmark] = useState<Bookmark | null>(null);
-  const [folderPages, setFolderPages] = useState<Record<string, number>>({});
-  const [customLogoUrl, setCustomLogoUrl] = useState<string | null>(null);
-
-  // Fetch custom logo on mount
-  useEffect(() => {
-    const fetchCustomLogo = async () => {
-      try {
-        const response = await fetch('/api/user/custom-logo')
-        if (response.ok) {
-          const data = await response.json()
-          if (data.customLogoUrl) {
-            setCustomLogoUrl(data.customLogoUrl)
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching custom logo:', error)
-      }
-    }
-    fetchCustomLogo()
-  }, [])
+  const [folderPages, setFolderPages] = useState<Record<string, number>>({})
 
   // Group bookmarks by category to create folders
   const folders: Folder[] = React.useMemo(() => {
@@ -295,10 +276,10 @@ export function BookmarkHierarchy({ bookmarks }: BookmarkHierarchyProps) {
                   >
                     <div className="flex items-start gap-2">
                       <div className="w-5 h-5 flex-shrink-0 mt-0.5">
-                        {(customLogoUrl || bookmark.favicon) ? (
+                        {bookmark.favicon ? (
                           <div className="relative w-5 h-5">
                             <Image
-                              src={customLogoUrl || bookmark.favicon}
+                              src={bookmark.favicon}
                               alt={bookmark.title}
                               fill
                               className="object-contain"

@@ -178,25 +178,6 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
   const [editingCategory, setEditingCategory] = useState<any>(null)
   const [folderColor, setFolderColor] = useState("#22c55e")
   const [backgroundColor, setBackgroundColor] = useState("#dcfce7")
-  const [customLogoUrl, setCustomLogoUrl] = useState<string | null>(null)
-
-  // Fetch custom logo on mount
-  useEffect(() => {
-    const fetchCustomLogo = async () => {
-      try {
-        const response = await fetch('/api/user/custom-logo')
-        if (response.ok) {
-          const data = await response.json()
-          if (data.customLogoUrl) {
-            setCustomLogoUrl(data.customLogoUrl)
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching custom logo:', error)
-      }
-    }
-    fetchCustomLogo()
-  }, [])
   
   // Group bookmarks by category
   const categorizedBookmarks = useMemo(() => {
@@ -328,10 +309,10 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
             >
               {/* Full card faded watermark background */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden opacity-5">
-                {(customLogoUrl || bookmark.favicon) ? (
+                {(bookmark.favicon) ? (
                   <div className="relative w-full h-full">
                     <Image
-                      src={customLogoUrl || bookmark.favicon}
+                      src={bookmark.favicon}
                       alt=""
                       fill
                       className="object-cover"
@@ -368,9 +349,9 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
               {/* Large visible logo - TOP RIGHT */}
               <div className="absolute top-4 right-16 z-10">
                 <div className="relative w-32 h-32">
-                  {(customLogoUrl || bookmark.favicon) ? (
+                  {(bookmark.favicon) ? (
                     <Image
-                      src={customLogoUrl || bookmark.favicon}
+                      src={bookmark.favicon}
                       alt={bookmark.title || "Bookmark"}
                       fill
                       className="object-contain"
@@ -399,9 +380,9 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                 {/* Left: Logo/Favicon */}
                 <div className="flex-shrink-0">
                   <div className="relative w-14 h-14 bg-black rounded-lg flex items-center justify-center overflow-hidden">
-                    {(customLogoUrl || bookmark.favicon) ? (
+                    {(bookmark.favicon) ? (
                       <Image
-                        src={customLogoUrl || bookmark.favicon}
+                        src={bookmark.favicon}
                         alt={bookmark.title || "Bookmark"}
                         fill
                         className="object-contain p-2"
