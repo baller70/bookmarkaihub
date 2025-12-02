@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { Folder, User } from "lucide-react"
 import { toast } from "sonner"
 
@@ -12,6 +13,7 @@ interface Category {
   color: string | null
   backgroundColor: string | null
   icon?: string
+  logo?: string | null
   _count?: {
     bookmarks: number
   }
@@ -26,10 +28,26 @@ export function BookmarkCompactFolders({ bookmarks, onUpdate }: BookmarkCompactF
   const router = useRouter()
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
+  const [globalCustomLogo, setGlobalCustomLogo] = useState<string | null>(null)
 
   useEffect(() => {
     fetchCategories()
+    fetchGlobalLogo()
   }, [])
+
+  const fetchGlobalLogo = async () => {
+    try {
+      const response = await fetch('/api/user/custom-logo')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.customLogoUrl) {
+          setGlobalCustomLogo(data.customLogoUrl)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching global custom logo:', error)
+    }
+  }
 
   const fetchCategories = async () => {
     try {
@@ -123,23 +141,35 @@ export function BookmarkCompactFolders({ bookmarks, onUpdate }: BookmarkCompactF
           onClick={() => handleFolderClick(category.id)}
           className="bg-white border border-black rounded-lg p-6 hover:shadow-lg transition-all cursor-pointer relative group"
         >
-          {/* Folder Icon - Top Left */}
+          {/* Folder Icon or Custom Logo - Top Left */}
           <div className="flex justify-start mb-5">
-            <div
-              className="rounded-md p-3 flex items-center justify-center"
-              style={{
-                backgroundColor: category.backgroundColor || category.color || '#60A5FA'
-              }}
-            >
-              <Folder
-                className="w-16 h-16"
+            {category.logo || globalCustomLogo ? (
+              <div className="relative w-20 h-20 rounded-md overflow-hidden bg-white border-2 border-gray-200 p-2">
+                <Image
+                  src={category.logo || globalCustomLogo || ''}
+                  alt={category.name}
+                  fill
+                  className="object-contain"
+                  unoptimized
+                />
+              </div>
+            ) : (
+              <div
+                className="rounded-md p-3 flex items-center justify-center"
                 style={{
-                  color: '#FFFFFF',
-                  fill: 'transparent'
+                  backgroundColor: category.backgroundColor || category.color || '#60A5FA'
                 }}
-                strokeWidth={2}
-              />
-            </div>
+              >
+                <Folder
+                  className="w-16 h-16"
+                  style={{
+                    color: '#FFFFFF',
+                    fill: 'transparent'
+                  }}
+                  strokeWidth={2}
+                />
+              </div>
+            )}
           </div>
 
           {/* Category Name */}

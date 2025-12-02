@@ -499,9 +499,9 @@ export function BookmarkCard({
 
         <div className="relative flex h-full">
           {/* Main Content Area */}
-          <div className="flex-1 p-4 sm:p-6 flex flex-col">
+          <div className="flex-1 min-w-0 p-4 sm:p-6 flex flex-col">
             {/* Header with logo and title */}
-            <div className="flex items-start space-x-3 sm:space-x-4 mb-3 sm:mb-4">
+            <div className="flex items-start space-x-3 sm:space-x-4 mb-3 sm:mb-4 min-w-0">
               {/* Small Header Logo */}
               <div className="relative w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0 bg-white rounded-[20px] overflow-hidden shadow-lg border-2 border-gray-100">
                 {(bookmark.customFavicon || bookmark.customLogo || bookmark.favicon) ? (
@@ -764,7 +764,7 @@ export function BookmarkCard({
           </div>
 
           {/* Right Action Bar */}
-          <div className="flex flex-col items-center justify-center space-y-2 sm:space-y-2.5 px-2 sm:px-2.5 py-4 sm:py-6 border-l border-gray-200/50 bg-gradient-to-b from-gray-50/50 to-transparent">
+          <div className="flex flex-col items-center justify-center space-y-2 sm:space-y-2.5 px-2 sm:px-2.5 py-4 sm:py-6 border-l border-gray-200/50 bg-gradient-to-b from-gray-50/50 to-transparent flex-shrink-0">
             <Button
               variant="ghost"
               size="sm"

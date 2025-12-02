@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Folder, MoreVertical, Palette, Type, Check, X } from 'lucide-react';
 import {
   DropdownMenu,
@@ -26,6 +27,7 @@ interface Bookmark {
     name: string;
     color: string;
     backgroundColor?: string;
+    logo?: string | null;
   } | null;
   isFavorite: boolean;
   priority: string | null;
@@ -39,6 +41,25 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
   const [tempBackgroundColor, setTempBackgroundColor] = useState('#FFFFFF');
   const [tempOutlineColor, setTempOutlineColor] = useState('#000000');
   const [categoryColors, setCategoryColors] = useState<Map<string, { backgroundColor: string; color: string }>>(new Map());
+  const [globalCustomLogo, setGlobalCustomLogo] = useState<string | null>(null);
+
+  // Fetch global custom logo on mount
+  useEffect(() => {
+    const fetchGlobalLogo = async () => {
+      try {
+        const response = await fetch('/api/user/custom-logo');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.customLogoUrl) {
+            setGlobalCustomLogo(data.customLogoUrl);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching global custom logo:', error);
+      }
+    };
+    fetchGlobalLogo();
+  }, []);
 
   // Group bookmarks by category with live color updates
   const categorizedBookmarks = useMemo(() => {
@@ -60,6 +81,7 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
             name: categoryName,
             color: categoryColor,
             backgroundColor: categoryBackgroundColor,
+            logo: bookmark.category?.logo || null,
           },
           bookmarks: [],
         });
@@ -215,23 +237,35 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
               </div>
             )}
 
-            {/* Large Folder Icon with Customizable Colors */}
+            {/* Large Folder Icon with Customizable Colors or Custom Logo */}
             <div className="flex justify-start mb-5">
-              <div 
-                className="rounded-md p-3 flex items-center justify-center"
-                style={{
-                  backgroundColor: category.backgroundColor || '#1F2937'
-                }}
-              >
-                <Folder
-                  className="w-16 h-16"
-                  style={{ 
-                    color: category.color || '#FFFFFF',
-                    fill: category.backgroundColor || 'transparent'
+              {category.logo || globalCustomLogo ? (
+                <div className="relative w-20 h-20 rounded-md overflow-hidden bg-white border-2 border-gray-200 p-2">
+                  <Image
+                    src={category.logo || globalCustomLogo || ''}
+                    alt={category.name}
+                    fill
+                    className="object-contain"
+                    unoptimized
+                  />
+                </div>
+              ) : (
+                <div 
+                  className="rounded-md p-3 flex items-center justify-center"
+                  style={{
+                    backgroundColor: category.backgroundColor || '#1F2937'
                   }}
-                  strokeWidth={2}
-                />
-              </div>
+                >
+                  <Folder
+                    className="w-16 h-16"
+                    style={{ 
+                      color: category.color || '#FFFFFF',
+                      fill: category.backgroundColor || 'transparent'
+                    }}
+                    strokeWidth={2}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Category Name - Editable */}

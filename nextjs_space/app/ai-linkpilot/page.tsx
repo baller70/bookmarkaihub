@@ -616,8 +616,28 @@ export default function AILinkPilotPage() {
           message += `\n❌ ${failCount} failed`
         }
         toast.success(message)
+
+        // Clear form after successful import
+        setPasteText('')
+        setSingleUrl('')
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ''
+        }
+        setParsedLinks([])
+        setSelectedLinks(new Set())
+        setUploadMethod('paste-text') // Reset to default method
       } else if (duplicateCount > 0 || skippedCount > 0) {
         toast.warning(`All ${duplicateCount + skippedCount} link${(duplicateCount + skippedCount) > 1 ? 's were' : ' was'} already in your collection`)
+        
+        // Clear form even for duplicates/skipped
+        setPasteText('')
+        setSingleUrl('')
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ''
+        }
+        setParsedLinks([])
+        setSelectedLinks(new Set())
+        setUploadMethod('paste-text') // Reset to default method
       } else {
         toast.error('Failed to import links')
       }
@@ -2075,6 +2095,70 @@ export default function AILinkPilotPage() {
                                   <div className="text-xs text-gray-600">Skipped</div>
                                 </div>
                               </div>
+
+                              {/* Links Data - Show individual URL statuses */}
+                              {log.linksData && log.linksData.length > 0 && (
+                                <details className="mt-4">
+                                  <summary className="text-xs font-semibold text-gray-700 cursor-pointer hover:text-gray-900 flex items-center gap-2">
+                                    <span>View Imported Links ({log.linksData.length})</span>
+                                  </summary>
+                                  <div className="mt-3 space-y-2 max-h-64 overflow-y-auto">
+                                    {log.linksData.map((link: any, idx: number) => (
+                                      <div 
+                                        key={idx} 
+                                        className={`p-2 rounded border text-xs flex items-start gap-2 ${
+                                          link.status === 'success' 
+                                            ? 'bg-green-50 border-green-200' 
+                                            : link.status === 'duplicate'
+                                            ? 'bg-yellow-50 border-yellow-200'
+                                            : link.status === 'skipped'
+                                            ? 'bg-gray-50 border-gray-200'
+                                            : 'bg-red-50 border-red-200'
+                                        }`}
+                                      >
+                                        <div className={`w-2 h-2 rounded-full mt-1 flex-shrink-0 ${
+                                          link.status === 'success' 
+                                            ? 'bg-green-500' 
+                                            : link.status === 'duplicate'
+                                            ? 'bg-yellow-500'
+                                            : link.status === 'skipped'
+                                            ? 'bg-gray-400'
+                                            : 'bg-red-500'
+                                        }`}></div>
+                                        <div className="flex-1 min-w-0">
+                                          <div className="font-medium text-gray-900 truncate" title={link.url}>
+                                            {link.url}
+                                          </div>
+                                          {link.title && (
+                                            <div className="text-gray-600 mt-0.5">
+                                              Title: {link.title}
+                                            </div>
+                                          )}
+                                          {link.error && (
+                                            <div className="text-red-600 mt-0.5">
+                                              Error: {link.error}
+                                            </div>
+                                          )}
+                                        </div>
+                                        <Badge 
+                                          variant="outline" 
+                                          className={`text-[10px] capitalize flex-shrink-0 ${
+                                            link.status === 'success' 
+                                              ? 'border-green-500 text-green-700' 
+                                              : link.status === 'duplicate'
+                                              ? 'border-yellow-500 text-yellow-700'
+                                              : link.status === 'skipped'
+                                              ? 'border-gray-400 text-gray-600'
+                                              : 'border-red-500 text-red-700'
+                                          }`}
+                                        >
+                                          {link.status}
+                                        </Badge>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </details>
+                              )}
 
                               {log.settings && Object.keys(log.settings).length > 0 && (
                                 <details className="mt-4">
