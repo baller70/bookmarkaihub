@@ -141,35 +141,23 @@ export function BookmarkCompactFolders({ bookmarks, onUpdate }: BookmarkCompactF
           onClick={() => handleFolderClick(category.id)}
           className="bg-white border border-black rounded-lg p-6 hover:shadow-lg transition-all cursor-pointer relative group"
         >
-          {/* Folder Icon or Custom Logo - Top Left */}
+          {/* Folder Icon - ALWAYS SHOW WITH COLORED BACKGROUND */}
           <div className="flex justify-start mb-5">
-            {category.logo || globalCustomLogo ? (
-              <div className="relative w-20 h-20 rounded-md overflow-hidden bg-white border-2 border-gray-200 p-2">
-                <Image
-                  src={category.logo || globalCustomLogo || ''}
-                  alt={category.name}
-                  fill
-                  className="object-contain"
-                  unoptimized
-                />
-              </div>
-            ) : (
-              <div
-                className="rounded-md p-3 flex items-center justify-center"
+            <div
+              className="rounded-md p-3 flex items-center justify-center"
+              style={{
+                backgroundColor: category.backgroundColor || category.color || '#60A5FA'
+              }}
+            >
+              <Folder
+                className="w-16 h-16"
                 style={{
-                  backgroundColor: category.backgroundColor || category.color || '#60A5FA'
+                  color: '#FFFFFF',
+                  fill: 'transparent'
                 }}
-              >
-                <Folder
-                  className="w-16 h-16"
-                  style={{
-                    color: '#FFFFFF',
-                    fill: 'transparent'
-                  }}
-                  strokeWidth={2}
-                />
-              </div>
-            )}
+                strokeWidth={2}
+              />
+            </div>
           </div>
 
           {/* Category Name */}
@@ -179,12 +167,25 @@ export function BookmarkCompactFolders({ bookmarks, onUpdate }: BookmarkCompactF
             </h3>
           </div>
 
-          {/* Bottom Section - User Icon & Bookmark Count */}
+          {/* Bottom Section - Logo (if available) & Bookmark Count */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-gray-600">
-              <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
-                <User className="w-5 h-5 text-white" />
-              </div>
+              {/* Logo goes here next to bookmark count */}
+              {category.logo || globalCustomLogo ? (
+                <div className="relative w-10 h-10 rounded-full overflow-hidden bg-white border-2 border-gray-300 flex-shrink-0">
+                  <Image
+                    src={category.logo || globalCustomLogo || ''}
+                    alt={category.name}
+                    fill
+                    className="object-contain p-1"
+                    unoptimized
+                  />
+                </div>
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center flex-shrink-0">
+                  <User className="w-5 h-5 text-white" />
+                </div>
+              )}
               <span className="text-sm font-medium">
                 {category._count?.bookmarks || 0} BOOKMARK{(category._count?.bookmarks || 0) !== 1 ? 'S' : ''}
               </span>
