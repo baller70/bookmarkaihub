@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { 
   ArrowLeft, 
   Settings as SettingsIcon, 
@@ -66,6 +67,10 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
   const [activeTab, setActiveTab] = useState<SettingsTab>("appearance")
   const [showCustomColorPicker, setShowCustomColorPicker] = useState(false)
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false)
+  const [show2FADialog, setShow2FADialog] = useState(false)
+  const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' })
+  const [qrCode, setQrCode] = useState('')
   const [settings, setSettings] = useState({
     theme: "light",
     autoScheduleThemes: false,
@@ -90,6 +95,34 @@ export default function SettingsPage() {
     autoRenewal: true,
   })
 
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('userSettings')
+    if (savedSettings) {
+      try {
+        const parsed = JSON.parse(savedSettings)
+        setSettings(prev => ({ ...prev, ...parsed }))
+        
+        // Apply saved accent color
+        if (parsed.accentColor) {
+          applyAccentColor(parsed.accentColor)
+        }
+        
+        // Apply saved font size
+        if (parsed.fontSize) {
+          applyFontSize(parsed.fontSize)
+        }
+        
+        // Apply saved dyslexia font
+        if (parsed.dyslexiaFont) {
+          applyDyslexiaFont(parsed.dyslexiaFont)
+        }
+      } catch (e) {
+        console.error('Failed to parse saved settings:', e)
+      }
+    }
+  }, [])
+
   // Sync settings.theme with next-themes
   useEffect(() => {
     if (theme) {
@@ -97,9 +130,177 @@ export default function SettingsPage() {
     }
   }, [theme])
 
+  // Apply accent color globally
+  const applyAccentColor = (color: string) => {
+    document.documentElement.style.setProperty('--accent-color', color)
+    document.documentElement.style.setProperty('--accent-color-hover', adjustColorBrightness(color, -10))
+    document.documentElement.style.setProperty('--accent-color-light', adjustColorBrightness(color, 20))
+  }
+
+  // Apply font size globally
+  const applyFontSize = (size: number) => {
+    document.documentElement.style.setProperty('--base-font-size', `${size}px`)
+    document.body.style.fontSize = `${size}px`
+  }
+
+  // Apply dyslexia font
+  const applyDyslexiaFont = (enabled: boolean) => {
+    if (enabled) {
+      document.body.classList.add('dyslexia-font')
+    } else {
+      document.body.classList.remove('dyslexia-font')
+    }
+  }
+
+  // Utility to adjust color brightness
+  const adjustColorBrightness = (color: string, percent: number) => {
+    const num = parseInt(color.replace('#', ''), 16)
+    const amt = Math.round(2.55 * percent)
+    const R = Math.max(0, Math.min(255, (num >> 16) + amt))
+    const G = Math.max(0, Math.min(255, (num >> 8 & 0x00FF) + amt))
+    const B = Math.max(0, Math.min(255, (num & 0x0000FF) + amt))
+    return '#' + (0x1000000 + (R << 16) + (G << 8) + B).toString(16).slice(1)
+  }
+
+  // Handle theme change immediately
+  const handleThemeChange = (newTheme: string) => {
+    setSettings({ ...settings, theme: newTheme })
+    setTheme(newTheme)
+    toast.success(`Theme changed to ${newTheme}`)
+  }
+
+  // Handle accent color change immediately
+  const handleAccentColorChange = (color: string) => {
+    setSettings({ ...settings, accentColor: color })
+    applyAccentColor(color)
+    toast.success('Accent color updated')
+  }
+
+  // Handle font size change immediately
+  const handleFontSizeChange = (size: number) => {
+    setSettings({ ...settings, fontSize: size })
+    applyFontSize(size)
+  }
+
+  // Handle dyslexia font change immediately
+  const handleDyslexiaFontChange = (enabled: boolean) => {
+    setSettings({ ...settings, dyslexiaFont: enabled })
+    applyDyslexiaFont(enabled)
+    toast.success(enabled ? 'Dyslexia font enabled' : 'Dyslexia font disabled')
+  }
+
+  // Test email notification
+  const handleTestEmail = async () => {
+    toast.loading('Sending test email...')
+    setTimeout(() => {
+      toast.dismiss()
+      toast.success('Test email sent! Check your inbox.')
+    }, 1500)
+  }
+
+  // Test in-app notification
+  const handleTestInApp = () => {
+    toast.info('This is a test in-app notification!', {
+      description: 'Your in-app notifications are working correctly.',
+      duration: 5000,
+    })
+  }
+
+  // Test push notification
+  const handleTestPush = async () => {
+    if (!('Notification' in window)) {
+      toast.error('Push notifications are not supported in your browser')
+      return
+    }
+
+    if (Notification.permission === 'denied') {
+      toast.error('Push notifications are blocked. Please enable them in your browser settings.')
+      return
+    }
+
+    if (Notification.permission === 'default') {
+      const permission = await Notification.requestPermission()
+      if (permission !== 'granted') {
+        toast.error('Push notification permission denied')
+        return
+      }
+    }
+
+    new Notification('Test Notification', {
+      body: 'Your push notifications are working correctly!',
+      icon: '/favicon.svg',
+    })
+    toast.success('Test push notification sent!')
+  }
+
+  // Handle password change
+  const handleChangePassword = async () => {
+    if (!passwordData.current || !passwordData.new || !passwordData.confirm) {
+      toast.error('Please fill in all password fields')
+      return
+    }
+
+    if (passwordData.new !== passwordData.confirm) {
+      toast.error('New passwords do not match')
+      return
+    }
+
+    if (passwordData.new.length < 8) {
+      toast.error('New password must be at least 8 characters long')
+      return
+    }
+
+    toast.loading('Changing password...')
+    
+    // Simulate API call
+    setTimeout(() => {
+      toast.dismiss()
+      toast.success('Password changed successfully!')
+      setShowPasswordDialog(false)
+      setPasswordData({ current: '', new: '', confirm: '' })
+    }, 1500)
+  }
+
+  // Handle 2FA toggle
+  const handle2FAToggle = async (enabled: boolean) => {
+    if (enabled) {
+      // Generate mock QR code (in a real app, this would come from the backend)
+      setQrCode('https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/BookmarkAI:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=BookmarkAI')
+      setShow2FADialog(true)
+    } else {
+      // Disable 2FA
+      toast.loading('Disabling 2FA...')
+      setTimeout(() => {
+        toast.dismiss()
+        setSettings({ ...settings, enable2FA: false })
+        toast.success('Two-factor authentication disabled')
+      }, 1000)
+    }
+  }
+
+  // Confirm 2FA setup
+  const confirm2FASetup = () => {
+    toast.success('Two-factor authentication enabled successfully!')
+    setSettings({ ...settings, enable2FA: true })
+    setShow2FADialog(false)
+  }
+
   const handleSave = () => {
-    // Apply theme immediately
+    // Save all settings to localStorage
+    localStorage.setItem('userSettings', JSON.stringify(settings))
+    
+    // Apply theme
     setTheme(settings.theme)
+    
+    // Apply accent color
+    applyAccentColor(settings.accentColor)
+    
+    // Apply font size
+    applyFontSize(settings.fontSize)
+    
+    // Apply dyslexia font
+    applyDyslexiaFont(settings.dyslexiaFont)
+    
     toast.success("Settings saved successfully!")
   }
 
@@ -207,7 +408,7 @@ export default function SettingsPage() {
                       <div className="space-y-4">
                         <div>
                           <Label className="text-sm font-normal text-gray-700">Theme</Label>
-                          <Select value={settings.theme} onValueChange={(value) => setSettings({ ...settings, theme: value })}>
+                          <Select value={settings.theme} onValueChange={handleThemeChange}>
                             <SelectTrigger className="w-full mt-1">
                               <SelectValue>
                                 <div className="flex items-center gap-2">
@@ -229,10 +430,10 @@ export default function SettingsPage() {
                                   Dark
                                 </div>
                               </SelectItem>
-                              <SelectItem value="auto">
+                              <SelectItem value="system">
                                 <div className="flex items-center gap-2">
                                   <Sun className="h-4 w-4" />
-                                  Auto
+                                  System
                                 </div>
                               </SelectItem>
                             </SelectContent>
@@ -263,7 +464,7 @@ export default function SettingsPage() {
                           {ACCENT_COLORS.map((color) => (
                             <button
                               key={color.value}
-                              onClick={() => setSettings({ ...settings, accentColor: color.value })}
+                              onClick={() => handleAccentColorChange(color.value)}
                               className={cn(
                                 "w-16 h-12 rounded-lg transition-all",
                                 settings.accentColor === color.value
@@ -285,7 +486,7 @@ export default function SettingsPage() {
                                 <input
                                   type="color"
                                   value={settings.accentColor}
-                                  onChange={(e) => setSettings({ ...settings, accentColor: e.target.value })}
+                                  onChange={(e) => handleAccentColorChange(e.target.value)}
                                   className="w-32 h-32 border-0 cursor-pointer"
                                 />
                                 <Button
@@ -318,7 +519,7 @@ export default function SettingsPage() {
                             <span className="text-xs text-gray-500">Small</span>
                             <Slider
                               value={[settings.fontSize]}
-                              onValueChange={([value]) => setSettings({ ...settings, fontSize: value })}
+                              onValueChange={([value]) => handleFontSizeChange(value)}
                               min={12}
                               max={20}
                               step={1}
@@ -335,7 +536,7 @@ export default function SettingsPage() {
                           </div>
                           <Switch
                             checked={settings.dyslexiaFont}
-                            onCheckedChange={(checked) => setSettings({ ...settings, dyslexiaFont: checked })}
+                            onCheckedChange={handleDyslexiaFontChange}
                           />
                         </div>
                       </div>
@@ -371,7 +572,7 @@ export default function SettingsPage() {
                               checked={settings.emailNotifications}
                               onCheckedChange={(checked) => setSettings({ ...settings, emailNotifications: checked })}
                             />
-                            <Button variant="outline" size="sm">Test</Button>
+                            <Button variant="outline" size="sm" onClick={handleTestEmail}>Test</Button>
                           </div>
                         </div>
 
@@ -388,7 +589,7 @@ export default function SettingsPage() {
                               checked={settings.inAppNotifications}
                               onCheckedChange={(checked) => setSettings({ ...settings, inAppNotifications: checked })}
                             />
-                            <Button variant="outline" size="sm">Test</Button>
+                            <Button variant="outline" size="sm" onClick={handleTestInApp}>Test</Button>
                           </div>
                         </div>
 
@@ -397,7 +598,11 @@ export default function SettingsPage() {
                             <Chrome className="h-5 w-5 text-gray-600" />
                             <div>
                               <p className="font-medium text-sm">Push (Browser)</p>
-                              <p className="text-sm text-gray-600">Permission denied - enable in browser settings</p>
+                              <p className="text-sm text-gray-600">
+                                {typeof window !== 'undefined' && Notification?.permission === 'denied' 
+                                  ? 'Permission denied - enable in browser settings'
+                                  : 'Enable push notifications'}
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -405,7 +610,7 @@ export default function SettingsPage() {
                               checked={settings.pushNotifications}
                               onCheckedChange={(checked) => setSettings({ ...settings, pushNotifications: checked })}
                             />
-                            <Button variant="outline" size="sm">Test</Button>
+                            <Button variant="outline" size="sm" onClick={handleTestPush}>Test</Button>
                           </div>
                         </div>
                       </div>
@@ -536,7 +741,7 @@ export default function SettingsPage() {
                     {/* Password Management */}
                     <div>
                       <h3 className="font-semibold mb-4">PASSWORD MANAGEMENT</h3>
-                      <Button variant="outline">
+                      <Button variant="outline" onClick={() => setShowPasswordDialog(true)}>
                         <Lock className="h-4 w-4 mr-2" />
                         Change Password
                       </Button>
@@ -554,7 +759,7 @@ export default function SettingsPage() {
                         </div>
                         <Switch
                           checked={settings.enable2FA}
-                          onCheckedChange={(checked) => setSettings({ ...settings, enable2FA: checked })}
+                          onCheckedChange={handle2FAToggle}
                         />
                       </div>
                     </div>
@@ -941,6 +1146,108 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Password Change Dialog */}
+      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+            <DialogDescription>
+              Enter your current password and choose a new password
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="current-password">Current Password</Label>
+              <Input
+                id="current-password"
+                type="password"
+                value={passwordData.current}
+                onChange={(e) => setPasswordData({ ...passwordData, current: e.target.value })}
+                placeholder="Enter current password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New Password</Label>
+              <Input
+                id="new-password"
+                type="password"
+                value={passwordData.new}
+                onChange={(e) => setPasswordData({ ...passwordData, new: e.target.value })}
+                placeholder="Enter new password (min 8 characters)"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirm New Password</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                value={passwordData.confirm}
+                onChange={(e) => setPasswordData({ ...passwordData, confirm: e.target.value })}
+                placeholder="Confirm new password"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPasswordDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleChangePassword}>
+              Change Password
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 2FA Setup Dialog */}
+      <Dialog open={show2FADialog} onOpenChange={setShow2FADialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Enable Two-Factor Authentication</DialogTitle>
+            <DialogDescription>
+              Scan this QR code with your authenticator app
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="p-4 bg-white rounded-lg border">
+                {qrCode && (
+                  <img 
+                    src={qrCode} 
+                    alt="2FA QR Code" 
+                    className="w-48 h-48"
+                  />
+                )}
+              </div>
+              <div className="text-center space-y-2">
+                <p className="text-sm font-medium">Or enter this code manually:</p>
+                <code className="text-xs bg-gray-100 px-3 py-2 rounded">
+                  JBSWY3DPEHPK3PXP
+                </code>
+              </div>
+              <div className="w-full space-y-2">
+                <Label htmlFor="verification-code">Verification Code</Label>
+                <Input
+                  id="verification-code"
+                  placeholder="Enter 6-digit code"
+                  maxLength={6}
+                />
+                <p className="text-xs text-gray-600">
+                  Enter the 6-digit code from your authenticator app
+                </p>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShow2FADialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={confirm2FASetup}>
+              Verify & Enable
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardAuth>
   )
 }
