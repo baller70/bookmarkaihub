@@ -376,7 +376,7 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                 </div>
               </div>
 
-              <div className="relative flex items-start gap-6 p-6 cursor-pointer z-0" onClick={() => setSelectedBookmark(bookmark)}>
+              <div className="relative flex items-start gap-6 p-6 pr-44 cursor-pointer z-0" onClick={() => setSelectedBookmark(bookmark)}>
                 {/* Left: Logo/Favicon */}
                 <div className="flex-shrink-0">
                   <div className="relative w-14 h-14 bg-black rounded-lg flex items-center justify-center overflow-hidden">
@@ -396,8 +396,8 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                   </div>
                 </div>
 
-                {/* Middle: Content */}
-                <div className="flex-1 min-w-0 space-y-2.5">
+                {/* Middle: Content - WITH RIGHT PADDING TO PREVENT OVERLAP WITH LOGO */}
+                <div className="flex-1 min-w-0 space-y-2.5 pr-4">
                   {/* Title and priority badge */}
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-bold text-base text-gray-900 uppercase">
@@ -440,8 +440,8 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                     })()}
                   </a>
 
-                  {/* Description */}
-                  <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                  {/* Description - WILL WRAP TO NEXT LINE IF TOO LONG */}
+                  <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed break-words">
                     {bookmark.description || "No description available"}
                   </p>
 
