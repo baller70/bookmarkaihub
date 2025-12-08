@@ -8,14 +8,43 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Tag, Plus, Search, Edit, Trash2, TrendingUp } from "lucide-react"
 import { toast } from "sonner"
+import type { Tag as TagType } from "@/types/bookmark"
 
 export default function TagsPage() {
-  const [tags, setTags] = useState<any[]>([])
+  const [tags, setTags] = useState<TagType[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
+
+  // Create tag modal state
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [newTagName, setNewTagName] = useState("")
+  const [newTagColor, setNewTagColor] = useState("#3B82F6")
+
+  // Delete confirmation state
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [tagToDelete, setTagToDelete] = useState<string | null>(null)
 
   useEffect(() => {
     fetchTags()
@@ -36,34 +65,49 @@ export default function TagsPage() {
   }
 
   const handleCreateTag = () => {
-    const tagName = prompt("Enter tag name:")
-    if (!tagName) return
+    setShowCreateModal(true)
+  }
 
-    const tagColor = prompt("Enter tag color (e.g., #3B82F6):", "#3B82F6")
-    
+  const submitCreateTag = async () => {
+    if (!newTagName.trim()) {
+      toast.error("Tag name is required")
+      return
+    }
+
     setIsCreating(true)
-    fetch("/api/tags", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: tagName, color: tagColor }),
-    })
-      .then((res) => {
-        if (res.ok) {
-          toast.success("Tag created successfully!")
-          fetchTags()
-        } else {
-          toast.error("Failed to create tag")
-        }
+    try {
+      const response = await fetch("/api/tags", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newTagName.trim(), color: newTagColor }),
       })
-      .catch(() => toast.error("Failed to create tag"))
-      .finally(() => setIsCreating(false))
+
+      if (response.ok) {
+        toast.success("Tag created successfully!")
+        fetchTags()
+        setShowCreateModal(false)
+        setNewTagName("")
+        setNewTagColor("#3B82F6")
+      } else {
+        toast.error("Failed to create tag")
+      }
+    } catch {
+      toast.error("Failed to create tag")
+    } finally {
+      setIsCreating(false)
+    }
   }
 
   const handleDeleteTag = async (tagId: string) => {
-    if (!confirm("Are you sure you want to delete this tag?")) return
+    setTagToDelete(tagId)
+    setShowDeleteDialog(true)
+  }
+
+  const confirmDeleteTag = async () => {
+    if (!tagToDelete) return
 
     try {
-      const response = await fetch(`/api/tags/${tagId}`, {
+      const response = await fetch(`/api/tags/${tagToDelete}`, {
         method: "DELETE",
       })
 
@@ -76,6 +120,9 @@ export default function TagsPage() {
     } catch (error) {
       console.error("Error deleting tag:", error)
       toast.error("Failed to delete tag")
+    } finally {
+      setShowDeleteDialog(false)
+      setTagToDelete(null)
     }
   }
 
@@ -149,7 +196,7 @@ export default function TagsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Active Tags</p>
-                  <p className="text-3xl font-bold text-gray-900 uppercase">{tags.filter(t => t._count?.bookmarks > 0).length}</p>
+                  <p className="text-3xl font-bold text-gray-900 uppercase">{tags.filter(t => (t._count?.bookmarks ?? 0) > 0).length}</p>
                 </div>
                 <Tag className="h-10 w-10 text-blue-500" />
               </div>
@@ -158,7 +205,7 @@ export default function TagsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Unused Tags</p>
-                  <p className="text-3xl font-bold text-gray-900 uppercase">{tags.filter(t => !t._count?.bookmarks || t._count.bookmarks === 0).length}</p>
+                  <p className="text-3xl font-bold text-gray-900 uppercase">{tags.filter(t => (t._count?.bookmarks ?? 0) === 0).length}</p>
                 </div>
                 <Tag className="h-10 w-10 text-gray-400" />
               </div>
@@ -253,6 +300,80 @@ export default function TagsPage() {
           </div>
         </div>
       </DashboardLayout>
+
+      {/* Create Tag Modal */}
+      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Create New Tag</DialogTitle>
+            <DialogDescription>
+              Add a new tag to organize your bookmarks.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="tagName">Tag Name</Label>
+              <Input
+                id="tagName"
+                value={newTagName}
+                onChange={(e) => setNewTagName(e.target.value)}
+                placeholder="Enter tag name"
+                onKeyDown={(e) => e.key === 'Enter' && submitCreateTag()}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="tagColor">Tag Color</Label>
+              <div className="flex gap-2 items-center">
+                <Input
+                  id="tagColor"
+                  type="color"
+                  value={newTagColor}
+                  onChange={(e) => setNewTagColor(e.target.value)}
+                  className="w-16 h-10 p-1 cursor-pointer"
+                />
+                <Input
+                  value={newTagColor}
+                  onChange={(e) => setNewTagColor(e.target.value)}
+                  placeholder="#3B82F6"
+                  className="flex-1"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreateModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={submitCreateTag} disabled={isCreating}>
+              {isCreating ? "Creating..." : "Create Tag"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Tag</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this tag? This action cannot be undone.
+              The tag will be removed from all bookmarks.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setTagToDelete(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteTag}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardAuth>
   )
 }

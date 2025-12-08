@@ -1,24 +1,17 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getDevSession } from '@/lib/dev-auth';
 import { prisma } from '@/lib/db';
 import { cookies } from 'next/headers';
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    const session = await getDevSession();
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
+    const userId = session.user.id;
 
     // Get active company from cookie
     const cookieStore = cookies();
@@ -29,14 +22,14 @@ export async function GET(req: NextRequest) {
         where: { id: activeCompanyId },
       });
 
-      if (company && company.ownerId === user.id) {
+      if (company && company.ownerId === userId) {
         return NextResponse.json(company);
       }
     }
 
     // If no active company or invalid, return the first company
     const firstCompany = await prisma.company.findFirst({
-      where: { ownerId: user.id },
+      where: { ownerId: userId },
       orderBy: { createdAt: 'asc' },
     });
 
@@ -56,18 +49,12 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    const session = await getDevSession();
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
+    const userId = session.user.id;
 
     const { companyId } = await req.json();
 
@@ -84,7 +71,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Company not found' }, { status: 404 });
     }
 
-    if (company.ownerId !== user.id) {
+    if (company.ownerId !== userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

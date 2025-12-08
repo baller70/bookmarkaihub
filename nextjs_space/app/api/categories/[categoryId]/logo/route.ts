@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
+import { getDevSession } from "@/lib/dev-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { uploadFile, deleteFile } from "@/lib/s3"
@@ -9,7 +9,7 @@ import { uploadFile, deleteFile } from "@/lib/s3"
 // Upload or update category logo
 export async function POST(request: Request, { params }: { params: { categoryId: string } }) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getDevSession()
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -72,7 +72,7 @@ export async function POST(request: Request, { params }: { params: { categoryId:
 // Delete category logo
 export async function DELETE(request: Request, { params }: { params: { categoryId: string } }) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getDevSession()
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }

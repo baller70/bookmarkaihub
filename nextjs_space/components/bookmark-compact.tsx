@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
+import { FallbackImage } from "@/components/ui/fallback-image"
 import {
   Folder, MoreVertical, User, ArrowLeft, ExternalLink, Star, Eye, Palette,
   Briefcase, Code, Music, Camera, Book, Heart,
@@ -393,14 +394,15 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
               >
                 {/* COMPACT Square card content */}
                 <div className="aspect-square flex flex-col p-3 relative">
-                  
+
                   {/* Background watermark pattern (faded logo) */}
                   {(bookmark.favicon) && (
                     <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none overflow-hidden">
                       <div className="relative w-full h-full">
-                        <Image
+                        <FallbackImage
                           src={bookmark.favicon}
                           alt=""
+                          fallbackText={bookmark.title}
                           fill
                           className="object-cover"
                           unoptimized
@@ -412,20 +414,16 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
                   {/* TOP LEFT - BIGGER Black square logo container FILLING SPACE */}
                   <div className="relative z-10 mb-2">
                     <div className="w-14 h-14 rounded-lg flex items-center justify-center overflow-hidden bg-black">
-                      {(bookmark.favicon) ? (
-                        <Image
-                          src={bookmark.favicon}
-                          alt={bookmark.title || "Bookmark"}
-                          width={44}
-                          height={44}
-                          className="object-contain"
-                          unoptimized
-                        />
-                      ) : (
-                        <span className="text-3xl font-black text-white uppercase">
-                          {bookmark.title?.charAt(0)?.toUpperCase() || "?"}
-                        </span>
-                      )}
+                      <FallbackImage
+                        src={bookmark.favicon || ""}
+                        alt={bookmark.title || "Bookmark"}
+                        fallbackText={bookmark.title}
+                        width={44}
+                        height={44}
+                        className="object-contain"
+                        fallbackClassName="text-3xl text-white bg-black"
+                        unoptimized
+                      />
                     </div>
                   </div>
 

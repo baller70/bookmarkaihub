@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { getDevSession } from "@/lib/dev-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getActiveCompanyId } from "@/lib/company";
@@ -7,7 +7,7 @@ import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getDevSession();
     
     if (!session?.user?.id) {
       return NextResponse.json({ 

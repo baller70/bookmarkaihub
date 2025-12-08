@@ -17,13 +17,14 @@ import { BookmarkGoals } from "@/components/bookmark-goals"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Grid3x3, List, Clock, FolderTree, Folders, Target, Kanban, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react"
+import { Search, Grid3x3, List, Clock, FolderTree, Folders, Target, Kanban, ChevronLeft, ChevronRight, ChevronDown, LucideIcon } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import type { Bookmark, Category } from "@/types/bookmark"
 
 export type ViewMode = "GRID" | "COMPACT" | "LIST" | "TIMELINE" | "HIERARCHY" | "FOLDER" | "GOAL" | "KANBAN"
 
-const viewModes: { id: ViewMode; label: string; icon: any }[] = [
+const viewModes: { id: ViewMode; label: string; icon: LucideIcon }[] = [
   { id: "GRID", label: "GRID", icon: Grid3x3 },
   { id: "COMPACT", label: "COMPACT", icon: Grid3x3 },
   { id: "LIST", label: "LIST", icon: List },
@@ -34,36 +35,47 @@ const viewModes: { id: ViewMode; label: string; icon: any }[] = [
   { id: "KANBAN", label: "KANBAN 2.0", icon: Kanban },
 ]
 
-interface Category {
-  id: string
-  name: string
-  color: string
+// Using Category from shared types - local extension for icon field
+interface DashboardCategory extends Category {
   icon: string
-  _count: {
-    bookmarks: number
-  }
 }
 
 export function DashboardContent() {
   const { data: session } = useSession()
   const [viewMode, setViewMode] = useState<ViewMode>("GRID")
   const [searchQuery, setSearchQuery] = useState("")
-  const [bookmarks, setBookmarks] = useState([])
-  const [analytics, setAnalytics] = useState(null)
+  // Using any[] for bookmarks since components define their own interfaces
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [bookmarks, setBookmarks] = useState<any[]>([])
+  // Analytics type matches AnalyticsChart's expected input
+  const [analytics, setAnalytics] = useState<{
+    analytics: Array<{
+      date: string
+      totalVisits: number
+      engagementScore: number
+      timeSpent: number
+    }>
+    totals: {
+      totalVisits: number
+      engagementScore: number
+      timeSpent: number
+      bookmarksAdded: number
+    }
+  } | null>(null)
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(25)
   const [bulkSelectMode, setBulkSelectMode] = useState(false)
   const [selectedBookmarks, setSelectedBookmarks] = useState<Set<string>>(new Set())
-  const [categories, setCategories] = useState<Category[]>([])
+  const [categories, setCategories] = useState<DashboardCategory[]>([])
   const [breakdownOpen, setBreakdownOpen] = useState(false)
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
 
   useEffect(() => {
-    if (session) {
-      fetchBookmarks()
-      fetchAnalytics()
-    }
+    // In dev mode, always fetch bookmarks regardless of session
+    // The API routes handle auth via getDevSession()
+    fetchBookmarks()
+    fetchAnalytics()
   }, [session, searchQuery, categoryFilter])
 
   useEffect(() => {
@@ -352,7 +364,7 @@ export function DashboardContent() {
                         <span className="text-gray-700 font-normal group-hover:text-gray-900">{category.name}:</span>
                       </div>
                       <span className="text-sm font-semibold text-gray-900 ml-2">
-                        {category._count.bookmarks} {category._count.bookmarks === 1 ? 'bookmark' : 'bookmarks'}
+                        {category._count?.bookmarks ?? 0} {(category._count?.bookmarks ?? 0) === 1 ? 'bookmark' : 'bookmarks'}
                       </span>
                     </div>
                   ))}

@@ -1,8 +1,8 @@
-
 "use client"
 
 import { useState } from "react"
 import Image from "next/image"
+import { FallbackImage } from "@/components/ui/fallback-image"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { BookmarkDetailModal } from "@/components/bookmark-detail-modal"
@@ -45,9 +45,10 @@ export function BookmarkListCard({ bookmark, onUpdate }: BookmarkListCardProps) 
         {bookmark.favicon && (
           <div className="absolute right-0 top-0 bottom-0 w-1/2 flex items-center justify-end pr-12 pointer-events-none overflow-hidden">
             <div className="relative w-full h-full">
-              <Image
+              <FallbackImage
                 src={bookmark.favicon}
                 alt=""
+                fallbackText={bookmark.title}
                 fill
                 className="opacity-[0.08] object-cover"
                 style={{ filter: 'grayscale(20%)' }}
@@ -62,19 +63,15 @@ export function BookmarkListCard({ bookmark, onUpdate }: BookmarkListCardProps) 
           {/* Left: Logo */}
           <div className="flex-shrink-0">
             <div className="relative w-14 h-14 bg-black rounded-lg overflow-hidden shadow-sm border-2 border-gray-200">
-              {bookmark.favicon ? (
-                <Image
-                  src={bookmark.favicon}
-                  alt={bookmark.title}
-                  fill
-                  className="object-cover p-2"
-                  unoptimized
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-white font-bold text-xl uppercase">
-                  {bookmark.title?.charAt(0)?.toUpperCase()}
-                </div>
-              )}
+              <FallbackImage
+                src={bookmark.favicon || ""}
+                alt={bookmark.title}
+                fallbackText={bookmark.title}
+                fill
+                className="object-cover p-2"
+                fallbackClassName="text-xl text-white bg-black"
+                unoptimized
+              />
             </div>
           </div>
           

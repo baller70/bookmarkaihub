@@ -2,15 +2,14 @@
 export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getDevSession } from "@/lib/dev-auth"
 import { prisma } from "@/lib/db"
 import { getActiveCompanyId } from "@/lib/company"
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session) {
+    const session = await getDevSession()
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -64,8 +63,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session) {
+    const session = await getDevSession()
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 

@@ -1,9 +1,9 @@
-
 "use client"
 
 import { useState } from "react"
 import { Eye, ExternalLink, Star, Trash2, Edit } from "lucide-react"
 import Image from "next/image"
+import { FallbackImage } from "@/components/ui/fallback-image"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -186,32 +186,28 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
 
               {/* Large Background Logo Watermark - Fills entire card */}
               <div className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-10">
-                {bookmark.favicon ? (
-                  <Image
-                    src={bookmark.favicon}
-                    alt={bookmark.title}
-                    fill
-                    className="object-cover"
-                    sizes="200px"
-                  />
-                ) : (
-                  <ExternalLink className="w-full h-full text-gray-300" />
-                )}
+                <FallbackImage
+                  src={bookmark.favicon || ""}
+                  alt={bookmark.title}
+                  fallbackText={bookmark.title}
+                  fill
+                  className="object-cover"
+                  fallbackClassName="w-full h-full text-gray-300"
+                  sizes="200px"
+                />
               </div>
 
               {/* Bottom Right - Small Logo */}
               <div className="absolute bottom-2.5 right-2.5 w-12 h-12 bg-white rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden z-10 shadow-sm">
-                {bookmark.favicon ? (
-                  <Image
-                    src={bookmark.favicon}
-                    alt={bookmark.title}
-                    width={48}
-                    height={48}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <ExternalLink className="w-6 h-6 text-gray-400" />
-                )}
+                <FallbackImage
+                  src={bookmark.favicon || ""}
+                  alt={bookmark.title}
+                  fallbackText={bookmark.title}
+                  width={48}
+                  height={48}
+                  className="w-full h-full object-cover"
+                  fallbackClassName="text-sm text-gray-400"
+                />
               </div>
 
               {/* Bottom Left - Visit Count */}

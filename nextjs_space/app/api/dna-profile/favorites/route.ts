@@ -1,13 +1,13 @@
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getDevSession } from "@/lib/dev-auth"
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
 // GET /api/dna-profile/favorites - Get user's favorite bookmarks with stats
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getDevSession()
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }

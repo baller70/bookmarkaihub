@@ -12,10 +12,11 @@ import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { Search as SearchIcon, History, Sparkles, Filter, X, Clock } from 'lucide-react'
 import type { SearchHistoryItem } from '@/lib/types'
+import type { Bookmark } from '@/types/bookmark'
 
 export default function SearchPage() {
   const [query, setQuery] = useState('')
-  const [results, setResults] = useState<any[]>([])
+  const [results, setResults] = useState<Bookmark[]>([])
   const [history, setHistory] = useState<SearchHistoryItem[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [showAiAssist, setShowAiAssist] = useState(false)
@@ -232,14 +233,14 @@ export default function SearchPage() {
                           <p className="text-sm text-muted-foreground mb-3">{bookmark.description}</p>
                         )}
                         <div className="flex items-center gap-2">
-                          {bookmark.categories?.map((cat: any) => (
-                            <Badge key={cat.categoryId} variant="secondary">
-                              {cat.category.name}
+                          {bookmark.categories?.map((cat) => (
+                            <Badge key={cat.id ?? cat.category?.id} variant="secondary">
+                              {cat.category?.name ?? cat.name}
                             </Badge>
                           ))}
-                          {bookmark.tags?.map((tag: any) => (
-                            <Badge key={tag.tagId} variant="outline">
-                              {tag.tag.name}
+                          {bookmark.tags?.map((tag) => (
+                            <Badge key={tag.id ?? tag.tag?.id} variant="outline">
+                              {tag.tag?.name ?? tag.name}
                             </Badge>
                           ))}
                         </div>

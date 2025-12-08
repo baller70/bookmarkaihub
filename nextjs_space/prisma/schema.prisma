@@ -1,7 +1,6 @@
 generator client {
     provider = "prisma-client-js"
     binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
-    output = "/home/ubuntu/bookmarkhub_clone/nextjs_space/node_modules/.prisma/client"
 }
 
 datasource db {
@@ -217,13 +216,13 @@ model Category {
   backgroundColor String?   // Optional folder background color
   icon            String    @default("folder")
   logo            String?   // Custom logo image URL (S3 path)
-  
+
   userId      String
   user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   companyId    String?
   company      Company?            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   bookmarks   BookmarkCategory[]
-  
+
   folderId    String?
   folder      CategoryFolder?     @relation(fields: [folderId], references: [id], onDelete: SetNull)
 
@@ -231,6 +230,8 @@ model Category {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, name])
+  @@index([userId, createdAt])  // Performance index for listing user's categories
+  @@index([companyId])          // Performance index for company lookups
 }
 
 model CategoryFolder {
@@ -251,7 +252,7 @@ model Tag {
   id        String       @id @default(cuid())
   name      String
   color     String       @default("#10B981") // Green default
-  
+
   userId    String
   user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   bookmarks BookmarkTag[]
@@ -260,6 +261,7 @@ model Tag {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, name])
+  @@index([userId, createdAt]) // Performance index for listing user's tags
 }
 
 // Junction tables for many-to-many relationships
@@ -267,22 +269,26 @@ model BookmarkCategory {
   id         String   @id @default(cuid())
   bookmarkId String
   categoryId String
-  
+
   bookmark   Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@unique([bookmarkId, categoryId])
+  @@index([bookmarkId])  // Performance index for bookmark lookups
+  @@index([categoryId])  // Performance index for category lookups
 }
 
 model BookmarkTag {
   id         String   @id @default(cuid())
   bookmarkId String
   tagId      String
-  
+
   bookmark   Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
   tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@unique([bookmarkId, tagId])
+  @@index([bookmarkId])  // Performance index for bookmark lookups
+  @@index([tagId])       // Performance index for tag lookups
 }
 
 // Task management

@@ -1,13 +1,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getDevSession } from "@/lib/dev-auth";
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
 // GET /api/marketplace/profile/buyer - Get buyer dashboard data
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getDevSession();
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

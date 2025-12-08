@@ -1,6 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
+import { getDevSession } from '@/lib/dev-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { createHash } from 'crypto';
@@ -11,7 +11,7 @@ export async function GET(
   { params }: { params: { bookmarkId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getDevSession();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -49,7 +49,7 @@ export async function POST(
   { params }: { params: { bookmarkId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getDevSession();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300; // 5 minutes
 
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { getDevSession } from "@/lib/dev-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { sendOpenAIRequest } from "@/lib/openai-client";
@@ -44,7 +44,7 @@ TAGS: tag1, tag2, tag3, tag4, tag5`;
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getDevSession();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

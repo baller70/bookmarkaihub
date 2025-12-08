@@ -3,12 +3,13 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
+import { FallbackImage } from "@/components/ui/fallback-image"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -24,10 +25,10 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { BookmarkDetailModal } from "@/components/bookmark-detail-modal"
-import { 
-  ExternalLink, 
-  Edit, 
-  Trash2, 
+import {
+  ExternalLink,
+  Edit,
+  Trash2,
   Heart,
   Eye,
   Copy,
@@ -46,9 +47,10 @@ import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
+import type { Bookmark, Category } from "@/types/bookmark"
 
 interface BookmarkCardProps {
-  bookmark: any
+  bookmark: Bookmark
   compact?: boolean
   onUpdate: () => void
   bulkSelectMode?: boolean
@@ -74,7 +76,7 @@ export function BookmarkCard({
   const [showDetail, setShowDetail] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isFavorite, setIsFavorite] = useState(bookmark.isFavorite || false)
-  const [categories, setCategories] = useState<any[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editedTitle, setEditedTitle] = useState(bookmark.title || "")
   const [isEditingUrl, setIsEditingUrl] = useState(false)
@@ -97,27 +99,22 @@ export function BookmarkCard({
         const response = await fetch('/api/categories')
         if (response.ok) {
           const data = await response.json()
-          console.log('Categories API response:', data)
           // API returns { categories: [...] }, extract the array
           const categoriesArray = data.categories || data
-          console.log('Categories array:', categoriesArray)
           // Ensure data is an array before setting state
           if (Array.isArray(categoriesArray)) {
             setCategories(categoriesArray)
           } else {
-            console.error('Categories API returned non-array data:', data)
             setCategories([])
           }
         } else {
-          console.error('Failed to fetch categories:', response.status, response.statusText)
           setCategories([])
         }
       } catch (error) {
-        console.error('Error fetching categories:', error)
         setCategories([])
       }
     }
-    
+
     fetchCategories()
   }, [])
 
@@ -323,25 +320,20 @@ export function BookmarkCard({
 
   const handleAssignCategory = async (categoryId: string) => {
     try {
-      console.log('Assigning category:', categoryId, 'to bookmark:', bookmark.id)
       const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ categoryId: categoryId === "none" ? null : categoryId }),
       })
-      
+
       if (response.ok) {
         const categoryName = categories.find(c => c.id === categoryId)?.name || "None"
-        console.log('Category assigned successfully:', categoryName)
         toast.success(`Bookmark moved to ${categoryName}`)
         onUpdate()
       } else {
-        const errorData = await response.json()
-        console.error("Failed to assign category:", response.status, errorData)
         toast.error("Failed to assign category")
       }
     } catch (error) {
-      console.error("Error assigning category:", error)
       toast.error("Failed to assign category")
     }
   }
@@ -425,8 +417,8 @@ export function BookmarkCard({
     }
   }
 
-  const progress = bookmark.totalTasks > 0 
-    ? (bookmark.completedTasks / bookmark.totalTasks) * 100 
+  const progress = (bookmark.totalTasks ?? 0) > 0
+    ? ((bookmark.completedTasks ?? 0) / (bookmark.totalTasks ?? 1)) * 100
     : 0
 
   return (
@@ -454,9 +446,10 @@ export function BookmarkCard({
         {/* Background Logo - Faint watermark */}
         {(bookmark.customBackground || bookmark.customLogo || bookmark.favicon) && (
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <Image
-              src={bookmark.customBackground || bookmark.customLogo || bookmark.favicon}
+            <FallbackImage
+              src={bookmark.customBackground ?? bookmark.customLogo ?? bookmark.favicon ?? ''}
               alt=""
+              fallbackText={bookmark.title}
               fill
               className="opacity-[0.05] object-cover"
               style={{ filter: 'grayscale(30%)' }}
@@ -504,19 +497,15 @@ export function BookmarkCard({
             <div className="flex items-start space-x-3 sm:space-x-4 mb-3 sm:mb-4 min-w-0 overflow-hidden">
               {/* Small Header Logo */}
               <div className="relative w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0 bg-white rounded-[20px] overflow-hidden shadow-lg border-2 border-gray-100">
-                {(bookmark.customFavicon || bookmark.customLogo || bookmark.favicon) ? (
-                  <Image
-                    src={bookmark.customFavicon || bookmark.customLogo || bookmark.favicon}
-                    alt={bookmark.title}
-                    fill
-                    className="object-contain p-2 sm:p-2.5 rounded-[16px]"
-                    unoptimized
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-base sm:text-lg rounded-[16px]">
-                    {bookmark.title?.charAt(0)?.toUpperCase()}
-                  </div>
-                )}
+                <FallbackImage
+                  src={bookmark.customFavicon || bookmark.customLogo || bookmark.favicon || ""}
+                  alt={bookmark.title}
+                  fallbackText={bookmark.title}
+                  fill
+                  className="object-contain p-2 sm:p-2.5 rounded-[16px]"
+                  fallbackClassName="w-full h-full text-base sm:text-lg rounded-[16px]"
+                  unoptimized
+                />
               </div>
               
               {/* Title and URL */}
@@ -631,21 +620,17 @@ export function BookmarkCard({
             {/* LARGE CENTERED MIDDLE LOGO */}
             <div className="flex items-center justify-center my-3 sm:my-4">
               <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-2xl overflow-hidden bg-white shadow-lg p-3">
-                {(bookmark.customLogo || bookmark.customFavicon || bookmark.favicon) ? (
-                  <div className="relative w-full h-full rounded-xl overflow-hidden">
-                    <Image
-                      src={bookmark.customLogo || bookmark.customFavicon || bookmark.favicon}
-                      alt={bookmark.title}
-                      fill
-                      className="object-contain rounded-xl"
-                      unoptimized
-                    />
-                  </div>
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white text-3xl sm:text-4xl font-bold uppercase rounded-xl">
-                    {bookmark.title?.charAt(0)?.toUpperCase()}
-                  </div>
-                )}
+                <div className="relative w-full h-full rounded-xl overflow-hidden">
+                  <FallbackImage
+                    src={bookmark.customLogo || bookmark.customFavicon || bookmark.favicon || ""}
+                    alt={bookmark.title}
+                    fallbackText={bookmark.title}
+                    fill
+                    className="object-contain rounded-xl"
+                    fallbackClassName="w-full h-full text-3xl sm:text-4xl rounded-xl"
+                    unoptimized
+                  />
+                </div>
               </div>
             </div>
 

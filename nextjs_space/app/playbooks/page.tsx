@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Sparkles, Plus, Clock } from 'lucide-react'
 import type { Playbook } from '@/lib/types'
+import type { Bookmark } from '@/types/bookmark'
 
 export default function PlaybooksPage() {
   const [playbooks, setPlaybooks] = useState<Playbook[]>([])
@@ -23,7 +24,7 @@ export default function PlaybooksPage() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [bookmarks, setBookmarks] = useState<any[]>([])
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([])
   
   // Create playbook form
   const [newTitle, setNewTitle] = useState('')

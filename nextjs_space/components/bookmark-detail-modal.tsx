@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
+import { FallbackImage } from "@/components/ui/fallback-image"
 import { useRouter } from "next/navigation"
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -762,6 +764,10 @@ export function BookmarkDetailModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-[900px] max-h-[90vh] overflow-y-auto p-0">
+        {/* Visually hidden title for accessibility - screen readers will announce this */}
+        <DialogTitle className="sr-only">
+          Bookmark Details: {bookmark.title}
+        </DialogTitle>
         <input
           ref={fileInputRef}
           type="file"
@@ -790,22 +796,22 @@ export function BookmarkDetailModal({
           className="hidden"
           onChange={handleBackgroundUpload}
         />
-        
+
         {/* Header */}
         <div className="border-b px-3 sm:px-6 py-3 sm:py-4 bg-white">
           <div className="flex flex-col gap-3 sm:gap-0 sm:flex-row items-start justify-between">
             <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 w-full sm:w-auto">
-              {(bookmark.customFavicon || bookmark.customLogo || bookmark.favicon) && (
-                <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-lg overflow-hidden bg-black flex-shrink-0">
-                  <Image
-                    src={bookmark.customFavicon || bookmark.customLogo || bookmark.favicon}
-                    alt=""
-                    fill
-                    className="object-contain"
-                    unoptimized
-                  />
-                </div>
-              )}
+              <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-lg overflow-hidden bg-black flex-shrink-0">
+                <FallbackImage
+                  src={bookmark.customFavicon || bookmark.customLogo || bookmark.favicon || ""}
+                  alt=""
+                  fallbackText={bookmark.title}
+                  fill
+                  className="object-contain"
+                  fallbackClassName="text-sm sm:text-base text-white bg-black"
+                  unoptimized
+                />
+              </div>
               <div className="min-w-0 flex-1">
                 {isEditingTitle ? (
                   <div className="flex items-center gap-1 mb-1" onClick={(e) => e.stopPropagation()}>
@@ -964,21 +970,17 @@ export function BookmarkDetailModal({
               {/* Left Column - Logo */}
               <div className="space-y-6">
                 <div className="relative aspect-square bg-gray-100 rounded-lg flex items-center justify-center group">
-                  {(bookmark.customLogo || bookmark.customFavicon || bookmark.favicon) ? (
-                    <Image
-                      src={bookmark.customLogo || bookmark.customFavicon || bookmark.favicon}
-                      alt={bookmark.title}
-                      fill
-                      className="object-contain p-8"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="text-6xl font-bold text-gray-300">
-                      {bookmark.title.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  
-                  <button 
+                  <FallbackImage
+                    src={bookmark.customLogo || bookmark.customFavicon || bookmark.favicon || ""}
+                    alt={bookmark.title}
+                    fallbackText={bookmark.title}
+                    fill
+                    className="object-contain p-8"
+                    fallbackClassName="text-6xl text-gray-300 bg-gray-100"
+                    unoptimized
+                  />
+
+                  <button
                     onClick={handleImageUpload}
                     className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg"
                   >

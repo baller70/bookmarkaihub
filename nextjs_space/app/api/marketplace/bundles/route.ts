@@ -1,6 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getDevSession } from "@/lib/dev-auth";
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
 // POST /api/marketplace/bundles - Create a new bundle
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getDevSession();
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

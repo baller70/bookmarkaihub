@@ -1,13 +1,13 @@
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getDevSession } from "@/lib/dev-auth"
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
 // GET: Fetch all time capsules for the authenticated user
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getDevSession()
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 // POST: Create a new time capsule
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getDevSession()
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

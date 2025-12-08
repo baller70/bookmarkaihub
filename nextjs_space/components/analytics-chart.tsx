@@ -166,8 +166,13 @@ export function AnalyticsChart({ analytics, onTimeRangeChange }: AnalyticsChartP
         </div>
 
         {/* Chart */}
-        <div className="h-56 w-full">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="h-56 w-full min-h-[224px]">
+          {chartData.length === 0 ? (
+            <div className="flex items-center justify-center h-full text-gray-500 text-sm">
+              No analytics data available yet. Start using bookmarks to generate analytics.
+            </div>
+          ) : (
+          <ResponsiveContainer width="100%" height={224} minWidth={300}>
             <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <XAxis 
                 dataKey="date" 
@@ -193,16 +198,16 @@ export function AnalyticsChart({ analytics, onTimeRangeChange }: AnalyticsChartP
               />
               {selectedMetrics.map((metricId, index) => {
                 const colors = [
-                  '#6366F1', '#8B5CF6', '#EC4899', '#F59E0B', 
+                  '#6366F1', '#8B5CF6', '#EC4899', '#F59E0B',
                   '#10B981', '#3B82F6', '#EF4444', '#8B5CF6',
                   '#14B8A6', '#F97316'
                 ]
                 const metric = availableMetrics.find(m => m.id === metricId)
                 return (
-                  <Bar 
+                  <Bar
                     key={metricId}
-                    dataKey={metricId} 
-                    fill={colors[index % colors.length]} 
+                    dataKey={metricId}
+                    fill={colors[index % colors.length]}
                     radius={[4, 4, 0, 0]}
                     maxBarSize={8}
                     name={metric?.label || metricId}
@@ -211,6 +216,7 @@ export function AnalyticsChart({ analytics, onTimeRangeChange }: AnalyticsChartP
               })}
             </BarChart>
           </ResponsiveContainer>
+          )}
         </div>
       </div>
     </Card>

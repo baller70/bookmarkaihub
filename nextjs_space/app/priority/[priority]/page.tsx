@@ -20,19 +20,7 @@ import { AlertTriangle, TrendingUp, Clock, Target, Search, ArrowLeft, SlidersHor
 import { useParams, useRouter } from "next/navigation"
 import { toast } from "sonner"
 
-interface Bookmark {
-  id: string
-  title: string
-  url: string
-  description?: string
-  favicon?: string
-  priority: 'URGENT' | 'HIGH' | 'MEDIUM' | 'LOW'
-  isFavorite: boolean
-  totalVisits: number
-  createdAt: string
-  categories?: Array<{ category: { name: string; color: string } }>
-  tags?: Array<{ tag: { name: string; color: string } }>
-}
+import type { Bookmark } from "@/types/bookmark"
 
 export default function PriorityDetailPage() {
   const params = useParams()
@@ -127,7 +115,7 @@ export default function PriorityDetailPage() {
         filtered.sort((a, b) => a.title.localeCompare(b.title))
         break
       case "visits":
-        filtered.sort((a, b) => b.totalVisits - a.totalVisits)
+        filtered.sort((a, b) => (b.totalVisits ?? b.visitCount ?? 0) - (a.totalVisits ?? a.visitCount ?? 0))
         break
     }
 

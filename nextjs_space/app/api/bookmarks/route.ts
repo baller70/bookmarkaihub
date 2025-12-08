@@ -2,8 +2,7 @@
 export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getDevSession } from "@/lib/dev-auth"
 import { prisma } from "@/lib/db"
 import { getFaviconUrl } from "@/lib/favicon-service"
 import { getActiveCompanyId } from "@/lib/company"
@@ -11,15 +10,10 @@ import { sendOpenAIRequest } from "@/lib/openai-client"
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session) {
+    const session = await getDevSession()
+    if (!session?.user?.id) {
       console.error('❌ No session found in GET /api/bookmarks');
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    if (!session.user?.id) {
-      console.error('❌ Session found but no user.id in GET /api/bookmarks');
-      return NextResponse.json({ error: "Invalid session" }, { status: 401 })
     }
 
     console.log('✅ Session valid for user:', session.user.email || session.user.id);
@@ -165,8 +159,8 @@ TAGS: tag1, tag2, tag3, tag4, tag5`;
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session) {
+    const session = await getDevSession()
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 

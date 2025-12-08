@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
+import { FallbackImage } from "@/components/ui/fallback-image"
 import {
   Folder, MoreVertical, User, ArrowLeft, ExternalLink, Star, Eye, MoreHorizontal,
   Briefcase, Code, Music, Camera, Book, Heart,
@@ -349,21 +350,15 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
               {/* Large visible logo - TOP RIGHT */}
               <div className="absolute top-4 right-16 z-10">
                 <div className="relative w-32 h-32">
-                  {(bookmark.favicon) ? (
-                    <Image
-                      src={bookmark.favicon}
-                      alt={bookmark.title || "Bookmark"}
-                      fill
-                      className="object-contain"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 rounded-2xl flex items-center justify-center">
-                      <span className="text-6xl font-bold text-gray-400">
-                        {bookmark.title?.charAt(0) || "?"}
-                      </span>
-                    </div>
-                  )}
+                  <FallbackImage
+                    src={bookmark.favicon || ""}
+                    alt={bookmark.title || "Bookmark"}
+                    fallbackText={bookmark.title}
+                    fill
+                    className="object-contain"
+                    fallbackClassName="w-full h-full text-6xl bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 rounded-2xl text-gray-400"
+                    unoptimized
+                  />
                 </div>
               </div>
 
@@ -380,19 +375,15 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                 {/* Left: Logo/Favicon */}
                 <div className="flex-shrink-0">
                   <div className="relative w-14 h-14 bg-black rounded-lg flex items-center justify-center overflow-hidden">
-                    {(bookmark.favicon) ? (
-                      <Image
-                        src={bookmark.favicon}
-                        alt={bookmark.title || "Bookmark"}
-                        fill
-                        className="object-contain p-2"
-                        unoptimized
-                      />
-                    ) : (
-                      <span className="text-2xl font-bold text-white uppercase">
-                        {bookmark.title?.charAt(0) || "?"}
-                      </span>
-                    )}
+                    <FallbackImage
+                      src={bookmark.favicon || ""}
+                      alt={bookmark.title || "Bookmark"}
+                      fallbackText={bookmark.title}
+                      fill
+                      className="object-contain p-2"
+                      fallbackClassName="text-2xl text-white bg-black"
+                      unoptimized
+                    />
                   </div>
                 </div>
 

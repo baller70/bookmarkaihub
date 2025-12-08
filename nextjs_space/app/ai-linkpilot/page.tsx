@@ -18,11 +18,12 @@ import { Separator } from "@/components/ui/separator"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
-import { 
-  Settings, 
-  Wand2, 
-  Upload, 
-  CheckCircle2, 
+import type { BulkUploadLog, Category } from "@/types/bookmark"
+import {
+  Settings,
+  Wand2,
+  Upload,
+  CheckCircle2,
   Chrome,
   ChevronDown,
   ChevronUp,
@@ -106,11 +107,11 @@ export default function AILinkPilotPage() {
   })
 
   // Categories for default category dropdown
-  const [categories, setCategories] = useState<Array<{id: string, name: string}>>([])
-  
+  const [categories, setCategories] = useState<Pick<Category, 'id' | 'name'>[]>([])
+
   // Upload history
   const [showUploadHistory, setShowUploadHistory] = useState(false)
-  const [uploadHistory, setUploadHistory] = useState<any[]>([])
+  const [uploadHistory, setUploadHistory] = useState<BulkUploadLog[]>([])
   const [loadingHistory, setLoadingHistory] = useState(false)
 
   // Fetch categories on mount
