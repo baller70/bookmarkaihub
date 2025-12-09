@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Eye, ExternalLink, Star, Trash2, Edit } from "lucide-react"
 import Image from "next/image"
 import { FallbackImage } from "@/components/ui/fallback-image"
@@ -14,6 +14,28 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { BookmarkDetailModal } from "./bookmark-detail-modal"
+import { FitnessRings, RingData } from "@/components/ui/fitness-rings"
+
+// Default ring colors
+const DEFAULT_RING_COLORS = {
+  visits: "#EF4444", // Red
+  tasks: "#22C55E",  // Green
+  time: "#06B6D4",   // Cyan
+}
+
+// Local storage key for ring colors
+const RING_COLORS_KEY = "bookmarkhub-ring-colors"
+
+// Get ring colors from localStorage
+function getRingColors(): Record<string, string> {
+  if (typeof window === "undefined") return DEFAULT_RING_COLORS
+  try {
+    const stored = localStorage.getItem(RING_COLORS_KEY)
+    return stored ? { ...DEFAULT_RING_COLORS, ...JSON.parse(stored) } : DEFAULT_RING_COLORS
+  } catch {
+    return DEFAULT_RING_COLORS
+  }
+}
 
 interface Bookmark {
   id: string
@@ -48,6 +70,39 @@ const priorityColors: Record<string, string> = {
 export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCardsProps) {
   const [selectedBookmark, setSelectedBookmark] = useState<Bookmark | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [ringColors, setRingColors] = useState<Record<string, string>>(DEFAULT_RING_COLORS)
+
+  // Load ring colors from localStorage on mount
+  useEffect(() => {
+    setRingColors(getRingColors())
+  }, [])
+
+  // Create ring data for a bookmark
+  const createRingsData = (bookmark: Bookmark): RingData[] => {
+    return [
+      {
+        id: "visits",
+        label: "Visits",
+        value: bookmark.visitCount || 0,
+        target: 100,
+        color: ringColors.visits,
+      },
+      {
+        id: "tasks",
+        label: "Tasks",
+        value: 0,
+        target: 1,
+        color: ringColors.tasks,
+      },
+      {
+        id: "time",
+        label: "Time",
+        value: 0,
+        target: 60,
+        color: ringColors.time,
+      },
+    ]
+  }
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -148,23 +203,14 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
                 )}
               </div>
 
-              {/* Top Right - Engagement Hexagon Badge */}
-              <div className="absolute top-1.5 right-2.5 z-10">
-                <div className="relative">
-                  <svg width="32" height="36" viewBox="0 0 40 44" className="text-red-500">
-                    <path
-                      d="M20 2 L35 11 L35 29 L20 38 L5 29 L5 11 Z"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-[9px] font-bold text-red-500">
-                      {engagementPct}%
-                    </span>
-                  </div>
-                </div>
+              {/* Top Right - Activity Rings Badge */}
+              <div className="absolute top-1.5 right-2 z-10">
+                <FitnessRings
+                  rings={createRingsData(bookmark)}
+                  size={32}
+                  strokeWidth={3}
+                  animated={false}
+                />
               </div>
 
               {/* Left - Title and URL */}

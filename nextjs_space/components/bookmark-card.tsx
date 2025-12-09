@@ -25,6 +25,9 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { BookmarkDetailModal } from "@/components/bookmark-detail-modal"
+import { FitnessRings, RingData } from "@/components/ui/fitness-rings"
+import { FitnessRingsModal } from "@/components/ui/fitness-rings-modal"
+import { RingColorCustomizer } from "@/components/ui/ring-color-customizer"
 import {
   ExternalLink,
   Edit,
@@ -48,6 +51,37 @@ import { toast } from "sonner"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import type { Bookmark, Category } from "@/types/bookmark"
+
+// Default ring colors
+const DEFAULT_RING_COLORS = {
+  visits: "#EF4444", // Red
+  tasks: "#22C55E",  // Green
+  time: "#06B6D4",   // Cyan
+}
+
+// Local storage key for ring colors
+const RING_COLORS_KEY = "bookmarkhub-ring-colors"
+
+// Get ring colors from localStorage
+function getRingColors(): Record<string, string> {
+  if (typeof window === "undefined") return DEFAULT_RING_COLORS
+  try {
+    const stored = localStorage.getItem(RING_COLORS_KEY)
+    return stored ? { ...DEFAULT_RING_COLORS, ...JSON.parse(stored) } : DEFAULT_RING_COLORS
+  } catch {
+    return DEFAULT_RING_COLORS
+  }
+}
+
+// Save ring colors to localStorage
+function saveRingColors(colors: Record<string, string>) {
+  if (typeof window === "undefined") return
+  try {
+    localStorage.setItem(RING_COLORS_KEY, JSON.stringify(colors))
+  } catch {
+    // Ignore storage errors
+  }
+}
 
 interface BookmarkCardProps {
   bookmark: Bookmark
@@ -86,6 +120,55 @@ export function BookmarkCard({
   const [newCategoryColor, setNewCategoryColor] = useState("#3b82f6")
   const [isCreatingCategory, setIsCreatingCategory] = useState(false)
   const [isEnhancing, setIsEnhancing] = useState(false)
+
+  // Fitness rings state
+  const [showRingsModal, setShowRingsModal] = useState(false)
+  const [showColorCustomizer, setShowColorCustomizer] = useState(false)
+  const [ringColors, setRingColors] = useState<Record<string, string>>(DEFAULT_RING_COLORS)
+
+  // Load ring colors from localStorage on mount
+  useEffect(() => {
+    setRingColors(getRingColors())
+  }, [])
+
+  // Calculate ring data based on bookmark metrics
+  const totalTasks = (bookmark.openTasks || 0) + (bookmark.completedTasks || 0)
+  const taskProgress = totalTasks > 0 ? (bookmark.completedTasks || 0) : 0
+  const taskTarget = totalTasks > 0 ? totalTasks : 1
+
+  // Define targets for each ring (can be customized)
+  const visitTarget = 100 // Target visits
+  const timeTarget = 60  // Target time in minutes
+
+  const ringsData: RingData[] = [
+    {
+      id: "visits",
+      label: "Visits",
+      value: bookmark.totalVisits || 0,
+      target: visitTarget,
+      color: ringColors.visits,
+    },
+    {
+      id: "tasks",
+      label: "Tasks",
+      value: taskProgress,
+      target: taskTarget,
+      color: ringColors.tasks,
+    },
+    {
+      id: "time",
+      label: "Time",
+      value: bookmark.timeSpent || 0,
+      target: timeTarget,
+      color: ringColors.time,
+    },
+  ]
+
+  const handleSaveRingColors = (colors: Record<string, string>) => {
+    setRingColors(colors)
+    saveRingColors(colors)
+    toast.success("Ring colors saved!")
+  }
   
   // Get current category ID from the bookmark's categories array
   const currentCategoryId = bookmark.categories && bookmark.categories.length > 0 
@@ -695,25 +778,19 @@ export function BookmarkCard({
                 </div>
               </div>
 
-              {/* Usage Hexagon */}
+              {/* Activity Rings (Apple Watch style) */}
               <div className="relative flex flex-col items-center">
-                <div className="relative">
-                  <svg width="60" height="60" viewBox="0 0 70 70" className="transform sm:w-[70px] sm:h-[70px]">
-                    <polygon 
-                      points="35,8 58,21 58,49 35,62 12,49 12,21" 
-                      fill="none" 
-                      stroke="#EF4444" 
-                      strokeWidth="2.5"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-base sm:text-lg font-bold text-red-500 font-audiowide">
-                      {bookmark.usagePercentage?.toFixed(0) || 0}%
-                    </span>
-                  </div>
-                </div>
+                <FitnessRings
+                  rings={ringsData}
+                  size={65}
+                  strokeWidth={5}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowRingsModal(true)
+                  }}
+                />
                 <div className="mt-1">
-                  <span className="text-[9px] sm:text-[10px] font-bold text-gray-700 tracking-wider font-audiowide">USAGE</span>
+                  <span className="text-[9px] sm:text-[10px] font-bold text-gray-700 tracking-wider font-audiowide">ACTIVITY</span>
                 </div>
               </div>
             </div>
@@ -993,6 +1070,25 @@ export function BookmarkCard({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Fitness Rings Detail Modal */}
+      <FitnessRingsModal
+        open={showRingsModal}
+        onOpenChange={setShowRingsModal}
+        rings={ringsData}
+        onCustomize={() => {
+          setShowRingsModal(false)
+          setShowColorCustomizer(true)
+        }}
+      />
+
+      {/* Ring Color Customizer Modal */}
+      <RingColorCustomizer
+        open={showColorCustomizer}
+        onOpenChange={setShowColorCustomizer}
+        rings={ringsData}
+        onSave={handleSaveRingColors}
+      />
     </>
   )
 }
