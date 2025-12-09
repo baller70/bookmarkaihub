@@ -4,6 +4,8 @@ import { getDevSession } from "@/lib/dev-auth";
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
+export const dynamic = "force-dynamic"
+
 // GET /api/marketplace/profile/buyer - Get buyer dashboard data
 export async function GET() {
   try {

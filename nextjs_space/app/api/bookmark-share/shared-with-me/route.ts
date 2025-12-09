@@ -4,6 +4,8 @@ import { getDevSession } from '@/lib/dev-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
+export const dynamic = "force-dynamic"
+
 // GET: Fetch all bookmarks shared with the current user
 export async function GET(req: NextRequest) {
   try {
