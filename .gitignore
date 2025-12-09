@@ -18,14 +18,3 @@ out
 .deploy
 .logs
 *.tsbuildinfo
-
-# Environment files (contain secrets)
-.env
-.env.local
-.env.*.local
-nextjs_space/.env
-nextjs_space/.env.local
-nextjs_space/.env.*.local
-
-# Sentry
-*.sentry-wizard*
