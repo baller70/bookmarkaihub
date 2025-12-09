@@ -577,7 +577,7 @@ export function BookmarkCard({
           {/* Main Content Area */}
           <div className="flex-1 min-w-0 p-4 sm:p-6 flex flex-col overflow-hidden">
             {/* Header with logo and title */}
-            <div className="flex items-start space-x-3 sm:space-x-4 mb-3 sm:mb-4 min-w-0 overflow-hidden">
+            <div className="flex items-start space-x-3 sm:space-x-4 mb-3 sm:mb-4 min-w-0 overflow-hidden flex-shrink-0">
               {/* Small Header Logo */}
               <div className="relative w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0 bg-white rounded-[20px] overflow-hidden shadow-lg border-2 border-gray-100">
                 <FallbackImage
@@ -701,7 +701,7 @@ export function BookmarkCard({
             </div>
 
             {/* LARGE CENTERED MIDDLE LOGO */}
-            <div className="flex items-center justify-center my-3 sm:my-4">
+            <div className="flex items-center justify-center my-3 sm:my-4 flex-shrink-0">
               <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-2xl overflow-hidden bg-white shadow-lg p-3">
                 <div className="relative w-full h-full rounded-xl overflow-hidden">
                   <FallbackImage
@@ -717,54 +717,66 @@ export function BookmarkCard({
               </div>
             </div>
 
-            {/* Description */}
-            <p className="text-xs sm:text-sm text-gray-700 mb-4 sm:mb-6 line-clamp-3 min-h-[48px] sm:min-h-[60px] leading-5 font-saira">
+            {/* Description - flexible to absorb extra space */}
+            <p className="text-xs sm:text-sm text-gray-700 mb-4 sm:mb-6 line-clamp-3 min-h-[48px] sm:min-h-[60px] leading-5 font-saira flex-shrink-0">
               {bookmark.description || "No description available"}
             </p>
 
-            {/* Tags */}
-            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-              <Badge 
-                className={cn(
-                  "text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium",
-                  priorityColors[bookmark.priority as keyof typeof priorityColors] || "bg-yellow-100 text-yellow-800"
+            {/* Tags - Fixed height container to prevent overflow */}
+            <div className="h-[36px] sm:h-[40px] overflow-hidden mb-3 sm:mb-4 flex-shrink-0">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2 items-center">
+                <Badge 
+                  className={cn(
+                    "text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium flex-shrink-0",
+                    priorityColors[bookmark.priority as keyof typeof priorityColors] || "bg-yellow-100 text-yellow-800"
+                  )}
+                >
+                  {bookmark.priority?.toLowerCase() || "medium"}
+                </Badge>
+                
+                {/* Category Badge */}
+                {bookmark.categories && bookmark.categories.length > 0 && bookmark.categories[0].category && (
+                  <Badge
+                    className="text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium flex items-center gap-1 flex-shrink-0"
+                    style={{ 
+                      backgroundColor: `${bookmark.categories[0].category.color || '#6B7280'}20`,
+                      color: bookmark.categories[0].category.color || '#6B7280',
+                      border: `1px solid ${bookmark.categories[0].category.color || '#6B7280'}40`
+                    }}
+                  >
+                    <Folder className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                    <span className="max-w-[60px] truncate">{bookmark.categories[0].category.name}</span>
+                  </Badge>
                 )}
-              >
-                {bookmark.priority?.toLowerCase() || "medium"}
-              </Badge>
-              
-              {/* Category Badge */}
-              {bookmark.categories && bookmark.categories.length > 0 && bookmark.categories[0].category && (
-                <Badge
-                  className="text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium flex items-center gap-1"
-                  style={{ 
-                    backgroundColor: `${bookmark.categories[0].category.color || '#6B7280'}20`,
-                    color: bookmark.categories[0].category.color || '#6B7280',
-                    border: `1px solid ${bookmark.categories[0].category.color || '#6B7280'}40`
-                  }}
-                >
-                  <Folder className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                  {bookmark.categories[0].category.name}
-                </Badge>
-              )}
-              
-              {bookmark.tags?.slice(0, 1).map((tag: any) => (
-                <Badge
-                  key={tag.tag.id}
-                  className="text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium"
-                  style={{ 
-                    backgroundColor: `${tag.tag.color}20`,
-                    color: tag.tag.color,
-                    border: "none"
-                  }}
-                >
-                  {tag.tag.name}
-                </Badge>
-              ))}
+                
+                {/* Show first 2 tags max */}
+                {bookmark.tags?.slice(0, 2).map((tag: any) => (
+                  <Badge
+                    key={tag.tag.id}
+                    className="text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium flex-shrink-0"
+                    style={{ 
+                      backgroundColor: `${tag.tag.color}20`,
+                      color: tag.tag.color,
+                      border: "none"
+                    }}
+                  >
+                    <span className="max-w-[50px] truncate">{tag.tag.name}</span>
+                  </Badge>
+                ))}
+                
+                {/* Show +X more indicator if there are additional tags */}
+                {(bookmark.tags?.length || 0) > 2 && (
+                  <Badge
+                    className="text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium bg-gray-100 text-gray-600 flex-shrink-0"
+                  >
+                    +{(bookmark.tags?.length || 0) - 2}
+                  </Badge>
+                )}
+              </div>
             </div>
 
-            {/* Stats Row */}
-            <div className="flex items-start justify-between mb-3 sm:mb-4 min-h-[60px] sm:min-h-[70px]">
+            {/* Stats Row - mt-auto pushes this and everything below to bottom */}
+            <div className="flex items-start justify-between mb-3 sm:mb-4 min-h-[60px] sm:min-h-[70px] mt-auto">
               <div className="flex flex-col space-y-1.5 sm:space-y-2">
                 <div className="flex items-center space-x-1.5 sm:space-x-2 bg-green-50/50 rounded-xl px-2 sm:px-3 py-1 sm:py-1.5">
                   <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600" />
@@ -796,10 +808,10 @@ export function BookmarkCard({
             </div>
 
             {/* Divider Line */}
-            <div className="border-t border-gray-200 mb-2 sm:mb-3"></div>
+            <div className="border-t border-gray-200 mb-2 sm:mb-3 flex-shrink-0"></div>
 
             {/* Task Stats */}
-            <div className="space-y-2 sm:space-y-2.5 mb-2 sm:mb-3">
+            <div className="space-y-2 sm:space-y-2.5 mb-2 sm:mb-3 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <span className="text-xs sm:text-sm font-russo text-slate-800">OPEN TASK</span>
                 <span className="text-xs sm:text-sm text-gray-500 font-saira">TOTAL: {bookmark.openTasks || 0}</span>
@@ -810,8 +822,8 @@ export function BookmarkCard({
               </div>
             </div>
 
-            {/* Progress Section at the bottom */}
-            <div className="py-1.5 sm:py-2 space-y-1.5 sm:space-y-2">
+            {/* Progress Section at the bottom - fixed position */}
+            <div className="py-1.5 sm:py-2 space-y-1.5 sm:space-y-2 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <span className="text-xs sm:text-sm text-gray-500 font-saira uppercase">PROGRESS</span>
                 <span className="text-xs sm:text-sm font-bold text-green-500 font-saira">{progress.toFixed(0)}%</span>
