@@ -47,6 +47,11 @@ export async function getDevSession() {
     }
   }
 
+  // Safety check: ensure devUser exists
+  if (!devUser) {
+    throw new Error('Failed to create or fetch dev user')
+  }
+
   // Ensure dev user has a company
   const company = await prisma.company.findFirst({
     where: { ownerId: devUser.id }
