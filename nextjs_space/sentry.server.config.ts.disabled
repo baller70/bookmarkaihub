@@ -21,9 +21,8 @@ Sentry.init({
   debug: false,
 
   // Capture unhandled promise rejections
-  integrations: [
-    Sentry.prismaIntegration(), // Prisma query tracing
-  ],
+  // Note: Removed prismaIntegration to avoid OpenTelemetry dynamic require warnings
+  integrations: [],
 
   // Filter out specific errors that aren't actionable
   beforeSend(event, hint) {

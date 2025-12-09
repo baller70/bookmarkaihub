@@ -26,14 +26,25 @@ export async function getDevSession() {
 
   // Create dev user if doesn't exist
   if (!devUser) {
-    const bcrypt = require('bcryptjs')
-    devUser = await prisma.user.create({
-      data: {
-        email: 'test@test.com',
-        password: await bcrypt.hash('test123', 10),
-        name: 'Dev User',
+    try {
+      const bcrypt = require('bcryptjs')
+      devUser = await prisma.user.create({
+        data: {
+          email: 'test@test.com',
+          password: await bcrypt.hash('test123', 10),
+          name: 'Dev User',
+        }
+      })
+    } catch (error: any) {
+      // If user already exists (race condition), fetch it
+      if (error.code === 'P2002') {
+        devUser = await prisma.user.findFirst({
+          where: { email: 'test@test.com' }
+        })
+      } else {
+        throw error
       }
-    })
+    }
   }
 
   // Ensure dev user has a company

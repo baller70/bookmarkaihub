@@ -1,6 +1,5 @@
 "use client"
 
-import * as Sentry from "@sentry/nextjs"
 import { useEffect } from "react"
 import { Button } from "@/components/ui/button"
 
@@ -12,8 +11,19 @@ export default function GlobalError({
   reset: () => void
 }) {
   useEffect(() => {
-    // Log the error to Sentry
-    Sentry.captureException(error)
+    // Log the error to console
+    console.error("Global error caught:", error)
+    
+    // Note: Sentry integration has been disabled to avoid build warnings.
+    // To enable Sentry, configure SENTRY_DSN in .env and uncomment the code below.
+    
+    // if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+    //   import("@sentry/nextjs").then((Sentry) => {
+    //     Sentry.captureException(error)
+    //   }).catch((err) => {
+    //     console.error("Failed to load Sentry:", err)
+    //   })
+    // }
   }, [error])
 
   return (
