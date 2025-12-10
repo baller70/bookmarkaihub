@@ -470,7 +470,7 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
         <div
           key={category.id}
           onClick={() => setSelectedCategory(category)}
-          className="group relative bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm hover:border-gray-300 transition-all cursor-pointer"
+          className="group relative bg-white border-2 border-black rounded-lg p-4 hover:shadow-md hover:border-gray-800 transition-all cursor-pointer"
         >
           <div className="flex items-center justify-between gap-4">
             {/* Left: Folder icon with background square + Category info */}

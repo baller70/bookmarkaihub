@@ -145,7 +145,7 @@ model Bookmark {
   // Usage tracking
   totalVisits      Int      @default(0)
   engagementScore  Int      @default(0)
-  timeSpent        Int      @default(0) // in minutes
+  timeSpent        Int      @default(0) // in seconds (for granular tracking)
   usagePercentage  Float    @default(0)
   lastVisited      DateTime?
   

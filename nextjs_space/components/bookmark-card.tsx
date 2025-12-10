@@ -131,6 +131,21 @@ export function BookmarkCard({
     setRingColors(getRingColors())
   }, [])
 
+  // Helper function to format time from seconds to human-readable format
+  const formatTimeSpent = (totalSeconds: number): string => {
+    if (totalSeconds < 60) {
+      return `${totalSeconds}s`
+    } else if (totalSeconds < 3600) {
+      const minutes = Math.floor(totalSeconds / 60)
+      const seconds = totalSeconds % 60
+      return seconds > 0 ? `${minutes}m ${seconds}s` : `${minutes}m`
+    } else {
+      const hours = Math.floor(totalSeconds / 3600)
+      const minutes = Math.floor((totalSeconds % 3600) / 60)
+      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
+    }
+  }
+
   // Calculate ring data based on bookmark metrics
   const totalTasks = (bookmark.openTasks || 0) + (bookmark.completedTasks || 0)
   const taskProgress = totalTasks > 0 ? (bookmark.completedTasks || 0) : 0
@@ -138,7 +153,10 @@ export function BookmarkCard({
 
   // Define targets for each ring (can be customized)
   const visitTarget = 100 // Target visits
-  const timeTarget = 60  // Target time in minutes
+  const timeTarget = 3600  // Target time in seconds (1 hour)
+
+  // Convert timeSpent to minutes for ring display (assuming stored in seconds now)
+  const timeSpentSeconds = bookmark.timeSpent || 0
 
   const ringsData: RingData[] = [
     {
@@ -158,7 +176,7 @@ export function BookmarkCard({
     {
       id: "time",
       label: "Time",
-      value: bookmark.timeSpent || 0,
+      value: timeSpentSeconds,
       target: timeTarget,
       color: ringColors.time,
     },
@@ -722,54 +740,55 @@ export function BookmarkCard({
               {bookmark.description || "No description available"}
             </p>
 
-            {/* Tags - Fixed height container to prevent overflow */}
-            <div className="h-[36px] sm:h-[40px] overflow-hidden mb-3 sm:mb-4 flex-shrink-0">
-              <div className="flex flex-wrap gap-1.5 sm:gap-2 items-center">
-                <Badge 
+            {/* Tags - Single line, no wrap, with overflow control */}
+            <div className="mb-3 sm:mb-4 flex-shrink-0 overflow-hidden">
+              <div className="flex gap-1.5 sm:gap-2 items-center overflow-x-auto scrollbar-hide">
+                {/* Priority Badge - always shown */}
+                <Badge
                   className={cn(
-                    "text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium flex-shrink-0",
+                    "text-[10px] sm:text-xs px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md font-medium flex-shrink-0 whitespace-nowrap",
                     priorityColors[bookmark.priority as keyof typeof priorityColors] || "bg-yellow-100 text-yellow-800"
                   )}
                 >
                   {bookmark.priority?.toLowerCase() || "medium"}
                 </Badge>
-                
-                {/* Category Badge */}
+
+                {/* Category Badge - always shown if exists */}
                 {bookmark.categories && bookmark.categories.length > 0 && bookmark.categories[0].category && (
                   <Badge
-                    className="text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium flex items-center gap-1 flex-shrink-0"
-                    style={{ 
+                    className="text-[10px] sm:text-xs px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md font-medium flex items-center gap-1 flex-shrink-0 whitespace-nowrap"
+                    style={{
                       backgroundColor: `${bookmark.categories[0].category.color || '#6B7280'}20`,
                       color: bookmark.categories[0].category.color || '#6B7280',
                       border: `1px solid ${bookmark.categories[0].category.color || '#6B7280'}40`
                     }}
                   >
-                    <Folder className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                    <span className="max-w-[60px] truncate">{bookmark.categories[0].category.name}</span>
+                    <Folder className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0" />
+                    <span className="max-w-[50px] sm:max-w-[60px] truncate">{bookmark.categories[0].category.name}</span>
                   </Badge>
                 )}
-                
-                {/* Show first 2 tags max */}
-                {bookmark.tags?.slice(0, 2).map((tag: any) => (
+
+                {/* Show only first tag to save space */}
+                {bookmark.tags?.slice(0, 1).map((tag: any) => (
                   <Badge
                     key={tag.tag.id}
-                    className="text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium flex-shrink-0"
-                    style={{ 
+                    className="text-[10px] sm:text-xs px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md font-medium flex-shrink-0 whitespace-nowrap"
+                    style={{
                       backgroundColor: `${tag.tag.color}20`,
                       color: tag.tag.color,
                       border: "none"
                     }}
                   >
-                    <span className="max-w-[50px] truncate">{tag.tag.name}</span>
+                    <span className="max-w-[40px] sm:max-w-[50px] truncate">{tag.tag.name}</span>
                   </Badge>
                 ))}
-                
+
                 {/* Show +X more indicator if there are additional tags */}
-                {(bookmark.tags?.length || 0) > 2 && (
+                {(bookmark.tags?.length || 0) > 1 && (
                   <Badge
-                    className="text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium bg-gray-100 text-gray-600 flex-shrink-0"
+                    className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md font-medium bg-gray-100 text-gray-500 flex-shrink-0 whitespace-nowrap"
                   >
-                    +{(bookmark.tags?.length || 0) - 2}
+                    +{(bookmark.tags?.length || 0) - 1}
                   </Badge>
                 )}
               </div>
@@ -785,7 +804,7 @@ export function BookmarkCard({
                 </div>
                 <div className="flex items-center space-x-1.5 sm:space-x-2 bg-green-50/50 rounded-xl px-2 sm:px-3 py-1 sm:py-1.5">
                   <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-                  <span className="text-sm sm:text-base font-bold text-gray-800 font-russo">{bookmark.timeSpent || 0}m</span>
+                  <span className="text-sm sm:text-base font-bold text-gray-800 font-russo">{formatTimeSpent(bookmark.timeSpent || 0)}</span>
                   <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-green-400" />
                 </div>
               </div>
@@ -850,15 +869,6 @@ export function BookmarkCard({
               title="Toggle Favorite"
             >
               <Heart className={cn("h-3 w-3 sm:h-3.5 sm:w-3.5", isFavorite && "fill-current")} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full hover:bg-blue-50 text-gray-400 hover:text-blue-500 transition-colors touch-target"
-              onClick={handleVisit}
-              title="Visit URL"
-            >
-              <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             </Button>
             <Button
               variant="ghost"

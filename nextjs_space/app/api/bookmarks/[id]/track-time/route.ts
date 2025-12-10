@@ -16,9 +16,11 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { timeSpentMinutes } = await request.json()
+    const body = await request.json()
+    // Support both seconds (new) and minutes (legacy) for backwards compatibility
+    const timeSpentSeconds = body.timeSpentSeconds ?? (body.timeSpentMinutes ? body.timeSpentMinutes * 60 : 0)
 
-    if (typeof timeSpentMinutes !== 'number' || timeSpentMinutes < 0) {
+    if (typeof timeSpentSeconds !== 'number' || timeSpentSeconds < 0) {
       return NextResponse.json({ error: "Invalid time value" }, { status: 400 })
     }
 
@@ -34,21 +36,21 @@ export async function POST(
       return NextResponse.json({ error: "Bookmark not found" }, { status: 404 })
     }
 
-    // Add time spent (round to nearest minute)
-    const roundedTime = Math.round(timeSpentMinutes)
-    
+    // Round to nearest second (minimum 1 second if any time passed)
+    const roundedSeconds = Math.max(Math.round(timeSpentSeconds), timeSpentSeconds > 0 ? 1 : 0)
+
     const bookmark = await prisma.bookmark.update({
       where: { id: params.id },
       data: {
         timeSpent: {
-          increment: roundedTime,
+          increment: roundedSeconds,
         },
       },
     })
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
-      timeSpent: bookmark.timeSpent,
+      timeSpent: bookmark.timeSpent, // Now in seconds
     })
   } catch (error) {
     console.error("Error tracking time:", error)

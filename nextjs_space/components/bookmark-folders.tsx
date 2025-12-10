@@ -170,10 +170,20 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
     }
   };
 
-  const handleFolderClick = (categoryId: string) => {
-    // Don't navigate for uncategorized
-    if (categoryId === 'uncategorized') return;
+  const handleFolderClick = (categoryId: string, e?: React.MouseEvent) => {
+    // Prevent any default behavior and stop propagation if event is provided
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     
+    // Don't navigate for uncategorized
+    if (categoryId === 'uncategorized') {
+      toast.info('This is the uncategorized folder. Bookmarks without a category appear here.');
+      return;
+    }
+    
+    // Navigate to category detail page
     router.push(`/categories/${categoryId}`);
   };
 
@@ -200,8 +210,8 @@ export default function BookmarkFolders({ bookmarks, onUpdate }: { bookmarks: Bo
         {categorizedBookmarks.map(({ category, bookmarks: categoryBookmarks }) => (
           <div
             key={category.id}
-            onClick={() => handleFolderClick(category.id)}
-            className="group relative bg-white border border-black rounded-lg p-6 hover:shadow-md hover:border-gray-900 transition-all cursor-pointer"
+            onClick={(e) => handleFolderClick(category.id, e)}
+            className="group relative bg-white border-2 border-black rounded-lg p-6 hover:shadow-md hover:border-gray-900 transition-all cursor-pointer"
           >
             {/* Three Dot Menu - Top Right */}
             {category.id !== 'uncategorized' && (

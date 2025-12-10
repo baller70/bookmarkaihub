@@ -389,11 +389,10 @@ export function BookmarkDetailModal({
 
     const trackTimeSpent = async () => {
       if (!bookmark?.id || !modalOpenTimeRef.current) return
-      
+
       const now = new Date()
       const timeSpentSeconds = (now.getTime() - modalOpenTimeRef.current.getTime()) / 1000
-      const timeSpentMinutes = timeSpentSeconds / 60
-      
+
       // Only track if at least 1 second has passed
       if (timeSpentSeconds >= 1) {
         try {
@@ -402,12 +401,12 @@ export function BookmarkDetailModal({
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ timeSpentMinutes }),
+            body: JSON.stringify({ timeSpentSeconds }), // Send seconds for granular tracking
           })
-          
+
           if (response.ok) {
             const data = await response.json()
-            setCurrentTimeSpent(data.timeSpent)
+            setCurrentTimeSpent(data.timeSpent) // Now in seconds
             // Update parent to show new time on card
             onUpdate()
           }

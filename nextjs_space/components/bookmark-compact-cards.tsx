@@ -203,11 +203,11 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
                 )}
               </div>
 
-              {/* Top Right - Activity Rings Badge */}
-              <div className="absolute top-1.5 right-2 z-10">
+              {/* Middle Right - Activity Rings Badge (moved from top-right to avoid drag handle conflict) */}
+              <div className="absolute top-1/2 -translate-y-1/2 right-2 z-10">
                 <FitnessRings
                   rings={createRingsData(bookmark)}
-                  size={32}
+                  size={36}
                   strokeWidth={3}
                   animated={false}
                 />

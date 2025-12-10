@@ -561,7 +561,7 @@ export function BookmarkGoals({ bookmarks, onUpdate }: BookmarkGoalsProps) {
           {selectedFolder.goals.map((goal) => (
             <div
               key={goal.id}
-              className="border rounded-lg p-6 hover:shadow-md transition group"
+              className="border-2 border-black rounded-lg p-6 hover:shadow-md transition group bg-white"
             >
               {/* Header */}
               <div className="flex items-start gap-3 mb-4">

@@ -15,6 +15,28 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { BookmarkDetailModal } from './bookmark-detail-modal';
+import { FitnessRings, RingData } from '@/components/ui/fitness-rings';
+
+// Default ring colors
+const DEFAULT_RING_COLORS = {
+  visits: "#EF4444", // Red
+  tasks: "#22C55E",  // Green
+  time: "#06B6D4",   // Cyan
+};
+
+// Local storage key for ring colors
+const RING_COLORS_KEY = "bookmarkhub-ring-colors";
+
+// Get ring colors from localStorage
+function getRingColors(): Record<string, string> {
+  if (typeof window === "undefined") return DEFAULT_RING_COLORS;
+  try {
+    const stored = localStorage.getItem(RING_COLORS_KEY);
+    return stored ? { ...DEFAULT_RING_COLORS, ...JSON.parse(stored) } : DEFAULT_RING_COLORS;
+  } catch {
+    return DEFAULT_RING_COLORS;
+  }
+}
 
 interface Bookmark {
   id: string;
@@ -54,6 +76,39 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
   const [draggedBookmarkId, setDraggedBookmarkId] = useState<string | null>(null);
   const [orderedBookmarks, setOrderedBookmarks] = useState<Bookmark[]>(bookmarks);
+  const [ringColors, setRingColors] = useState<Record<string, string>>(DEFAULT_RING_COLORS);
+
+  // Load ring colors from localStorage on mount
+  useEffect(() => {
+    setRingColors(getRingColors());
+  }, []);
+
+  // Create ring data for a bookmark
+  const createRingsData = (bookmark: Bookmark): RingData[] => {
+    return [
+      {
+        id: "visits",
+        label: "Visits",
+        value: bookmark.visitCount || 0,
+        target: 100,
+        color: ringColors.visits,
+      },
+      {
+        id: "tasks",
+        label: "Tasks",
+        value: 0,
+        target: 1,
+        color: ringColors.tasks,
+      },
+      {
+        id: "time",
+        label: "Time",
+        value: 0,
+        target: 60,
+        color: ringColors.time,
+      },
+    ];
+  };
 
   // Update ordered bookmarks when bookmarks prop changes
   React.useEffect(() => {
@@ -314,8 +369,8 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
 
                       {/* Bookmark Card */}
                       <div
-                        className={`relative rounded-xl p-6 border transition-all duration-300 cursor-move group overflow-hidden hover:scale-[1.02] hover:shadow-2xl hover:border-indigo-400 ${
-                          draggedBookmarkId === bookmark.id ? 'opacity-50 border-blue-500' : 'border-gray-200'
+                        className={`relative rounded-xl p-6 border-2 transition-all duration-300 cursor-move group overflow-hidden hover:scale-[1.02] hover:shadow-2xl hover:border-indigo-400 ${
+                          draggedBookmarkId === bookmark.id ? 'opacity-50 border-blue-500' : 'border-black'
                         } bg-gradient-to-br from-pink-50/30 via-purple-50/20 to-blue-50/30`}
                       >
                         {/* Full Background Faded Logo - Stretched to Cover Every Inch */}
@@ -454,6 +509,21 @@ export function BookmarkTimeline({ bookmarks, onUpdate }: BookmarkTimelineProps)
                                 {bookmark.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
                               </a>
                             </div>
+                          </div>
+                        </div>
+
+                        {/* Fitness Rings - Lower Right Corner */}
+                        <div className="absolute bottom-4 right-4 z-10">
+                          <div className="bg-white/90 rounded-full p-2 shadow-lg border border-gray-200">
+                            <FitnessRings
+                              rings={createRingsData(bookmark)}
+                              size={70}
+                              strokeWidth={5}
+                              animated={false}
+                            />
+                          </div>
+                          <div className="text-center mt-1">
+                            <span className="text-[9px] font-bold text-gray-600 tracking-wider uppercase">Activity</span>
                           </div>
                         </div>
                       </div>
