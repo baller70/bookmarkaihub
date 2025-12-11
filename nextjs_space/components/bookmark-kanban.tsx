@@ -311,14 +311,28 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   });
 
   const existingIds = new Set(cards.map((c) => c.id));
-  const addableBookmarks = bookmarks
+  const [addCardPage, setAddCardPage] = useState(1);
+  const ITEMS_PER_PAGE = 20;
+  
+  const allAddableBookmarks = bookmarks
     .filter((b) => !existingIds.has(b.id))
     .filter((b) => {
       const q = addMenuQuery.trim().toLowerCase();
       if (!q) return true;
       return `${b.title || ''} ${b.description || ''}`.toLowerCase().includes(q);
-    })
-    .slice(0, 12);
+    });
+  
+  const totalAddableCount = allAddableBookmarks.length;
+  const totalPages = Math.ceil(totalAddableCount / ITEMS_PER_PAGE);
+  const addableBookmarks = allAddableBookmarks.slice(
+    (addCardPage - 1) * ITEMS_PER_PAGE,
+    addCardPage * ITEMS_PER_PAGE
+  );
+  
+  // Reset page when search changes
+  useEffect(() => {
+    setAddCardPage(1);
+  }, [addMenuQuery]);
 
   const handleSelectAddCard = (bookmark: any) => {
     setSelectedAddIds((prev) => {
@@ -545,7 +559,13 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
       </Dialog>
 
       {/* Add Card Dialog */}
-      <Dialog open={showAddMenu} onOpenChange={setShowAddMenu}>
+      <Dialog open={showAddMenu} onOpenChange={(open) => {
+        setShowAddMenu(open);
+        if (!open) {
+          setAddCardPage(1);
+          setAddMenuQuery('');
+        }
+      }}>
         <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -553,7 +573,7 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
               Add Cards to Board
             </DialogTitle>
             <DialogDescription>
-              Select bookmarks to add as cards to your Kanban board.
+              {totalAddableCount} bookmark{totalAddableCount !== 1 ? 's' : ''} available to add to your Kanban board.
             </DialogDescription>
           </DialogHeader>
           <div className="relative">
@@ -565,15 +585,24 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
               className="pl-10"
             />
           </div>
-          <div className="flex-1 overflow-y-auto min-h-0 -mx-6 px-6">
+          {/* Stats bar */}
+          <div className="flex items-center justify-between text-xs text-muted-foreground bg-gray-50 rounded-lg px-3 py-2">
+            <span>
+              Showing {addableBookmarks.length > 0 ? ((addCardPage - 1) * ITEMS_PER_PAGE) + 1 : 0}-{Math.min(addCardPage * ITEMS_PER_PAGE, totalAddableCount)} of {totalAddableCount}
+            </span>
+            <span className="font-medium text-primary">{selectedAddIds.size} selected</span>
+          </div>
+          <div className="flex-1 overflow-y-auto min-h-0 -mx-6 px-6" style={{ maxHeight: '400px' }}>
             {addableBookmarks.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <LayoutGrid className="w-12 h-12 text-muted-foreground/50 mb-3" />
-                <p className="text-sm text-muted-foreground">No bookmarks available to add</p>
+                <p className="text-sm text-muted-foreground">
+                  {addMenuQuery ? 'No bookmarks match your search' : 'No bookmarks available to add'}
+                </p>
               </div>
             ) : (
               <div className="space-y-2 py-2">
-                {addableBookmarks.map((b) => (
+                {addableBookmarks.map((b, index) => (
                   <label
                     key={b.id}
                     className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
@@ -587,6 +616,9 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                       onCheckedChange={() => handleSelectAddCard(b)}
                       className="mt-0.5"
                     />
+                    <span className="text-xs text-muted-foreground w-6 mt-1">
+                      {((addCardPage - 1) * ITEMS_PER_PAGE) + index + 1}
+                    </span>
                     <div className="flex items-start gap-3 flex-1 min-w-0">
                       <div className="relative w-10 h-10 rounded-md overflow-hidden bg-gray-100 border flex-shrink-0">
                         <Image
@@ -607,16 +639,97 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
               </div>
             )}
           </div>
-          <div className="flex items-center justify-between pt-4 border-t">
-            <span className="text-sm text-muted-foreground">
-              {selectedAddIds.size} bookmark{selectedAddIds.size !== 1 ? 's' : ''} selected
-            </span>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 py-3 border-t border-b">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setAddCardPage(1)}
+                disabled={addCardPage === 1}
+              >
+                First
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setAddCardPage((p) => Math.max(1, p - 1))}
+                disabled={addCardPage === 1}
+              >
+                Previous
+              </Button>
+              <div className="flex items-center gap-1 px-2">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (addCardPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (addCardPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = addCardPage - 2 + i;
+                  }
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setAddCardPage(pageNum)}
+                      className={`w-8 h-8 rounded-md text-sm font-medium transition-colors ${
+                        addCardPage === pageNum
+                          ? 'bg-primary text-white'
+                          : 'hover:bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setAddCardPage((p) => Math.min(totalPages, p + 1))}
+                disabled={addCardPage === totalPages}
+              >
+                Next
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setAddCardPage(totalPages)}
+                disabled={addCardPage === totalPages}
+              >
+                Last
+              </Button>
+            </div>
+          )}
+          <div className="flex items-center justify-between pt-3">
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setSelectedAddIds(new Set())}
+                disabled={selectedAddIds.size === 0}
+              >
+                Clear Selection
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => {
+                  const allIds = new Set(allAddableBookmarks.map(b => b.id));
+                  setSelectedAddIds(allIds);
+                }}
+              >
+                Select All ({totalAddableCount})
+              </Button>
+            </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setShowAddMenu(false)}>
                 Cancel
               </Button>
               <Button onClick={handleAddSelectedCards} disabled={selectedAddIds.size === 0}>
-                Add to Board
+                Add {selectedAddIds.size > 0 ? `(${selectedAddIds.size})` : ''} to Board
               </Button>
             </div>
           </div>
