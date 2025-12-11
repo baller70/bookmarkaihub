@@ -316,7 +316,6 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
     setShowAddMenu(false);
     setSelectedAddIds(new Set());
   };
-  };
 
   const toggleSetting = (setter: (val: boolean | ((v: boolean) => boolean)) => void) => {
     setter((prev: boolean) => !prev);
