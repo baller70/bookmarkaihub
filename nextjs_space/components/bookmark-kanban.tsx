@@ -109,6 +109,15 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   const [cardPositions, setCardPositions] = useState<Record<string, string>>({});
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string>('');
+  const [showAddMenu, setShowAddMenu] = useState(false);
+  const [addMenuQuery, setAddMenuQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [filterPriorities, setFilterPriorities] = useState<Set<string>>(new Set());
+  const [filterStatuses, setFilterStatuses] = useState<Set<string>>(new Set());
+  const [showProgressBar, setShowProgressBar] = useState(true);
+  const [showTags, setShowTags] = useState(true);
+  const [compactCards, setCompactCards] = useState(false);
 
   const getInitialStatusForBookmark = (bookmark: any) => {
     if (bookmark.priority === 'HIGH' || bookmark.priority === 'URGENT') {
@@ -160,20 +169,8 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   };
 
   const handleAddCard = () => {
-    const newId = `card-${Date.now()}`;
-    const newCard = {
-      id: newId,
-      title: 'New Card',
-      description: 'Describe this card...',
-      priority: 'MEDIUM',
-      tags: [],
-      favicon: '/favicon.svg',
-      isFavorite: false,
-      visitCount: 0,
-    };
-    setCards((prev) => [...prev, newCard]);
-    setCardPositions((prev) => ({ ...prev, [newId]: 'BACKLOG' }));
-    setActionMessage('Added a new card to Backlog');
+    setShowAddMenu((prev) => !prev);
+    setActionMessage(showAddMenu ? '' : 'Select a card to add');
   };
 
   const handleAddColumn = (rowId: string) => {
@@ -198,7 +195,8 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   };
 
   const handleSettings = () => {
-    setActionMessage('Settings clicked – add settings panel here.');
+    setShowSettings((prev) => !prev);
+    setActionMessage(showSettings ? '' : 'Settings opened');
   };
 
   const handleColumnMenuClick = (rowId: string, columnId: string) => {
@@ -209,8 +207,69 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
     setActionMessage(`Actions menu clicked for ${bookmarkId}`);
   };
 
+  const togglePriorityFilter = (priority: string) => {
+    setFilterPriorities((prev) => {
+      const next = new Set(prev);
+      if (next.has(priority)) {
+        next.delete(priority);
+      } else {
+        next.add(priority);
+      }
+      return next;
+    });
+  };
+
+  const toggleStatusFilter = (status: string) => {
+    setFilterStatuses((prev) => {
+      const next = new Set(prev);
+      if (next.has(status)) {
+        next.delete(status);
+      } else {
+        next.add(status);
+      }
+      return next;
+    });
+  };
+
+  const filteredCards = cards.filter((card) => {
+    const query = searchQuery.trim().toLowerCase();
+    if (query) {
+      const haystack = `${card.title || ''} ${card.description || ''} ${card.tags?.map((t: any) => t.tag?.name || t.name || '').join(' ')}`.toLowerCase();
+      if (!haystack.includes(query)) return false;
+    }
+    if (filterPriorities.size && card.priority && !filterPriorities.has(card.priority.toUpperCase())) {
+      return false;
+    }
+    const status = cardPositions[card.id] || getInitialStatusForBookmark(card);
+    if (filterStatuses.size && !filterStatuses.has(status)) {
+      return false;
+    }
+    return true;
+  });
+
+  const existingIds = new Set(cards.map((c) => c.id));
+  const addableBookmarks = bookmarks
+    .filter((b) => !existingIds.has(b.id))
+    .filter((b) => {
+      const q = addMenuQuery.trim().toLowerCase();
+      if (!q) return true;
+      return `${b.title || ''} ${b.description || ''}`.toLowerCase().includes(q);
+    })
+    .slice(0, 12);
+
+  const handleSelectAddCard = (bookmark: any) => {
+    setCards((prev) => [...prev, bookmark]);
+    setCardPositions((prev) => ({ ...prev, [bookmark.id]: 'BACKLOG' }));
+    setActionMessage(`Added "${bookmark.title}" to Backlog`);
+    setShowAddMenu(false);
+  };
+
+  const toggleSetting = (setter: (val: boolean | ((v: boolean) => boolean)) => void) => {
+    setter((prev: boolean) => !prev);
+  };
+
   // Group bookmarks by column
-  const groupedBookmarks = cards.reduce((groups: any, bookmark: any) => {
+  const groupedBookmarks = filteredCards.reduce((groups: any, bookmark: any) => {
     const status = cardPositions[bookmark.id] || getInitialStatusForBookmark(bookmark);
     if (!groups[status]) {
       groups[status] = [];
@@ -292,7 +351,7 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2.5 justify-end overflow-x-auto">
-          <Button variant="outline" size="sm" className="flex-shrink-0 h-10 px-3" onClick={handleFilter}>
+          <Button variant="outline" size="sm" className="flex-shrink-0 h-10 px-3" onClick={() => setShowFilters((p) => !p)}>
             <Filter className="w-4 h-4 sm:mr-2" />
             <span className="hidden sm:inline">Filter</span>
           </Button>
@@ -310,6 +369,101 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
       {actionMessage && (
         <div className="px-2 text-xs sm:text-sm text-muted-foreground">
           {actionMessage}
+        </div>
+      )}
+
+      {/* Filters Panel */}
+      {showFilters && (
+        <div className="px-2">
+          <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
+            <div className="text-xs font-semibold text-muted-foreground">Filters</div>
+            <div className="flex flex-wrap gap-2">
+              {['LOW', 'MEDIUM', 'HIGH', 'URGENT'].map((p) => (
+                <button
+                  key={p}
+                  onClick={() => togglePriorityFilter(p)}
+                  className={`text-xs px-2 py-1 rounded border ${
+                    filterPriorities.has(p) ? 'bg-primary text-white border-primary' : 'bg-white'
+                  }`}
+                >
+                  Priority: {p}
+                </button>
+              ))}
+              {['BACKLOG', 'TODO', 'IN_PROGRESS'].map((s) => (
+                <button
+                  key={s}
+                  onClick={() => toggleStatusFilter(s)}
+                  className={`text-xs px-2 py-1 rounded border ${
+                    filterStatuses.has(s) ? 'bg-primary text-white border-primary' : 'bg-white'
+                  }`}
+                >
+                  Status: {s.replace('_', ' ')}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Card Panel */}
+      {showAddMenu && (
+        <div className="px-2">
+          <div className="rounded-lg border bg-white p-3 space-y-2 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="text-xs font-semibold text-muted-foreground">Add a bookmarked card</div>
+              <Button size="sm" variant="ghost" onClick={() => setShowAddMenu(false)}>Close</Button>
+            </div>
+            <Input
+              placeholder="Search bookmarks..."
+              value={addMenuQuery}
+              onChange={(e) => setAddMenuQuery(e.target.value)}
+              className="h-9 text-sm"
+            />
+            <div className="max-h-64 overflow-y-auto space-y-2">
+              {addableBookmarks.length === 0 ? (
+                <div className="text-xs text-muted-foreground px-1 py-2">No bookmarks available</div>
+              ) : (
+                addableBookmarks.map((b) => (
+                  <div key={b.id} className="flex items-center justify-between gap-2 border rounded-md px-2 py-2">
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium truncate">{b.title}</div>
+                      <div className="text-xs text-muted-foreground truncate">{b.description}</div>
+                    </div>
+                    <Button size="sm" onClick={() => handleSelectAddCard(b)}>Add</Button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Panel */}
+      {showSettings && (
+        <div className="px-2">
+          <div className="rounded-lg border bg-white p-3 space-y-2 shadow-sm">
+            <div className="text-xs font-semibold text-muted-foreground">Kanban Settings</div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                className={`text-xs px-2 py-1 rounded border ${showProgressBar ? 'bg-primary text-white border-primary' : 'bg-white'}`}
+                onClick={() => toggleSetting(setShowProgressBar)}
+              >
+                Toggle Progress Bar
+              </button>
+              <button
+                className={`text-xs px-2 py-1 rounded border ${showTags ? 'bg-primary text-white border-primary' : 'bg-white'}`}
+                onClick={() => toggleSetting(setShowTags)}
+              >
+                Toggle Tags
+              </button>
+              <button
+                className={`text-xs px-2 py-1 rounded border ${compactCards ? 'bg-primary text-white border-primary' : 'bg-white'}`}
+                onClick={() => toggleSetting(setCompactCards)}
+              >
+                Compact Cards
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
