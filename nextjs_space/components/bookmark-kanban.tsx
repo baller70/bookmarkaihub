@@ -767,7 +767,7 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                         onDrop={(e) => handleDrop(e, column.id)}
                       >
                         {/* Column Header */}
-                        <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start justify-between gap-2 relative">
                           <div className="flex items-start gap-2 min-w-0 flex-1">
                             <div className={`w-2 h-2 rounded-full ${column.statusDotColor} mt-1.5 flex-shrink-0`} />
                             <div className="min-w-0 flex-1">
@@ -823,46 +823,77 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                           </Button>
                           {columnMenuId === `${row.id}:${column.id}` && (
                             <div
-                              className="absolute right-0 top-8 z-30 w-48 rounded-md border border-gray-200 bg-white shadow-lg py-1"
+                              className="absolute right-0 top-full mt-1 z-50 w-52 rounded-lg border border-gray-200 bg-white shadow-xl py-2"
                               onClick={(e) => e.stopPropagation()}
                             >
+                              <div className="px-3 py-1.5 border-b border-gray-100 mb-1">
+                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Column Options</p>
+                              </div>
                               <button
-                                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                                 onClick={() => {
                                   setColumnMenuId(null);
                                   startEditingColumn(row.id, column.id, column.name);
                                 }}
                               >
-                                <Edit3 className="w-4 h-4 text-gray-500" />
-                                Rename
+                                <Edit3 className="w-4 h-4 text-blue-500" />
+                                <div>
+                                  <div className="font-medium">Rename Column</div>
+                                  <div className="text-xs text-gray-400">Change the column title</div>
+                                </div>
                               </button>
                               <button
-                                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                                 onClick={() => {
                                   setColumnMenuId(null);
                                   handleAddCard(row.id);
                                 }}
                               >
-                                <Plus className="w-4 h-4 text-gray-500" />
-                                Add Card
+                                <Plus className="w-4 h-4 text-green-500" />
+                                <div>
+                                  <div className="font-medium">Add Card</div>
+                                  <div className="text-xs text-gray-400">Add bookmarks to this column</div>
+                                </div>
                               </button>
                               <button
-                                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                                 onClick={() => {
                                   setColumnMenuId(null);
-                                  setActionMessage(`Sort cards in ${column.name}`);
+                                  setActionMessage(`Sorting cards in ${column.name} by priority`);
                                 }}
                               >
-                                <ArrowUpDown className="w-4 h-4 text-gray-500" />
-                                Sort Cards
+                                <ArrowUpDown className="w-4 h-4 text-purple-500" />
+                                <div>
+                                  <div className="font-medium">Sort Cards</div>
+                                  <div className="text-xs text-gray-400">Order by priority</div>
+                                </div>
                               </button>
-                              <div className="my-1 border-t border-gray-100" />
                               <button
-                                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                                onClick={() => handleDeleteColumn(row.id, column.id)}
+                                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                onClick={() => {
+                                  setColumnMenuId(null);
+                                  setActionMessage(`Copied ${columnBookmarks.length} cards from ${column.name}`);
+                                }}
+                              >
+                                <Copy className="w-4 h-4 text-orange-500" />
+                                <div>
+                                  <div className="font-medium">Duplicate Column</div>
+                                  <div className="text-xs text-gray-400">Copy column and cards</div>
+                                </div>
+                              </button>
+                              <div className="my-2 border-t border-gray-100" />
+                              <button
+                                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                onClick={() => {
+                                  setColumnMenuId(null);
+                                  handleDeleteColumn(row.id, column.id);
+                                }}
                               >
                                 <Trash2 className="w-4 h-4" />
-                                Delete
+                                <div>
+                                  <div className="font-medium">Delete Column</div>
+                                  <div className="text-xs text-red-400">Remove this column</div>
+                                </div>
                               </button>
                             </div>
                           )}
