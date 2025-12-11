@@ -149,20 +149,22 @@ export default function DnaProfilePage() {
                 </CardContent>
               </Card>
 
-              {/* Progress */}
-              <Card className="bg-white border shadow-sm">
-                <CardHeader className="pb-4">
-                  <h3 className="text-base font-semibold text-black uppercase">PROGRESS</h3>
-                </CardHeader>
-                <CardContent className="space-y-4 pb-6">
-                  <div className="space-y-2">
-                    <Progress value={progressPercentage} className="h-2 bg-gray-200" />
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    Complete all sections for better AI recommendations
-                  </p>
-                </CardContent>
-              </Card>
+              {/* Progress - Only show for About You section */}
+              {activeSection === 'about-you' && (
+                <Card className="bg-white border shadow-sm">
+                  <CardHeader className="pb-4">
+                    <h3 className="text-base font-semibold text-black uppercase">PROGRESS</h3>
+                  </CardHeader>
+                  <CardContent className="space-y-4 pb-6">
+                    <div className="space-y-2">
+                      <Progress value={progressPercentage} className="h-2 bg-gray-200" />
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      Complete all sections for better AI recommendations
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             {/* Main content area */}

@@ -194,7 +194,7 @@ export function AnalyticsContent({ showTitle = true }: AnalyticsContentProps) {
           {activeTab === 'timeTracking' && <TimeTrackingTab data={analyticsData} />}
           {activeTab === 'insights' && <InsightsTab data={analyticsData} />}
           {activeTab === 'categories' && <CategoriesTab data={analyticsData} />}
-          {activeTab === 'projects' && <ProjectsTab />}
+          {activeTab === 'projects' && <ProjectsTab data={analyticsData} />}
           {activeTab === 'recommendations' && <RecommendationsTab data={analyticsData} />}
         </CardContent>
       </Card>
@@ -861,67 +861,51 @@ function CategoriesTab({ data }: { data: AnalyticsData | null }) {
   )
 }
 
-// Projects Tab Component
-function ProjectsTab() {
-  const activeProjects = [
-    { 
-      name: 'Website Redesign', 
-      bookmarks: 28, 
-      hours: 42.5, 
-      progress: 75, 
-      team: 4,
-      deadline: '2 weeks',
-      status: 'On Track',
-      color: 'bg-blue-500'
-    },
-    { 
-      name: 'Mobile App Development', 
-      bookmarks: 35, 
-      hours: 38.2, 
-      progress: 60, 
-      team: 6,
-      deadline: '1 month',
-      status: 'On Track',
-      color: 'bg-green-500'
-    },
-    { 
-      name: 'Marketing Campaign', 
-      bookmarks: 18, 
-      hours: 22.8, 
-      progress: 45, 
-      team: 3,
-      deadline: '3 weeks',
-      status: 'At Risk',
-      color: 'bg-orange-500'
-    },
-    { 
-      name: 'Data Analytics Platform', 
-      bookmarks: 42, 
-      hours: 56.3, 
-      progress: 30, 
-      team: 5,
-      deadline: '2 months',
-      status: 'Behind',
-      color: 'bg-red-500'
-    },
-    { 
-      name: 'API Integration', 
-      bookmarks: 22, 
-      hours: 28.5, 
-      progress: 85, 
-      team: 3,
-      deadline: '1 week',
-      status: 'On Track',
-      color: 'bg-purple-500'
-    },
-  ]
+// Projects Tab Component - Uses real category data as "projects"
+function ProjectsTab({ data }: { data: AnalyticsData | null }) {
+  // Derive projects from top categories
+  const activeProjects = data?.categoryStats?.slice(0, 5).map((cat, index) => {
+    const avgTimePerBookmark = cat.bookmarks > 0 ? (cat.timeSpent / cat.bookmarks) : 0
+    const efficiency = cat.visits > 0 ? Math.min(Math.round((cat.visits / cat.bookmarks) * 10), 100) : 0
+    const statuses = ['On Track', 'On Track', 'At Risk', 'Behind', 'On Track']
+    const deadlines = ['1 week', '2 weeks', '3 weeks', '1 month', '2 months']
+    
+    return {
+      name: cat.name,
+      bookmarks: cat.bookmarks,
+      hours: (cat.timeSpent / 60).toFixed(1),
+      progress: efficiency,
+      team: Math.max(1, Math.floor(cat.bookmarks / 10)),
+      deadline: deadlines[index % deadlines.length],
+      status: efficiency > 60 ? 'On Track' : efficiency > 30 ? 'At Risk' : 'Behind',
+      color: cat.color || '#3B82F6'
+    }
+  }) || []
 
-  const resourceAllocation = [
-    { category: 'Development', hours: 156, percentage: 42, bookmarks: 128 },
-    { category: 'Design', hours: 98, percentage: 26, bookmarks: 82 },
-    { category: 'Research', hours: 72, percentage: 19, bookmarks: 64 },
-    { category: 'Planning', hours: 48, percentage: 13, bookmarks: 38 },
-  ]
+  // Resource allocation from category stats
+  const totalHours = data?.categoryStats?.reduce((sum, cat) => sum + (cat.timeSpent / 60), 0) || 0
+  const totalBookmarks = data?.categoryStats?.reduce((sum, cat) => sum + cat.bookmarks, 0) || 0
+  
+  const resourceAllocation = data?.categoryStats?.slice(0, 4).map(cat => ({
+    category: cat.name,
+    hours: Math.round(cat.timeSpent / 60),
+    percentage: totalHours > 0 ? Math.round((cat.timeSpent / 60 / totalHours) * 100) : 0,
+    bookmarks: cat.bookmarks
+  })) || []
+
+  if (!data || activeProjects.length === 0) {
+    return (
+      <div className="text-center py-16">
+        <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+          <Users className="w-8 h-8 text-gray-400" />
+        </div>
+        <h3 className="text-lg font-semibold mb-2 text-gray-900">NO PROJECT DATA YET</h3>
+        <p className="text-gray-600 max-w-md mx-auto">
+          Start organizing your bookmarks into categories to see project analytics here.
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
