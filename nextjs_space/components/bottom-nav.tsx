@@ -49,7 +49,7 @@ export function BottomNav() {
   }
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 safe-area-bottom">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700 safe-area-bottom">
       <nav className="flex items-center justify-around px-2 py-2.5">
         {navigation.map((item) => {
           const isActive = pathname === item.href
@@ -60,13 +60,13 @@ export function BottomNav() {
               className={cn(
                 "flex flex-col items-center justify-center min-w-[60px] max-w-[76px] flex-1 py-2.5 px-1.5 rounded-lg transition-all touch-target",
                 isActive
-                  ? "text-blue-600 bg-blue-50"
-                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30"
+                  : "text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-slate-800"
               )}
             >
               <item.icon className={cn(
                 "h-5 w-5 mb-1.5 flex-shrink-0",
-                isActive && "text-blue-600"
+                isActive && "text-blue-600 dark:text-blue-400"
               )} />
               <span className="text-[10px] font-medium truncate w-full text-center leading-normal">
                 {item.name}
@@ -77,7 +77,7 @@ export function BottomNav() {
         {/* Logout Button */}
         <button
           onClick={handleLogout}
-          className="flex flex-col items-center justify-center min-w-[60px] max-w-[76px] flex-1 py-2.5 px-1.5 rounded-lg transition-all touch-target text-red-600 hover:text-red-700 hover:bg-red-50"
+          className="flex flex-col items-center justify-center min-w-[60px] max-w-[76px] flex-1 py-2.5 px-1.5 rounded-lg transition-all touch-target text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
         >
           <LogOut className="h-5 w-5 mb-1.5 flex-shrink-0" />
           <span className="text-[10px] font-medium truncate w-full text-center leading-normal">

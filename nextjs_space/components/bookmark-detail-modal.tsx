@@ -72,15 +72,21 @@ import { MediaTool } from "@/components/media-tool"
 import { CommentsTool } from "@/components/comments-tool"
 import { AddRelatedBookmarksModal } from "@/components/add-related-bookmarks-modal"
 import { AddGoalsModal } from "@/components/add-goals-modal"
-// NEW TOOLS - Phase 1 & 2
-import { ReadingProgressTool } from "@/components/reading-progress-tool"
-import { CodeSnippetsTool } from "@/components/code-snippets-tool"
-import { HighlightsTool } from "@/components/highlights-tool"
+// NEW TOOLS - Complete 22 Tool System
 import { AISummaryTool } from "@/components/ai-summary-tool"
-import { VersionMonitorTool } from "@/components/version-monitor-tool"
-import { PriceTrackerTool } from "@/components/price-tracker-tool"
-import { RelatedResourcesTool } from "@/components/related-resources-tool"
-import { BookmarkShareTool } from "@/components/bookmark-share-tool"
+// New 12 tools
+import { MindMapTool } from "@/components/mind-map-tool"
+import { VisionBoardTool } from "@/components/vision-board-tool"
+import { ESignaturesTool } from "@/components/e-signatures-tool"
+import { RemindersTool } from "@/components/reminders-tool"
+import { FileLockerTool } from "@/components/file-locker-tool"
+import { CalendarTool } from "@/components/calendar-tool"
+import { ContactsTool } from "@/components/contacts-tool"
+import { ChecklistsTool } from "@/components/checklists-tool"
+import { TimeTrackingTool } from "@/components/time-tracking-tool"
+import { LinksHubTool } from "@/components/links-hub-tool"
+import { ExportTool } from "@/components/export-tool"
+import { SharingTool } from "@/components/sharing-tool"
 
 interface BookmarkDetailModalProps {
   bookmark: any
@@ -1590,24 +1596,10 @@ export function BookmarkDetailModal({
             <HabitsTool bookmarkId={bookmark.id} />
           </TabsContent>
 
-          {/* NEW TOOLS - Phase 1 & 2 */}
-          {/* READING PROGRESS TAB */}
-          <TabsContent value="reading-progress" className="p-4 sm:p-6 bg-white mt-0">
-            <ReadingProgressTool bookmarkId={bookmark.id} />
-          </TabsContent>
-
-          {/* CODE SNIPPETS TAB */}
-          <TabsContent value="code-snippets" className="p-4 sm:p-6 bg-white mt-0">
-            <CodeSnippetsTool bookmarkId={bookmark.id} />
-          </TabsContent>
-
-          {/* WEB HIGHLIGHTS TAB */}
-          <TabsContent value="highlights" className="p-4 sm:p-6 bg-white mt-0">
-            <HighlightsTool bookmarkId={bookmark.id} />
-          </TabsContent>
-
+          {/* ===== NEW 22 TOOL SYSTEM ===== */}
+          
           {/* AI SUMMARY TAB */}
-          <TabsContent value="ai-summary" className="p-4 sm:p-6 bg-white mt-0">
+          <TabsContent value="ai-summary" className="p-0 bg-white mt-0">
             <AISummaryTool 
               bookmarkId={bookmark.id} 
               bookmarkTitle={bookmark.title}
@@ -1615,24 +1607,69 @@ export function BookmarkDetailModal({
             />
           </TabsContent>
 
-          {/* VERSION MONITOR TAB */}
-          <TabsContent value="version-monitor" className="p-4 sm:p-6 bg-white mt-0">
-            <VersionMonitorTool bookmarkId={bookmark.id} />
+          {/* TIME TRACKING TAB */}
+          <TabsContent value="time-tracking" className="p-0 bg-white mt-0">
+            <TimeTrackingTool bookmarkId={bookmark.id} />
           </TabsContent>
 
-          {/* PRICE TRACKER TAB */}
-          <TabsContent value="price-tracker" className="p-4 sm:p-6 bg-white mt-0">
-            <PriceTrackerTool bookmarkId={bookmark.id} />
+          {/* E-SIGNATURES TAB */}
+          <TabsContent value="e-signatures" className="p-0 bg-white mt-0">
+            <ESignaturesTool bookmarkId={bookmark.id} />
           </TabsContent>
 
-          {/* RELATED RESOURCES TAB */}
-          <TabsContent value="related-resources" className="p-4 sm:p-6 bg-white mt-0">
-            <RelatedResourcesTool bookmarkId={bookmark.id} />
+          {/* MIND MAP TAB */}
+          <TabsContent value="mind-map" className="p-0 bg-white mt-0 h-[500px]">
+            <MindMapTool bookmarkId={bookmark.id} />
           </TabsContent>
 
-          {/* BOOKMARK SHARING TAB */}
-          <TabsContent value="bookmark-share" className="p-4 sm:p-6 bg-white mt-0">
-            <BookmarkShareTool bookmarkId={bookmark.id} />
+          {/* VISION BOARD TAB */}
+          <TabsContent value="vision-board" className="p-0 bg-white mt-0 h-[500px]">
+            <VisionBoardTool bookmarkId={bookmark.id} />
+          </TabsContent>
+
+          {/* REMINDERS TAB */}
+          <TabsContent value="reminders" className="p-0 bg-white mt-0">
+            <RemindersTool bookmarkId={bookmark.id} />
+          </TabsContent>
+
+          {/* FILE LOCKER TAB */}
+          <TabsContent value="file-locker" className="p-0 bg-white mt-0 h-[500px]">
+            <FileLockerTool bookmarkId={bookmark.id} />
+          </TabsContent>
+
+          {/* CALENDAR TAB */}
+          <TabsContent value="calendar" className="p-0 bg-white mt-0 h-[500px]">
+            <CalendarTool bookmarkId={bookmark.id} />
+          </TabsContent>
+
+          {/* CONTACTS TAB */}
+          <TabsContent value="contacts" className="p-0 bg-white mt-0">
+            <ContactsTool bookmarkId={bookmark.id} />
+          </TabsContent>
+
+          {/* CHECKLISTS TAB */}
+          <TabsContent value="checklists" className="p-0 bg-white mt-0 h-[500px]">
+            <ChecklistsTool bookmarkId={bookmark.id} />
+          </TabsContent>
+
+          {/* SHARING TAB */}
+          <TabsContent value="sharing" className="p-0 bg-white mt-0">
+            <SharingTool bookmarkId={bookmark.id} bookmarkTitle={bookmark.title} />
+          </TabsContent>
+
+          {/* LINKS HUB TAB */}
+          <TabsContent value="links-hub" className="p-0 bg-white mt-0">
+            <LinksHubTool bookmarkId={bookmark.id} />
+          </TabsContent>
+
+          {/* EXPORT TAB */}
+          <TabsContent value="export" className="p-0 bg-white mt-0">
+            <ExportTool bookmarkId={bookmark.id} bookmarkTitle={bookmark.title} />
+          </TabsContent>
+
+          {/* TO-DO LISTS TAB (renamed from lists) */}
+          <TabsContent value="todo-lists" className="p-0 bg-white mt-0">
+            <ListsTab bookmarkId={bookmark.id} />
           </TabsContent>
         </Tabs>
 

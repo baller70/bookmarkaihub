@@ -1,5 +1,7 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Saira:ital,wght@0,100..900;1,100..900&family=Audiowide&display=swap');
+/* OpenDyslexic font for dyslexia-friendly mode */
+@import url('https://fonts.cdnfonts.com/css/opendyslexic');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -27,21 +29,26 @@
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
     
-    /* Dotted background pattern */
-    --pattern-dots: radial-gradient(circle, #d1d5db 1.5px, transparent 0);
-    --pattern-grid: linear-gradient(90deg, #e5e7eb 1px, transparent 0), linear-gradient(180deg, #e5e7eb 1px, transparent 0);
-    --pattern-waves: repeating-linear-gradient(135deg, #a5b4fc 0 2px, transparent 2px 20px), repeating-linear-gradient(-135deg, #a5b4fc 0 2px, transparent 2px 20px);
-    --pattern-geometric: repeating-linear-gradient(45deg, #fbbf24 0 10px, transparent 10px 20px), repeating-linear-gradient(-45deg, #6366f1 0 10px, transparent 10px 20px);
-    --active-pattern: var(--pattern-dots);
-    --pattern-size: 24px 24px;
+    /* User customizable accent color */
+    --user-accent: #3B82F6;
+    --user-accent-rgb: 59, 130, 246;
+    --user-accent-foreground: #ffffff;
+    --user-font-size: 16px;
+    
+    /* Background pattern */
+    --pattern-dots: radial-gradient(circle, #e5e7eb 1px, transparent 0);
+    --pattern-size: 20px 20px;
   }
 
+  /* ========================================
+     DARK MODE - Complete Theme Override
+     ======================================== */
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --card: 222.2 47% 11%;
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 222.2 47% 11%;
     --popover-foreground: 210 40% 98%;
     --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 47.4% 11.2%;
@@ -53,9 +60,12 @@
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
+    --border: 217.2 32.6% 25%;
+    --input: 217.2 32.6% 20%;
     --ring: 224.3 76.3% 48%;
+    
+    /* Dark mode pattern */
+    --pattern-dots: radial-gradient(circle, #374151 1px, transparent 0);
   }
 }
 
@@ -63,33 +73,636 @@
   * {
     @apply border-border;
   }
-  body {
-    @apply text-stone-950 font-[family-name:Saira,system-ui,sans-serif];
-    background: transparent;
-  }
-  h1, h2, h3 {
-    font-family: 'Audiowide', cursive;
+  
+  html {
+    font-size: var(--user-font-size, 16px);
   }
   
-  /* Dotted background pattern pseudo-element */
-  html::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-image: var(--active-pattern) !important;
-    background-size: var(--pattern-size) !important;
-    background-repeat: repeat !important;
-    background-attachment: fixed !important;
-    background-color: rgb(255, 255, 255) !important;
-    z-index: -9999 !important;
-    pointer-events: none !important;
+  body {
+    @apply bg-background text-foreground font-[family-name:Saira,system-ui,sans-serif];
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
+  
+  h1, h2, h3, h4 {
+    font-family: 'Audiowide', cursive;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+
+/* Switch thumb outline for all toggles */
+button[role="switch"] span[data-state] {
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25);
 }
 
-/* Custom styles for BookmarkHub */
+button[role="switch"][data-state="unchecked"] span[data-state="unchecked"] {
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+/* Visual tweaks */
+.underline-links a:hover {
+  text-decoration: underline;
+}
+
+.monochrome-mode {
+  filter: saturate(0.65);
+}
+
+.soft-shadows .shadow,
+.soft-shadows .shadow-sm,
+.soft-shadows .shadow-md,
+.soft-shadows .shadow-lg,
+.soft-shadows .shadow-xl,
+.soft-shadows .shadow-2xl {
+  box-shadow: 0 10px 35px -18px rgba(0,0,0,0.35), 0 8px 12px -10px rgba(0,0,0,0.18) !important;
+}
+}
+
+/* ========================================
+   DARK MODE - Override all hardcoded colors
+   ======================================== */
+.dark {
+  color-scheme: dark;
+}
+
+/* Dark mode backgrounds */
+.dark .bg-white {
+  background-color: hsl(222.2 47% 11%) !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: hsl(222.2 47% 8%) !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: hsl(222.2 47% 13%) !important;
+}
+
+/* Dark mode text colors - Gray */
+.dark .text-gray-900,
+.dark .text-stone-950 {
+  color: hsl(210 40% 98%) !important;
+}
+
+.dark .text-gray-800 {
+  color: hsl(210 40% 92%) !important;
+}
+
+.dark .text-gray-700 {
+  color: hsl(215 20.2% 80%) !important;
+}
+
+.dark .text-gray-600 {
+  color: hsl(215 20.2% 70%) !important;
+}
+
+.dark .text-gray-500 {
+  color: hsl(215 20.2% 60%) !important;
+}
+
+.dark .text-gray-400 {
+  color: hsl(215 20.2% 50%) !important;
+}
+
+.dark .text-black {
+  color: hsl(210 40% 98%) !important;
+}
+
+/* Dark mode text colors - Slate */
+.dark .text-slate-900 {
+  color: hsl(210 40% 98%) !important;
+}
+
+.dark .text-slate-800 {
+  color: hsl(210 40% 92%) !important;
+}
+
+.dark .text-slate-700 {
+  color: hsl(215 20.2% 80%) !important;
+}
+
+.dark .text-slate-600 {
+  color: hsl(215 20.2% 70%) !important;
+}
+
+.dark .text-slate-500 {
+  color: hsl(215 20.2% 60%) !important;
+}
+
+.dark .text-slate-400 {
+  color: hsl(215 20.2% 50%) !important;
+}
+
+/* Dark mode text colors - Stone */
+.dark .text-stone-900 {
+  color: hsl(210 40% 98%) !important;
+}
+
+.dark .text-stone-800 {
+  color: hsl(210 40% 92%) !important;
+}
+
+.dark .text-stone-700 {
+  color: hsl(215 20.2% 80%) !important;
+}
+
+.dark .text-stone-600 {
+  color: hsl(215 20.2% 70%) !important;
+}
+
+/* Dark mode borders - Gray */
+.dark .border-gray-200,
+.dark .border-gray-300 {
+  border-color: hsl(217.2 32.6% 25%) !important;
+}
+
+.dark .border-gray-100 {
+  border-color: hsl(217.2 32.6% 20%) !important;
+}
+
+.dark .border-gray-400 {
+  border-color: hsl(217.2 32.6% 35%) !important;
+}
+
+/* Dark mode borders - Slate */
+.dark .border-slate-200,
+.dark .border-slate-300 {
+  border-color: hsl(217.2 32.6% 25%) !important;
+}
+
+.dark .border-slate-100 {
+  border-color: hsl(217.2 32.6% 20%) !important;
+}
+
+/* Dark mode backgrounds - Slate */
+.dark .bg-slate-50 {
+  background-color: hsl(222.2 47% 8%) !important;
+}
+
+.dark .bg-slate-100 {
+  background-color: hsl(222.2 47% 13%) !important;
+}
+
+.dark .bg-slate-200 {
+  background-color: hsl(222.2 47% 18%) !important;
+}
+
+/* Dark mode hover states */
+.dark .hover\:bg-slate-100:hover {
+  background-color: hsl(222.2 47% 16%) !important;
+}
+
+.dark .hover\:bg-slate-200:hover {
+  background-color: hsl(222.2 47% 20%) !important;
+}
+
+.dark .hover\:bg-gray-100:hover {
+  background-color: hsl(222.2 47% 16%) !important;
+}
+
+.dark .hover\:bg-gray-50:hover {
+  background-color: hsl(222.2 47% 13%) !important;
+}
+
+.dark .hover\:text-slate-900:hover {
+  color: hsl(210 40% 98%) !important;
+}
+
+.dark .hover\:text-gray-900:hover {
+  color: hsl(210 40% 98%) !important;
+}
+
+/* Dark mode cards and containers */
+.dark [class*="Card"],
+.dark .card {
+  background-color: hsl(222.2 47% 11%);
+  border-color: hsl(217.2 32.6% 25%);
+}
+
+/* Dark mode inputs */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: hsl(222.2 47% 8%) !important;
+  border-color: hsl(217.2 32.6% 25%) !important;
+  color: hsl(210 40% 98%) !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: hsl(215 20.2% 50%) !important;
+}
+
+/* Dark mode buttons */
+.dark .bg-black {
+  background-color: hsl(210 40% 98%) !important;
+  color: hsl(222.2 47% 11%) !important;
+}
+
+.dark .hover\:bg-gray-800:hover {
+  background-color: hsl(217.2 32.6% 25%) !important;
+}
+
+/* Dark mode separators */
+.dark hr,
+.dark [class*="Separator"] {
+  border-color: hsl(217.2 32.6% 20%);
+  background-color: hsl(217.2 32.6% 20%);
+}
+
+/* Dark mode for specific component patterns */
+.dark .shadow-sm,
+.dark .shadow-md,
+.dark .shadow-lg,
+.dark .shadow-xl {
+  --tw-shadow-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Dark mode ring colors */
+.dark .ring-gray-200,
+.dark .ring-gray-300 {
+  --tw-ring-color: hsl(217.2 32.6% 30%) !important;
+}
+
+/* Dark mode divide colors */
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: hsl(217.2 32.6% 25%) !important;
+}
+
+/* Dark mode placeholder text */
+.dark .placeholder\:text-gray-400::placeholder,
+.dark .placeholder\:text-gray-500::placeholder {
+  color: hsl(215 20.2% 45%) !important;
+}
+
+/* Dark mode select triggers and dropdowns */
+.dark [class*="SelectTrigger"],
+.dark [class*="SelectContent"] {
+  background-color: hsl(222.2 47% 11%) !important;
+  border-color: hsl(217.2 32.6% 25%) !important;
+  color: hsl(210 40% 98%) !important;
+}
+
+.dark [class*="SelectItem"] {
+  color: hsl(210 40% 90%) !important;
+}
+
+.dark [class*="SelectItem"]:hover,
+.dark [class*="SelectItem"][data-highlighted] {
+  background-color: hsl(222.2 47% 16%) !important;
+}
+
+/* Dark mode dropdown menus */
+.dark [class*="DropdownMenuContent"],
+.dark [class*="DropdownMenuItem"] {
+  background-color: hsl(222.2 47% 11%) !important;
+  border-color: hsl(217.2 32.6% 25%) !important;
+  color: hsl(210 40% 98%) !important;
+}
+
+.dark [class*="DropdownMenuItem"]:hover {
+  background-color: hsl(222.2 47% 16%) !important;
+}
+
+/* Dark mode dialogs and modals */
+.dark [class*="DialogContent"],
+.dark [class*="Dialog"] > div[class*="fixed"] {
+  background-color: hsl(222.2 47% 11%) !important;
+  border-color: hsl(217.2 32.6% 25%) !important;
+}
+
+/* Dark mode popovers */
+.dark [class*="PopoverContent"] {
+  background-color: hsl(222.2 47% 11%) !important;
+  border-color: hsl(217.2 32.6% 25%) !important;
+}
+
+/* Dark mode tabs */
+.dark [class*="TabsList"] {
+  background-color: hsl(222.2 47% 8%) !important;
+}
+
+.dark [class*="TabsTrigger"] {
+  color: hsl(215 20.2% 60%) !important;
+}
+
+.dark [class*="TabsTrigger"][data-state="active"] {
+  background-color: hsl(222.2 47% 16%) !important;
+  color: hsl(210 40% 98%) !important;
+}
+
+/* Dark mode tooltips */
+.dark [class*="TooltipContent"] {
+  background-color: hsl(210 40% 98%) !important;
+  color: hsl(222.2 47% 11%) !important;
+}
+
+/* Dark mode badges */
+.dark [class*="Badge"]:not([class*="bg-"]) {
+  background-color: hsl(222.2 47% 16%) !important;
+  color: hsl(210 40% 90%) !important;
+}
+
+/* Dark mode progress bars */
+.dark [class*="Progress"] {
+  background-color: hsl(222.2 47% 16%) !important;
+}
+
+/* Dark mode switches */
+.dark [class*="Switch"][data-state="unchecked"] {
+  background-color: hsl(222.2 47% 20%) !important;
+}
+
+/* Dark mode sliders */
+.dark [class*="Slider"] [class*="Track"] {
+  background-color: hsl(222.2 47% 20%) !important;
+}
+
+/* Dark mode specific component fixes */
+
+/* Sidebar in dark mode */
+.dark .bg-gray-50.border-r {
+  background-color: hsl(222.2 47% 8%) !important;
+}
+
+/* Cards with shadows in dark mode - ensure text is visible */
+.dark .shadow-xl,
+.dark .shadow-2xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Ensure gradient backgrounds with text remain readable */
+.dark .bg-gradient-to-br.from-slate-900,
+.dark .bg-gradient-to-r.from-slate-900 {
+  color: hsl(210 40% 98%);
+}
+
+/* Fix any remaining white backgrounds in dark mode */
+.dark .rounded-xl.bg-white,
+.dark .rounded-lg.bg-white,
+.dark .rounded-2xl.bg-white,
+.dark .rounded-md.bg-white {
+  background-color: hsl(222.2 47% 11%) !important;
+}
+
+/* Ensure all gray-50/80 backgrounds are handled */
+.dark .bg-gray-50\/50,
+.dark .bg-gray-50\/80 {
+  background-color: rgba(30, 41, 59, 0.5) !important;
+}
+
+/* Fix text in overview/stat cards */
+.dark .text-5xl.font-bold.text-gray-900,
+.dark .text-4xl.font-bold.text-gray-900,
+.dark .text-3xl.font-bold.text-gray-900,
+.dark .text-2xl.font-bold.text-gray-900 {
+  color: hsl(210 40% 98%) !important;
+}
+
+/* Ensure emerald/green text stays visible */
+.dark .text-emerald-600,
+.dark .text-emerald-500 {
+  color: hsl(160 84% 60%) !important;
+}
+
+.dark .text-emerald-400 {
+  color: hsl(160 84% 70%) !important;
+}
+
+/* Ensure amber/yellow text stays visible */
+.dark .text-amber-600,
+.dark .text-amber-500 {
+  color: hsl(38 92% 60%) !important;
+}
+
+.dark .text-amber-400 {
+  color: hsl(38 92% 70%) !important;
+}
+
+/* Ensure red text stays visible */
+.dark .text-red-600,
+.dark .text-red-500 {
+  color: hsl(0 84% 65%) !important;
+}
+
+/* Ensure blue text stays visible */
+.dark .text-blue-600,
+.dark .text-blue-500 {
+  color: hsl(217 91% 65%) !important;
+}
+
+/* Navigation active states */
+.dark .bg-slate-200.text-slate-900 {
+  background-color: hsl(222.2 47% 18%) !important;
+  color: hsl(210 40% 98%) !important;
+}
+
+/* Make sure icons in dark mode are visible */
+.dark svg.text-gray-400,
+.dark svg.text-gray-500,
+.dark svg.text-slate-400,
+.dark svg.text-slate-500 {
+  color: hsl(215 20.2% 55%) !important;
+}
+
+/* Ensure hover states work in dark mode */
+.dark .group:hover .group-hover\:text-gray-900,
+.dark .group:hover .group-hover\:text-slate-900 {
+  color: hsl(210 40% 98%) !important;
+}
+
+.dark .group:hover .group-hover\:text-blue-300,
+.dark .group:hover .group-hover\:text-blue-400 {
+  color: hsl(217 91% 70%) !important;
+}
+
+/* Ring offset for dark mode */
+.dark .ring-offset-white,
+.dark .ring-offset-slate-800 {
+  --tw-ring-offset-color: hsl(222.2 47% 11%) !important;
+}
+
+/* Scroll areas */
+.dark .overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: hsl(217.2 32.6% 35%);
+}
+
+.dark .overflow-y-auto::-webkit-scrollbar-track {
+  background-color: hsl(222.2 47% 8%);
+}
+
+/* Animations pulse in dark mode */
+.dark .animate-pulse {
+  background-color: hsl(222.2 47% 16%) !important;
+}
+
+/* ========================================
+   USER ACCENT COLOR - Subtle Application
+   Text always stays black/white for readability
+   ======================================== */
+
+/* Focus rings with accent - subtle */
+*:focus-visible {
+  outline-color: var(--user-accent);
+  outline-offset: 2px;
+}
+
+/* Selection highlight with accent */
+::selection {
+  background-color: rgba(var(--user-accent-rgb), 0.2);
+}
+
+/* Switch/Toggle with accent when checked */
+[data-state="checked"] {
+  background-color: var(--user-accent) !important;
+}
+
+/* Slider filled track with accent */
+[role="slider"] span[data-orientation="horizontal"] > span:first-child {
+  background-color: var(--user-accent) !important;
+}
+
+/* Primary buttons - accent background with proper contrast text */
+button[class*="bg-primary"],
+.btn-accent {
+  background-color: var(--user-accent) !important;
+  color: var(--user-accent-foreground) !important;
+}
+
+/* Subtle border accents on hover */
+button:hover,
+a:hover {
+  border-color: rgba(var(--user-accent-rgb), 0.3);
+}
+
+/* Active/selected states - very subtle tint */
+[data-state="active"],
+[aria-selected="true"] {
+  background-color: rgba(var(--user-accent-rgb), 0.1);
+}
+
+/* NOTE: Text color is NOT changed by accent color
+   Text always remains:
+   - Light mode: black/dark gray
+   - Dark mode: white/light gray
+   This ensures readability across all accent colors */
+
+/* Apply accent to elements that were black/dark by default */
+.accent-applied .text-black,
+.accent-applied .text-gray-900,
+.accent-applied .text-slate-900 {
+  color: var(--user-accent) !important;
+}
+.dark.accent-applied .text-black,
+.dark.accent-applied .text-gray-900,
+.dark.accent-applied .text-slate-900 {
+  color: var(--user-accent-foreground) !important;
+}
+
+.accent-applied .border-black,
+.accent-applied .border-gray-900,
+.accent-applied .border-slate-900 {
+  border-color: var(--user-accent) !important;
+}
+.dark.accent-applied .border-black,
+.dark.accent-applied .border-gray-900,
+.dark.accent-applied .border-slate-900 {
+  border-color: rgba(var(--user-accent-rgb), 0.6) !important;
+}
+
+/* Icons that inherit color will pick up accent while remaining visible on dark */
+.accent-applied svg {
+  color: var(--user-accent);
+}
+.dark.accent-applied svg {
+  color: var(--user-accent-foreground);
+}
+
+/* Safe hover utility to ensure contrast on hover/active */
+.accent-safe-hover:hover {
+  background-color: rgba(var(--user-accent-rgb), 0.12) !important;
+  color: var(--user-accent-foreground) !important;
+}
+.accent-safe-hover:active {
+  background-color: rgba(var(--user-accent-rgb), 0.18) !important;
+  color: var(--user-accent-foreground) !important;
+}
+
+/* ========================================
+   ACCESSIBILITY MODES
+   ======================================== */
+
+/* Dyslexia-friendly font */
+.dyslexia-font,
+.dyslexia-font * {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', sans-serif !important;
+  letter-spacing: 0.03em;
+  word-spacing: 0.08em;
+  line-height: 1.5;
+}
+
+/* High contrast mode */
+.high-contrast {
+  --foreground: 0 0% 0%;
+  --background: 0 0% 100%;
+  --muted-foreground: 0 0% 25%;
+}
+
+.dark.high-contrast {
+  --foreground: 0 0% 100%;
+  --background: 0 0% 0%;
+  --muted-foreground: 0 0% 75%;
+}
+
+.high-contrast .text-gray-500,
+.high-contrast .text-gray-600 {
+  color: hsl(0 0% 35%) !important;
+}
+
+.dark.high-contrast .text-gray-500,
+.dark.high-contrast .text-gray-600 {
+  color: hsl(0 0% 75%) !important;
+}
+
+/* Compact mode */
+.compact-mode {
+  --user-font-size: 14px;
+}
+
+/* Reduced motion */
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* ========================================
+   BACKGROUND PATTERN
+   ======================================== */
+html::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-image: var(--pattern-dots);
+  background-size: var(--pattern-size);
+  background-repeat: repeat;
+  background-attachment: fixed;
+  background-color: hsl(var(--background));
+  z-index: -9999;
+  pointer-events: none;
+  transition: background-color 0.2s ease;
+}
+
+/* ========================================
+   CUSTOM COMPONENTS
+   ======================================== */
 .font-audiowide {
   font-family: 'Audiowide', cursive;
 }
@@ -102,14 +715,8 @@
 
 /* Animations */
 @keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in {
@@ -135,31 +742,29 @@
   border-radius: 3px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(156, 163, 175, 0.8);
+.dark .custom-scrollbar {
+  scrollbar-color: rgba(100, 116, 139, 0.5) transparent;
 }
 
-/* Mobile-specific improvements */
+/* ========================================
+   UTILITIES
+   ======================================== */
 @layer utilities {
-  /* Improve tap targets on mobile */
   .touch-target {
     min-height: 44px;
     min-width: 44px;
   }
 
-  /* Better horizontal scroll for mobile */
   .scroll-container {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    -ms-overflow-style: none;
   }
 
   .scroll-container::-webkit-scrollbar {
     display: none;
   }
 
-  /* Hide scrollbar utility */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -169,21 +774,12 @@
     display: none;
   }
 
-  /* Prevent text selection on mobile for interactive elements */
   .no-select {
     -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Smooth transitions for mobile interactions */
-  .smooth-transition {
-    transition: all 0.2s ease-in-out;
-  }
-
-  /* Safe area support for notched devices */
   .safe-area-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
@@ -191,58 +787,28 @@
   .safe-area-top {
     padding-top: env(safe-area-inset-top);
   }
-
-  /* Prevent horizontal scroll on mobile */
-  .prevent-horizontal-scroll {
-    overflow-x: hidden;
-    max-width: 100vw;
-  }
 }
 
-/* Mobile-optimized spacing */
+/* ========================================
+   RESPONSIVE
+   ======================================== */
 @media (max-width: 640px) {
   body {
     font-size: 14px;
     overflow-x: hidden;
   }
 
-  /* Reduce excessive padding on mobile */
   .container {
     padding-left: 1rem;
     padding-right: 1rem;
   }
 
-  /* Improve button sizing on mobile */
-  button {
-    min-height: 40px;
-  }
-
-  /* Better touch targets for links */
-  a {
-    padding: 0.25rem;
-  }
-
-  /* Prevent horizontal overflow */
   html, body {
     overflow-x: hidden;
     max-width: 100vw;
   }
-
-  /* Better grid for mobile */
-  .grid {
-    grid-template-columns: 1fr !important;
-  }
 }
 
-/* Tablet optimizations */
-@media (min-width: 640px) and (max-width: 1024px) {
-  .container {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
-}
-
-/* Prevent zoom on input focus on mobile */
 @media screen and (max-width: 640px) {
   input[type="text"],
   input[type="email"],

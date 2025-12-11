@@ -49,6 +49,10 @@ model User {
   goalsViewLogo String?   @db.Text // S3 cloud storage path for Goals view global logo
   subscriptionTier  SubscriptionTier @default(BASIC)
   
+  // User preferences and settings
+  notificationSettings String? @db.Text // JSON string of notification preferences
+  appearanceSettings   String? @db.Text // JSON string of appearance preferences
+  
   accounts      Account[]
   sessions      Session[]
   bookmarks     Bookmark[]
@@ -62,6 +66,7 @@ model User {
   playbooks     Playbook[]
   searchHistory SearchHistory[]
   timeCapsules  TimeCapsule[]
+  timeCapsuleSettings TimeCapsuleSetting?
   ownedCompanies    Company[] @relation("CompanyOwner")
   companies         UserCompany[]
   bulkUploadLogs    BulkUploadLog[]
@@ -94,6 +99,7 @@ model Company {
   members                 UserCompany[]
   bookmarks               Bookmark[]
   categories              Category[]
+  tags                    Tag[]
   goals                   Goal[]
   goalFolders             GoalFolder[]
   todoItems               TodoItem[]
@@ -130,11 +136,12 @@ model UserCompany {
 model Bookmark {
   id          String   @id @default(cuid())
   title       String
-  url         String   @db.Text
+  url         String?  @db.Text // Optional - allows custom/blank cards without URLs
   description String?  @db.Text
   favicon     String?  @db.Text
   priority    Priority @default(MEDIUM)
   isFavorite  Boolean  @default(false)
+  isCustomCard Boolean @default(false) // True for custom cards without URLs
   
   // Custom branding (Grid View only)
   customFavicon    String? @db.Text // S3 cloud storage path for custom favicon
@@ -275,13 +282,18 @@ model Tag {
 
   userId    String
   user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  companyId String?
+  company   Company?     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
   bookmarks BookmarkTag[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([userId, name])
+  @@unique([userId, name, companyId])
   @@index([userId, createdAt]) // Performance index for listing user's tags
+  @@index([companyId]) // Performance index for company filtering
 }
 
 // Junction tables for many-to-many relationships
@@ -597,6 +609,19 @@ model TimeCapsule {
   updatedAt DateTime @updatedAt
 }
 
+model TimeCapsuleSetting {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  frequency          String   @default("weekly")
+  maxCapsules        Int      @default(10)
+  enableAutoSnapshots Boolean @default(true)
+  autoCleanup        Boolean  @default(true)
+  nextRun            DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
 enum ViewMode {
   GRID
   LIST
@@ -607,11 +632,13 @@ enum ViewMode {
 // Customizable Tools System
 model BookmarkTool {
   id          String   @id @default(cuid())
-  key         String   @unique // overview, arp, notification, task, media, comment, todo, notes, habits
+  key         String   @unique // overview, notification, tasks, timer, media, etc.
   label       String   // Display name
+  description String?  @db.Text // Description of what the tool does
   icon        String   // Icon name for Lucide
+  category    String?  @default("productivity") // core, productivity, creativity, documents, collaboration, content, ai, utility
   isDefault   Boolean  @default(false) // Default tools that ship with all bookmarks
-  isSystem    Boolean  @default(false) // Cannot be deleted (overview, arp, etc.)
+  isSystem    Boolean  @default(false) // Cannot be deleted (overview, etc.)
   
   preferences BookmarkToolPreference[]
   

@@ -1,7 +1,8 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import useSWR from 'swr'
 import {
   Dialog,
   DialogContent,
@@ -20,6 +21,9 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Clock } from 'lucide-react'
+import { toast } from 'sonner'
+
+const fetcher = (url: string) => fetch(url).then(res => res.json())
 
 interface ScheduleModalProps {
   open: boolean
@@ -27,14 +31,47 @@ interface ScheduleModalProps {
 }
 
 export function ScheduleModal({ open, onOpenChange }: ScheduleModalProps) {
+  const { data, isLoading, mutate } = useSWR(open ? '/api/time-capsule/settings' : null, fetcher)
   const [frequency, setFrequency] = useState('weekly')
   const [maxCapsules, setMaxCapsules] = useState('10')
   const [enableAutoSnapshots, setEnableAutoSnapshots] = useState(true)
   const [autoCleanup, setAutoCleanup] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
 
-  const handleSave = () => {
-    // Handle save logic here
-    onOpenChange(false)
+  useEffect(() => {
+    if (data) {
+      setFrequency(data.frequency || 'weekly')
+      setMaxCapsules(String(data.maxCapsules ?? '10'))
+      setEnableAutoSnapshots(Boolean(data.enableAutoSnapshots ?? true))
+      setAutoCleanup(Boolean(data.autoCleanup ?? true))
+    }
+  }, [data])
+
+  const handleSave = async () => {
+    setIsSaving(true)
+    try {
+      const response = await fetch('/api/time-capsule/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          frequency,
+          maxCapsules: Number(maxCapsules) || 10,
+          enableAutoSnapshots,
+          autoCleanup,
+        }),
+      })
+
+      if (!response.ok) throw new Error('Failed to save settings')
+
+      await mutate()
+      toast.success('Schedule saved')
+      onOpenChange(false)
+    } catch (error) {
+      console.error('Error saving time capsule settings:', error)
+      toast.error('Could not save schedule')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
@@ -68,6 +105,8 @@ export function ScheduleModal({ open, onOpenChange }: ScheduleModalProps) {
               type="number"
               value={maxCapsules}
               onChange={(e) => setMaxCapsules(e.target.value)}
+              min={1}
+              disabled={isLoading}
             />
           </div>
 
@@ -79,6 +118,7 @@ export function ScheduleModal({ open, onOpenChange }: ScheduleModalProps) {
               id="enableAutoSnapshots"
               checked={enableAutoSnapshots}
               onCheckedChange={setEnableAutoSnapshots}
+              disabled={isLoading}
             />
           </div>
 
@@ -90,6 +130,7 @@ export function ScheduleModal({ open, onOpenChange }: ScheduleModalProps) {
               id="autoCleanup"
               checked={autoCleanup}
               onCheckedChange={setAutoCleanup}
+              disabled={isLoading}
             />
           </div>
         </div>
@@ -97,8 +138,8 @@ export function ScheduleModal({ open, onOpenChange }: ScheduleModalProps) {
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave} className="bg-black text-white hover:bg-black/90">
-            Save Settings
+          <Button onClick={handleSave} disabled={isSaving || isLoading} className="bg-black text-white hover:bg-black/90">
+            {isSaving ? 'Saving...' : 'Save Settings'}
           </Button>
         </div>
       </DialogContent>

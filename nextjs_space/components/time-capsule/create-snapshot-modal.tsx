@@ -43,7 +43,9 @@ export function CreateSnapshotModal({ open, onOpenChange, onSuccess }: CreateSna
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: name,
-          description: description || null
+          description: description || null,
+          includeSettings,
+          includeAnalytics
         })
       })
 

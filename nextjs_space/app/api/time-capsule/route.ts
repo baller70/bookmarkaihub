@@ -35,10 +35,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, description } = body
+    const { title, description, includeSettings = true, includeAnalytics = true } = body
 
-    // Fetch current user's bookmarks, categories, and tags for the snapshot
-    const [bookmarks, categories, tags] = await Promise.all([
+    // Fetch current user's bookmarks, categories, tags, settings, and analytics for the snapshot
+    const [bookmarks, categories, tags, settings, analytics] = await Promise.all([
       prisma.bookmark.findMany({
         where: { userId: session.user.id },
         include: {
@@ -55,7 +55,13 @@ export async function POST(request: NextRequest) {
       }),
       prisma.tag.findMany({
         where: { userId: session.user.id }
-      })
+      }),
+      includeSettings ? prisma.timeCapsuleSetting.findUnique({ where: { userId: session.user.id } }) : null,
+      includeAnalytics ? prisma.analytics.findMany({
+        where: { userId: session.user.id },
+        orderBy: { date: 'desc' },
+        take: 30,
+      }) : []
     ])
 
     // Calculate stats
@@ -88,7 +94,15 @@ export async function POST(request: NextRequest) {
         id: t.id,
         name: t.name,
         color: t.color
-      }))
+      })),
+      settings: settings ? {
+        frequency: settings.frequency,
+        maxCapsules: settings.maxCapsules,
+        enableAutoSnapshots: settings.enableAutoSnapshots,
+        autoCleanup: settings.autoCleanup,
+        nextRun: settings.nextRun
+      } : null,
+      analytics: analytics || []
     }
 
     // Generate AI summary (placeholder for now)

@@ -3,19 +3,24 @@ export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { getDevSession } from "@/lib/dev-auth"
-import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
+import { getActiveCompanyId } from "@/lib/company"
 
 export async function GET() {
   try {
     const session = await getDevSession()
-    if (!session) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+
+    // Get active company for filtering
+    const activeCompanyId = await getActiveCompanyId(session.user.id)
 
     const tags = await prisma.tag.findMany({
       where: {
         userId: session.user.id,
+        // Filter by company if one is active
+        ...(activeCompanyId && { companyId: activeCompanyId }),
       },
       include: {
         _count: {
@@ -39,7 +44,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const session = await getDevSession()
-    if (!session) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -49,11 +54,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 })
     }
 
-    // Check if tag with this name already exists for this user
+    // Get active company
+    const activeCompanyId = await getActiveCompanyId(session.user.id)
+
+    // Check if tag with this name already exists for this user AND company
     const existingTag = await prisma.tag.findFirst({
       where: {
         userId: session.user.id,
         name: name.trim(),
+        ...(activeCompanyId && { companyId: activeCompanyId }),
       },
     })
 
@@ -69,6 +78,7 @@ export async function POST(request: Request) {
         name: name.trim(),
         color: color || "#10B981",
         userId: session.user.id,
+        companyId: activeCompanyId,
       },
     })
 

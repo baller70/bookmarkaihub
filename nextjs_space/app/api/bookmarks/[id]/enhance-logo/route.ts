@@ -1,16 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDevSession } from "@/lib/dev-auth";
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { upscaleImage } from '@/lib/image-upscaler';
+import { getNextFavicon, getAllAvailableFavicons } from '@/lib/favicon-service';
 
-// No extended timeout needed - Sharp processes locally in seconds
-export const maxDuration = 30; // 30 seconds is more than enough for local processing
+export const maxDuration = 30;
 
 /**
  * POST /api/bookmarks/[id]/enhance-logo
- * Manually trigger high-quality upscaling for a bookmark's logo
- * Uses Sharp with Lanczos3 algorithm (FREE, local processing)
+ * 
+ * Fetches the NEXT available high-quality favicon/logo.
+ * Each press cycles through available sources:
+ * - First press: Gets the best available logo
+ * - Second press: Gets the next alternative
+ * - Continues cycling through all available options
+ * - Wraps back to the first option after the last
+ * 
+ * This allows users to keep pressing until they find a logo they like.
  */
 export async function POST(
   req: NextRequest,
@@ -36,99 +41,150 @@ export async function POST(
       return NextResponse.json({ error: 'Bookmark not found' }, { status: 404 });
     }
 
-    // Get the current favicon
-    let currentFavicon = bookmark.favicon || '';
+    const currentFavicon = bookmark.favicon || '';
     const domain = new URL(bookmark.url).hostname.replace(/^www\./, '');
 
-    console.log(`[ENHANCE-LOGO] Starting enhancement for ${bookmark.title}`);
-    console.log(`[ENHANCE-LOGO] Current favicon: ${currentFavicon}`);
+    console.log(`\n[ENHANCE-LOGO] ════════════════════════════════════════`);
+    console.log(`[ENHANCE-LOGO] Cycling logo for: ${bookmark.title}`);
+    console.log(`[ENHANCE-LOGO] URL: ${bookmark.url}`);
+    console.log(`[ENHANCE-LOGO] Current favicon: ${currentFavicon || '(none)'}`);
+    console.log(`[ENHANCE-LOGO] ════════════════════════════════════════\n`);
 
-    // If current favicon is empty or inaccessible, fetch a fresh one first
-    if (!currentFavicon) {
-      console.log(`[ENHANCE-LOGO] No favicon found, fetching fresh one...`);
-      const { getFaviconUrl } = await import('@/lib/favicon-service');
-      currentFavicon = await getFaviconUrl(bookmark.url);
-      console.log(`[ENHANCE-LOGO] Fresh favicon obtained: ${currentFavicon}`);
-    } else {
-      // Check if current favicon is accessible
-      try {
-        const checkResponse = await fetch(currentFavicon, { method: 'HEAD' });
-        if (!checkResponse.ok) {
-          console.log(`[ENHANCE-LOGO] Current favicon inaccessible (${checkResponse.status}), fetching fresh one...`);
-          const { getFaviconUrl } = await import('@/lib/favicon-service');
-          currentFavicon = await getFaviconUrl(bookmark.url);
-          console.log(`[ENHANCE-LOGO] Fresh favicon obtained: ${currentFavicon}`);
-        }
-      } catch (error) {
-        console.log(`[ENHANCE-LOGO] Error checking favicon accessibility, fetching fresh one...`);
-        const { getFaviconUrl } = await import('@/lib/favicon-service');
-        currentFavicon = await getFaviconUrl(bookmark.url);
-        console.log(`[ENHANCE-LOGO] Fresh favicon obtained: ${currentFavicon}`);
-      }
-    }
+    // Get the NEXT available favicon (cycles through options)
+    const result = await getNextFavicon(bookmark.url, currentFavicon || null);
 
-    // Upscale the image
-    const result = await upscaleImage(currentFavicon, domain);
+    console.log(`\n[ENHANCE-LOGO] Result:`);
+    console.log(`[ENHANCE-LOGO]   Option: ${result.index + 1} of ${result.totalOptions}`);
+    console.log(`[ENHANCE-LOGO]   Tier: ${result.tier}`);
+    console.log(`[ENHANCE-LOGO]   Source: ${result.source}`);
+    console.log(`[ENHANCE-LOGO]   Quality: ${result.quality}`);
+    console.log(`[ENHANCE-LOGO]   New favicon: ${result.url}`);
 
-    if (result.success && result.upscaledUrl) {
-      // Update the bookmark with the enhanced logo
-      await prisma.bookmark.update({
-        where: { id: bookmarkId },
-        data: {
-          favicon: result.upscaledUrl,
-        },
-      });
+    // Update the bookmark with the new favicon
+    await prisma.bookmark.update({
+      where: { id: bookmarkId },
+      data: {
+        favicon: result.url,
+      },
+    });
 
-      console.log(`[ENHANCE-LOGO] Successfully enhanced logo for ${bookmark.title}`);
+    // Generate user-friendly message
+    const sourceNames: Record<string, string> = {
+      'curated_override': 'Official brand logo',
+      'clearbit': 'Clearbit HD logo',
+      'logo.dev': 'Logo.dev HD logo',
+      'brandfetch': 'Brandfetch logo',
+      'html_parse': 'Website icon',
+      'unavatar': 'Unavatar logo',
+      'duckduckgo': 'DuckDuckGo icon',
+      'favicon.ico': 'Standard favicon',
+      'google': 'Google favicon',
+      'similar_themed': 'Similar themed icon',
+      'similar_robot': 'Tech-style icon',
+      'similar_geometric': 'Geometric icon',
+      'similar_character': 'Character icon',
+      'similar_friendly': 'Friendly icon',
+      'similar_abstract': 'Abstract icon',
+      'letter_icon': 'Letter icon',
+      'generated': 'Generated icon',
+    };
 
-      return NextResponse.json({
-        success: true,
-        message: 'Logo enhanced successfully! Your high-quality logo is now live.',
-        favicon: result.upscaledUrl,
-        s3Key: result.s3Key,
-      });
-    } else {
-      console.error(`[ENHANCE-LOGO] Enhancement failed:`, result.error);
-      
-      // Provide user-friendly error messages
-      let userMessage = result.error || 'Enhancement failed';
-      
-      if (result.error?.includes('already good') || result.error?.includes('meets quality')) {
-        userMessage = 'This logo is already high quality and doesn\'t need enhancement!';
-      } else if (result.error?.includes('download') || result.error?.includes('fetch')) {
-        userMessage = 'Failed to download the logo. The file might be corrupted or inaccessible. Try again to fetch a fresh copy.';
-      } else if (result.error?.includes('403')) {
-        userMessage = 'The current logo file is not accessible. Fetching a fresh copy...';
-      }
-      
-      return NextResponse.json({
-        success: false,
-        message: userMessage,
-        error: result.error,
-        favicon: currentFavicon,
-      }, { status: 400 });
-    }
+    const sourceName = sourceNames[result.source] || result.source;
+    const cycleInfo = result.totalOptions > 1 
+      ? ` (${result.index + 1}/${result.totalOptions})` 
+      : '';
+
+    console.log(`[ENHANCE-LOGO] ✅ Updated to: ${sourceName}${cycleInfo}`);
+
+    return NextResponse.json({
+      success: true,
+      message: `${sourceName}${cycleInfo}`,
+      favicon: result.url,
+      previousFavicon: currentFavicon,
+      metadata: {
+        tier: result.tier,
+        source: result.source,
+        quality: result.quality,
+        index: result.index,
+        totalOptions: result.totalOptions,
+        canCycle: result.totalOptions > 1,
+      },
+    });
 
   } catch (error) {
     console.error('[ENHANCE-LOGO] Error:', error);
     
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    let userFriendlyMessage = 'Failed to enhance logo. Please try again.';
-    
-    if (errorMessage.includes('download') || errorMessage.includes('fetch')) {
-      userFriendlyMessage = 'Failed to download the original logo. Please check the URL and try again.';
-    } else if (errorMessage.includes('upload') || errorMessage.includes('S3')) {
-      userFriendlyMessage = 'Failed to save the enhanced logo. Please try again.';
-    }
     
     return NextResponse.json(
       { 
         success: false,
         error: 'Failed to enhance logo', 
-        message: userFriendlyMessage,
+        message: 'Could not fetch a logo. Please try again.',
         details: errorMessage 
       },
       { status: 500 }
     );
+  }
+}
+
+/**
+ * GET /api/bookmarks/[id]/enhance-logo
+ * 
+ * Preview ALL available logo options without updating
+ */
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getDevSession();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const bookmarkId = params.id;
+
+    // Verify bookmark ownership
+    const bookmark = await prisma.bookmark.findFirst({
+      where: {
+        id: bookmarkId,
+        userId: session.user.id,
+      },
+      select: {
+        id: true,
+        title: true,
+        url: true,
+        favicon: true,
+      },
+    });
+
+    if (!bookmark) {
+      return NextResponse.json({ error: 'Bookmark not found' }, { status: 404 });
+    }
+
+    // Get all available options
+    const allOptions = await getAllAvailableFavicons(bookmark.url);
+
+    // Find which one is currently active
+    const currentIndex = bookmark.favicon 
+      ? allOptions.findIndex(opt => opt.url === bookmark.favicon)
+      : -1;
+
+    return NextResponse.json({
+      current: {
+        favicon: bookmark.favicon || null,
+        index: currentIndex,
+      },
+      options: allOptions.map((opt, idx) => ({
+        ...opt,
+        isCurrent: idx === currentIndex,
+      })),
+      totalOptions: allOptions.length,
+    });
+
+  } catch (error) {
+    console.error('[ENHANCE-LOGO] Preview error:', error);
+    return NextResponse.json({ error: 'Failed to get logo options' }, { status: 500 });
   }
 }

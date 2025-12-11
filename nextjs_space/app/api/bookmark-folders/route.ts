@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { getDevSession } from "@/lib/dev-auth"
+import { getActiveCompanyId } from "@/lib/company"
 
 // GET /api/bookmark-folders?categoryId=...
 export async function GET(request: Request) {
@@ -16,10 +17,14 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "categoryId is required" }, { status: 400 })
     }
 
+    // Get active company for filtering
+    const activeCompanyId = await getActiveCompanyId(session.user.id)
+
     const folders = await prisma.bookmarkFolder.findMany({
       where: {
         categoryId,
         userId: session.user.id,
+        ...(activeCompanyId && { companyId: activeCompanyId }),
       },
       orderBy: { createdAt: "asc" },
     })

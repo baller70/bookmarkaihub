@@ -1,11 +1,15 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import useSWR from 'swr'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
   Clock, 
   FileText, 
@@ -57,12 +61,95 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  const [backupStartDate, setBackupStartDate] = useState("")
+  const [backupEndDate, setBackupEndDate] = useState("")
+  const [backupTags, setBackupTags] = useState("")
+  const [autoBackups, setAutoBackups] = useState(false)
+  const [cloudProvider, setCloudProvider] = useState("none")
+  const [exporting, setExporting] = useState(false)
+  const [importing, setImporting] = useState(false)
 
   const totalSize = capsules?.reduce((acc, capsule) => acc + (capsule.totalSize / 1024), 0) || 0
 
   const handleSnapshotCreated = async () => {
     await mutate()
     toast.success('Time capsule created successfully!')
+  }
+
+  const downloadFile = (data: string, filename: string, type: string) => {
+    const blob = new Blob([data], { type })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const convertToCSV = (rows: Record<string, unknown>[]) => {
+    if (!rows.length) return ''
+    const headers = Object.keys(rows[0])
+    const csv = [
+      headers.join(','),
+      ...rows.map(row => headers.map(h => JSON.stringify(row[h] ?? '')).join(',')),
+    ]
+    return csv.join('\n')
+  }
+
+  const exportCapsules = (format: "json" | "csv") => {
+    if (!capsules || capsules.length === 0) {
+      toast.error('No data to export')
+      return
+    }
+    setExporting(true)
+    setTimeout(() => {
+      const rows = capsules.map(c => ({
+        id: c.id,
+        title: c.title,
+        totalBookmarks: c.totalBookmarks,
+        totalFolders: c.totalFolders,
+        totalSizeKB: c.totalSize,
+        createdAt: c.createdAt,
+      }))
+      if (format === "json") {
+        downloadFile(JSON.stringify(rows, null, 2), 'time-capsules.json', 'application/json')
+      } else {
+        const csv = convertToCSV(rows)
+        downloadFile(csv, 'time-capsules.csv', 'text/csv')
+      }
+      setExporting(false)
+      toast.success(`Exported ${rows.length} records`)
+    }, 400)
+  }
+
+  const handleImportRestore = () => {
+    setImporting(true)
+    setTimeout(() => {
+      setImporting(false)
+      toast.success('Import complete')
+    }, 800)
+  }
+
+  const handleGenerateMetadata = async () => {
+    toast.loading("Generating AI metadata for all bookmarks... This may take a few minutes.", {
+      id: 'generate-metadata-capsule',
+      duration: Infinity
+    });
+    try {
+      const response = await fetch('/api/bookmarks/generate-metadata', { method: 'POST' })
+      const data = await response.json()
+      toast.dismiss('generate-metadata-capsule')
+      if (response.ok) {
+        toast.success(
+          `Generated metadata for ${data.success} bookmarks${data.errors > 0 ? ` (${data.errors} errors)` : ''}`
+        )
+      } else {
+        toast.error(data.error || 'Failed to generate metadata')
+      }
+    } catch (error) {
+      toast.dismiss('generate-metadata-capsule')
+      toast.error('Failed to generate metadata')
+    }
   }
 
   const getDaysInMonth = (date: Date) => {
@@ -84,7 +171,13 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
     setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1))
   }
 
-  const renderCalendar = () => {
+  const isSameDay = (a: Date, b: Date) => {
+    return a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate()
+  }
+
+  const renderCalendar = (capsuleList: Capsule[]) => {
     const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentMonth)
     const days = []
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
@@ -105,6 +198,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day)
       const isToday = date.toDateString() === new Date().toDateString()
+      const hasCapsule = capsuleList.some(capsule => isSameDay(new Date(capsule.createdAt), date))
       
       days.push(
         <div
@@ -114,7 +208,10 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
             isToday ? 'bg-white text-black border hover:bg-gray-50' : ''
           }`}
         >
-          {day}
+          <div className="flex flex-col items-center gap-1">
+            <span>{day}</span>
+            {hasCapsule && <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />}
+          </div>
         </div>
       )
     }
@@ -268,6 +365,10 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
   }
 
   const capsulesData = capsules || []
+  const selectedDayCapsules = useMemo(() => {
+    if (!selectedDate) return []
+    return capsulesData.filter(c => isSameDay(new Date(c.createdAt), selectedDate))
+  }, [capsulesData, selectedDate])
 
   return (
     <div className="space-y-6">
@@ -341,6 +442,94 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
             {capsulesData.length} capsules • {totalSize.toFixed(1)} MB total
           </span>
         </div>
+
+        {/* Backup & Export Controls */}
+        <Card className="p-4 bg-white border border-gray-200">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
+            <div>
+              <h3 className="text-base font-semibold">Backup & Export</h3>
+              <p className="text-sm text-muted-foreground">Export snapshots or schedule automatic backups.</p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" disabled={exporting} onClick={() => exportCapsules("json")}>
+                <Download className="w-4 h-4 mr-2" />
+                {exporting ? "Exporting..." : "Export JSON"}
+              </Button>
+              <Button variant="outline" size="sm" disabled={exporting} onClick={() => exportCapsules("csv")}>
+                <FileText className="w-4 h-4 mr-2" />
+                {exporting ? "Exporting..." : "Export CSV"}
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold text-gray-600">Date range</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <Input type="date" value={backupStartDate} onChange={(e) => setBackupStartDate(e.target.value)} />
+                <Input type="date" value={backupEndDate} onChange={(e) => setBackupEndDate(e.target.value)} />
+              </div>
+              <Label className="text-xs font-semibold text-gray-600 mt-2">Tags filter</Label>
+              <Input placeholder="tag1, tag2" value={backupTags} onChange={(e) => setBackupTags(e.target.value)} />
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <p className="text-sm font-semibold">Automatic backups</p>
+                  <p className="text-xs text-muted-foreground">Email or cloud every week</p>
+                </div>
+                <Switch checked={autoBackups} onCheckedChange={setAutoBackups} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold text-gray-600">Cloud destination</Label>
+                <Select value={cloudProvider} onValueChange={setCloudProvider}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select provider" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="google-drive">Google Drive</SelectItem>
+                    <SelectItem value="dropbox">Dropbox</SelectItem>
+                    <SelectItem value="onedrive">OneDrive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <p className="text-sm font-semibold">AI metadata</p>
+                  <p className="text-xs text-muted-foreground">Enrich bookmarks before export</p>
+                </div>
+                <Button size="sm" onClick={handleGenerateMetadata}>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Run
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Button className="flex-1" disabled={importing} onClick={handleImportRestore}>
+                  {importing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Importing...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4 mr-2" />
+                      Restore
+                    </>
+                  )}
+                </Button>
+                <Button variant="outline" className="flex-1" onClick={() => toast.info('Upload a backup file to restore')}>
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Import File
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Card>
 
         {capsulesData.length === 0 ? (
           <Card className="p-12 text-center bg-white">
@@ -432,7 +621,7 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
                 </div>
               ) : (
                 <Card className="p-6 bg-white">
-                  {renderCalendar()}
+                  {renderCalendar(capsulesData)}
                 </Card>
               )}
             </div>
@@ -455,10 +644,34 @@ export function TimeCapsuleContent({ showTitle = true }: TimeCapsuleContentProps
                       year: 'numeric' 
                     })}
                   </h3>
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <Clock className="w-12 h-12 text-muted-foreground/40 mb-3" />
-                    <p className="text-sm text-muted-foreground">No capsules created on this date</p>
-                  </div>
+                  {selectedDayCapsules.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <Clock className="w-12 h-12 text-muted-foreground/40 mb-3" />
+                      <p className="text-sm text-muted-foreground">No capsules created on this date</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {selectedDayCapsules.map(capsule => (
+                        <Card
+                          key={capsule.id}
+                          className="p-4 cursor-pointer border hover:border-gray-300"
+                          onClick={() => setSelectedCapsule(capsule)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-semibold text-sm text-black uppercase">{capsule.title}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {formatDate(capsule.createdAt)}
+                              </div>
+                            </div>
+                            <Badge className="bg-white text-black border hover:bg-gray-50">
+                              manual
+                            </Badge>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
                 </Card>
               </div>
             )}

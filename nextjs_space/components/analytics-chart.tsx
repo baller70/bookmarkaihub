@@ -30,6 +30,7 @@ interface AnalyticsData {
 
 interface AnalyticsChartProps {
   analytics: AnalyticsData
+  userName?: string
   onTimeRangeChange?: (range: string) => void
 }
 
@@ -52,9 +53,12 @@ const availableMetrics = [
   { id: "revenue", label: "Revenue Generated" },
 ]
 
-export function AnalyticsChart({ analytics, onTimeRangeChange }: AnalyticsChartProps) {
+export function AnalyticsChart({ analytics, userName, onTimeRangeChange }: AnalyticsChartProps) {
   const [selectedRange, setSelectedRange] = useState("90")
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>(["totalVisits", "engagementScore"])
+  
+  // Get first name from user name
+  const firstName = userName?.split(' ')[0] || 'Your'
 
   const handleTimeRangeChange = (range: string) => {
     setSelectedRange(range)
@@ -97,8 +101,8 @@ export function AnalyticsChart({ analytics, onTimeRangeChange }: AnalyticsChartP
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-0">
           <div className="space-y-1">
-            <h3 className="text-base sm:text-lg font-bold text-gray-900 leading-relaxed">TOM ANALYTICS CHART</h3>
-            <p className="text-xs text-gray-500">Total for the last 3 months</p>
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white leading-relaxed uppercase">{firstName.toUpperCase()}'S ANALYTICS CHART</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Total for the last 3 months</p>
           </div>
           
           {/* Time Range Tabs */}

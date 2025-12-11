@@ -377,29 +377,29 @@ function OverviewTab({ data }: { data: AnalyticsData | null }) {
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-700">Productivity Score</span>
-                  <span className="text-green-600 font-semibold">0%</span>
+                  <span className="text-gray-700">Engagement Score</span>
+                  <span className="text-green-600 font-semibold">{data.overview.engagementScore.toFixed(0)}%</span>
                 </div>
-                <Progress value={0} className="h-2" />
+                <Progress value={data.overview.engagementScore} className="h-2" />
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-700">Focus Time</span>
-                  <span className="text-gray-900 font-semibold">4.2h avg</span>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-700">Distraction Rate</span>
-                  <span className="text-gray-900 font-semibold">12%</span>
+                  <span className="text-gray-700">Total Active Time</span>
+                  <span className="text-gray-900 font-semibold">{data.overview.activeTime}h</span>
                 </div>
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-700">Goal Achievement</span>
-                  <span className="text-green-600 font-semibold">85%</span>
+                  <span className="text-gray-700">Average Visits/Bookmark</span>
+                  <span className="text-gray-900 font-semibold">{data.overview.totalBookmarks > 0 ? (data.overview.totalVisits / data.overview.totalBookmarks).toFixed(1) : '0'}</span>
                 </div>
-                <Progress value={85} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-gray-700">Top Categories Active</span>
+                  <span className="text-green-600 font-semibold">{data.topCategories.length}</span>
+                </div>
+                <Progress value={Math.min(data.topCategories.length * 20, 100)} className="h-2" />
               </div>
             </div>
           </CardContent>
@@ -441,20 +441,20 @@ function OverviewTab({ data }: { data: AnalyticsData | null }) {
             </div>
             <div className="space-y-3">
               <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-                <div className="text-sm font-semibold text-blue-900 mb-1">Most Productive Hour</div>
-                <div className="text-xs text-blue-700">10:00 AM - 11:00 AM (92% efficiency)</div>
+                <div className="text-sm font-semibold text-blue-900 mb-1">Total Bookmarks</div>
+                <div className="text-xs text-blue-700">{data.overview.totalBookmarks} bookmarks in your collection</div>
               </div>
               <div className="p-3 rounded-lg bg-green-50 border border-green-200">
-                <div className="text-sm font-semibold text-green-900 mb-1">Streak Record</div>
-                <div className="text-xs text-green-700">14 days consecutive bookmark usage</div>
+                <div className="text-sm font-semibold text-green-900 mb-1">New This Period</div>
+                <div className="text-xs text-green-700">+{data.overview.bookmarksAdded} bookmarks added recently</div>
               </div>
               <div className="p-3 rounded-lg bg-purple-50 border border-purple-200">
-                <div className="text-sm font-semibold text-purple-900 mb-1">Favorite Domain</div>
-                <div className="text-xs text-purple-700">github.com (127 visits this month)</div>
+                <div className="text-sm font-semibold text-purple-900 mb-1">Top Category</div>
+                <div className="text-xs text-purple-700">{data.topCategories.length > 0 ? `${data.topCategories[0].name} (${data.topCategories[0].time})` : 'No categories yet'}</div>
               </div>
               <div className="p-3 rounded-lg bg-orange-50 border border-orange-200">
-                <div className="text-sm font-semibold text-orange-900 mb-1">Time Saved</div>
-                <div className="text-xs text-orange-700">~2.3h saved with quick access</div>
+                <div className="text-sm font-semibold text-orange-900 mb-1">Top Performer</div>
+                <div className="text-xs text-orange-700">{data.topPerformers.length > 0 ? `${data.topPerformers[0].title} (${data.topPerformers[0].visits} visits)` : 'Visit bookmarks to see insights'}</div>
               </div>
             </div>
           </CardContent>
@@ -562,7 +562,12 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
               <div className="flex items-center gap-2">
                 <Lightbulb className="w-4 h-4 text-blue-600" />
                 <span className="text-xs text-blue-700">
-                  You're most productive on <strong>Tuesdays and Wednesdays</strong>
+                  {(() => {
+                    const maxDay = data.weeklyPattern.reduce((max, day) => day.hours > max.hours ? day : max, data.weeklyPattern[0])
+                    return maxDay && maxDay.hours > 0 
+                      ? <span>Most active on <strong>{maxDay.day}</strong> ({maxDay.hours.toFixed(1)}h)</span>
+                      : <span>Start using bookmarks to see your <strong>activity pattern</strong></span>
+                  })()}
                 </span>
               </div>
             </div>
@@ -573,23 +578,43 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <Activity className="w-5 h-5 text-gray-700" />
-              <h3 className="text-lg font-semibold text-gray-900 uppercase">PEAK HOURS ANALYSIS</h3>
+              <h3 className="text-lg font-semibold text-gray-900 uppercase">ACTIVITY SUMMARY</h3>
             </div>
-            <p className="text-sm text-gray-600 mb-4">When you're most effective with bookmarks</p>
+            <p className="text-sm text-gray-600 mb-4">Your bookmark activity metrics</p>
             <div className="space-y-3">
-              {['9-10 AM', '2-3 PM', '10-11 AM'].map((time) => (
-                <div key={time} className="p-3 rounded-lg border border-gray-200">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-semibold text-gray-900">{time}</span>
-                    <span className="text-xs text-gray-600">0% efficiency</span>
-                  </div>
-                  <Progress value={0} className="h-2" />
-                  <div className="flex items-center gap-1 mt-2">
-                    <div className="w-2 h-2 rounded-full bg-yellow-400" />
-                    <span className="text-xs text-gray-600">Low energy</span>
-                  </div>
+              <div className="p-3 rounded-lg border border-gray-200">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-semibold text-gray-900">Total Visits</span>
+                  <span className="text-xs text-gray-600">{data.overview.totalVisits} all-time</span>
                 </div>
-              ))}
+                <Progress value={Math.min(data.overview.totalVisits / 10, 100)} className="h-2" />
+                <div className="flex items-center gap-1 mt-2">
+                  <div className={`w-2 h-2 rounded-full ${data.overview.totalVisits > 100 ? 'bg-green-400' : data.overview.totalVisits > 50 ? 'bg-yellow-400' : 'bg-orange-400'}`} />
+                  <span className="text-xs text-gray-600">{data.overview.totalVisits > 100 ? 'High activity' : data.overview.totalVisits > 50 ? 'Moderate activity' : 'Growing activity'}</span>
+                </div>
+              </div>
+              <div className="p-3 rounded-lg border border-gray-200">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-semibold text-gray-900">Engagement Score</span>
+                  <span className="text-xs text-gray-600">{data.overview.engagementScore.toFixed(0)}% average</span>
+                </div>
+                <Progress value={data.overview.engagementScore} className="h-2" />
+                <div className="flex items-center gap-1 mt-2">
+                  <div className={`w-2 h-2 rounded-full ${data.overview.engagementScore > 70 ? 'bg-green-400' : data.overview.engagementScore > 40 ? 'bg-yellow-400' : 'bg-orange-400'}`} />
+                  <span className="text-xs text-gray-600">{data.overview.engagementScore > 70 ? 'Excellent engagement' : data.overview.engagementScore > 40 ? 'Good engagement' : 'Room to improve'}</span>
+                </div>
+              </div>
+              <div className="p-3 rounded-lg border border-gray-200">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-semibold text-gray-900">Active Categories</span>
+                  <span className="text-xs text-gray-600">{data.topCategories.length} categories</span>
+                </div>
+                <Progress value={Math.min(data.topCategories.length * 20, 100)} className="h-2" />
+                <div className="flex items-center gap-1 mt-2">
+                  <div className={`w-2 h-2 rounded-full ${data.topCategories.length >= 5 ? 'bg-green-400' : data.topCategories.length >= 3 ? 'bg-yellow-400' : 'bg-blue-400'}`} />
+                  <span className="text-xs text-gray-600">{data.topCategories.length >= 5 ? 'Well organized' : data.topCategories.length >= 3 ? 'Good organization' : 'Add more categories'}</span>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -601,27 +626,27 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <Target className="w-5 h-5 text-purple-500" />
-              <h3 className="text-lg font-semibold text-gray-900 uppercase">SESSION BREAKDOWN</h3>
+              <h3 className="text-lg font-semibold text-gray-900 uppercase">BOOKMARK STATS</h3>
             </div>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-700">Short sessions (&lt;30min)</span>
-                <span className="text-2xl font-bold text-gray-900 uppercase">15</span>
+                <span className="text-sm text-gray-700">Total Bookmarks</span>
+                <span className="text-2xl font-bold text-gray-900 uppercase">{data.overview.totalBookmarks}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-700">Medium sessions (30min-2h)</span>
-                <span className="text-2xl font-bold text-gray-900 uppercase">8</span>
+                <span className="text-sm text-gray-700">Added This Period</span>
+                <span className="text-2xl font-bold text-gray-900 uppercase">{data.overview.bookmarksAdded}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-700">Long sessions (&gt;2h)</span>
-                <span className="text-2xl font-bold text-gray-900 uppercase">5</span>
+                <span className="text-sm text-gray-700">Total Time Spent</span>
+                <span className="text-2xl font-bold text-gray-900 uppercase">{data.overview.activeTime}h</span>
               </div>
             </div>
             <div className="mt-4 p-3 rounded-lg bg-yellow-50 border border-yellow-200">
               <div className="flex items-center gap-2">
                 <Lightbulb className="w-4 h-4 text-yellow-600" />
                 <span className="text-xs text-yellow-700">
-                  Your optimal session length is <strong>1.8 hours</strong>
+                  Average <strong>{data.overview.totalBookmarks > 0 ? (parseFloat(data.overview.activeTime) / data.overview.totalBookmarks * 60).toFixed(1) : '0'} min</strong> per bookmark
                 </span>
               </div>
             </div>
@@ -632,27 +657,30 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <Activity className="w-5 h-5 text-red-500" />
-              <h3 className="text-lg font-semibold text-gray-900 uppercase">DISTRACTION ANALYSIS</h3>
+              <h3 className="text-lg font-semibold text-gray-900 uppercase">PERFORMANCE INSIGHTS</h3>
             </div>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-700">Tab switching rate</span>
-                <span className="text-2xl font-bold text-gray-900 uppercase">12/hour</span>
+                <span className="text-sm text-gray-700">Top Performers</span>
+                <span className="text-2xl font-bold text-gray-900 uppercase">{data.topPerformers.length}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-700">Focus streaks</span>
-                <span className="text-2xl font-bold text-gray-900 uppercase">6 avg</span>
+                <span className="text-sm text-gray-700">Needs Attention</span>
+                <span className="text-2xl font-bold text-gray-900 uppercase">{data.underperformers.length}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-700">Break frequency</span>
-                <span className="text-2xl font-bold text-gray-900 uppercase">Every 45min</span>
+                <span className="text-sm text-gray-700">Categories Active</span>
+                <span className="text-2xl font-bold text-gray-900 uppercase">{data.categoryStats.length}</span>
               </div>
             </div>
-            <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200">
+            <div className="mt-4 p-3 rounded-lg bg-blue-50 border border-blue-200">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-red-600" />
-                <span className="text-xs text-red-700">
-                  Consider <strong>25min focused work blocks</strong>
+                <Lightbulb className="w-4 h-4 text-blue-600" />
+                <span className="text-xs text-blue-700">
+                  {data.underperformers.length > 0 
+                    ? <span>Review <strong>{data.underperformers.length} underperforming</strong> bookmarks</span>
+                    : <span>All bookmarks are <strong>performing well</strong>!</span>
+                  }
                 </span>
               </div>
             </div>
@@ -663,29 +691,32 @@ function TimeTrackingTab({ data }: { data: AnalyticsData | null }) {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 mb-4">
               <Target className="w-5 h-5 text-green-500" />
-              <h3 className="text-lg font-semibold text-gray-900 uppercase">TIME GOALS</h3>
+              <h3 className="text-lg font-semibold text-gray-900 uppercase">CATEGORY OVERVIEW</h3>
             </div>
             <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-700">Daily Goal (5h)</span>
-                  <span className="text-green-600 font-semibold">85%</span>
+              {data.topCategories.slice(0, 2).map((cat, index) => (
+                <div key={index}>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="text-gray-700">{cat.name}</span>
+                    <span className="text-green-600 font-semibold">{cat.time}</span>
+                  </div>
+                  <Progress value={cat.percent} className="h-2" />
                 </div>
-                <Progress value={85} className="h-2" />
-              </div>
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-700">Weekly Goal (30h)</span>
-                  <span className="text-green-600 font-semibold">72%</span>
+              ))}
+              {data.topCategories.length === 0 && (
+                <div className="text-sm text-gray-500 text-center py-4">
+                  No category data yet
                 </div>
-                <Progress value={72} className="h-2" />
-              </div>
+              )}
             </div>
             <div className="mt-4 p-3 rounded-lg bg-green-50 border border-green-200">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-green-600" />
                 <span className="text-xs text-green-700">
-                  On track to <strong>exceed monthly goal</strong>
+                  {data.topCategories.length > 0 
+                    ? <span>Top category: <strong>{data.topCategories[0].name}</strong> with {data.topCategories[0].percent}% of time</span>
+                    : <span>Add categories to track time distribution</span>
+                  }
                 </span>
               </div>
             </div>
@@ -1065,7 +1096,10 @@ function ProjectsTab({ data }: { data: AnalyticsData | null }) {
             <div className="flex items-center gap-2">
               <Lightbulb className="w-4 h-4 text-blue-600" />
               <span className="text-xs text-blue-700">
-                <strong>Development</strong> is consuming the most resources this month
+                {resourceAllocation.length > 0 
+                  ? <span><strong>{resourceAllocation[0].category}</strong> is consuming the most time ({resourceAllocation[0].hours}h)</span>
+                  : <span>Add categories to see resource allocation</span>
+                }
               </span>
             </div>
           </div>
@@ -1235,7 +1269,10 @@ function RecommendationsTab({ data }: { data: AnalyticsData | null }) {
             <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-green-600" />
               <span className="text-xs text-green-700">
-                Your engagement is <strong>up 45%</strong> this week!
+                {trendingItems.length > 0 
+                  ? <span>You have <strong>{trendingItems.length} trending</strong> bookmarks!</span>
+                  : <span>Keep engaging with bookmarks to see <strong>trends</strong>!</span>
+                }
               </span>
             </div>
           </div>

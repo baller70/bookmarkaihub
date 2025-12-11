@@ -38,27 +38,47 @@ import {
   Globe,
   Clock,
   Check,
-  RotateCcw
+  RotateCcw,
+  Plus,
+  Sparkles as SparklesIcon,
+  BarChart3,
+  Timer,
+  Users,
+  LineChart,
+  Link2Off,
+  BookmarkCheck,
+  ShieldCheck
 } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
-type SettingsTab = "appearance" | "notifications" | "privacy" | "backup" | "billing" | "oracle"
+type SettingsTab = "appearance" | "notifications" | "privacy" | "billing" | "oracle"
 
 const ACCENT_COLORS = [
+  { name: "Default", value: "#000000" },
   { name: "Blue", value: "#3B82F6" },
   { name: "Green", value: "#10B981" },
   { name: "Purple", value: "#8B5CF6" },
   { name: "Red", value: "#EF4444" },
   { name: "Orange", value: "#F97316" },
   { name: "Cyan", value: "#06B6D4" },
+  { name: "Pink", value: "#EC4899" },
+  { name: "Indigo", value: "#6366F1" },
+  { name: "Teal", value: "#14B8A6" },
+  { name: "Amber", value: "#F59E0B" },
+]
+
+const FONT_OPTIONS = [
+  { name: "System Default", value: "system" },
+  { name: "Saira (Default)", value: "saira" },
+  { name: "Inter", value: "inter" },
+  { name: "Roboto", value: "roboto" },
 ]
 
 const settingsSections = [
   { id: "appearance" as SettingsTab, label: "Appearance", icon: Palette },
   { id: "notifications" as SettingsTab, label: "Notifications", icon: Bell },
   { id: "privacy" as SettingsTab, label: "Privacy & Security", icon: Shield },
-  { id: "backup" as SettingsTab, label: "Backup & Export", icon: Download },
   { id: "billing" as SettingsTab, label: "Billing & Subscription", icon: CreditCard },
 ]
 
@@ -69,29 +89,66 @@ export default function SettingsPage() {
   const [showCustomColorPicker, setShowCustomColorPicker] = useState(false)
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [show2FADialog, setShow2FADialog] = useState(false)
+  const [verificationCode, setVerificationCode] = useState("")
+  const [exporting, setExporting] = useState(false)
+  const [sessions, setSessions] = useState([
+    { id: "current", name: "MacBook Pro", device: "Chrome • macOS", ip: "192.168.1.200", lastActive: "Active now", current: true },
+    { id: "iphone", name: "iPhone 15 Pro", device: "Safari • iOS", ip: "192.168.1.156", lastActive: "2 hours ago", current: false },
+  ])
   const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' })
   const [qrCode, setQrCode] = useState('')
   const [settings, setSettings] = useState({
+    // Appearance
     theme: "light",
     autoScheduleThemes: false,
-    accentColor: "#3B82F6",
+    accentColor: "#000000",
     fontSize: 16,
+    fontFamily: "saira",
     dyslexiaFont: false,
+    reducedMotion: false,
+    highContrast: false,
+    compactMode: false,
+    animatedBackgrounds: true,
+    sidebarPosition: "left",
+    
+    // Notification Channels
     emailNotifications: true,
     inAppNotifications: true,
     pushNotifications: false,
+    soundEnabled: true,
+    notificationEmail: "",
+    underlineLinks: false,
+    monochromeMode: false,
+    softShadows: true,
+    notificationEmail: "",
+    
+    // Event Types
     newAIRecommendations: true,
     weeklyDigest: true,
     timeCapsuleReminders: true,
     collaborativeInvites: true,
     analyticsAlerts: false,
+    brokenLinkAlerts: true,
+    bookmarkReminders: true,
+    securityAlerts: true,
+    
+    // Quiet Hours
     quietHours: false,
+    quietHoursStart: "22:00",
+    quietHoursEnd: "07:00",
+    quietHoursWeekends: true,
+    
+    // Do Not Disturb
+    dndEnabled: false,
+    
+    // Digest Scheduling
     digestFrequency: "weekly",
     digestDay: "monday",
     digestTime: "09:00",
+    emailDigest: true,
+    
+    // Privacy & Security
     enable2FA: false,
-    autoBackups: false,
-    cloudProvider: "none",
     autoRenewal: true,
   })
 
@@ -114,13 +171,54 @@ export default function SettingsPage() {
         }
         
         // Apply saved dyslexia font
-        if (parsed.dyslexiaFont) {
+        if (parsed.dyslexiaFont !== undefined) {
           applyDyslexiaFont(parsed.dyslexiaFont)
+        }
+        
+        // Apply saved reduced motion
+        if (parsed.reducedMotion !== undefined) {
+          applyReducedMotion(parsed.reducedMotion)
+        }
+        
+        // Apply saved high contrast
+        if (parsed.highContrast !== undefined) {
+          applyHighContrast(parsed.highContrast)
+        }
+        
+        // Apply saved compact mode
+        if (parsed.compactMode !== undefined) {
+          applyCompactMode(parsed.compactMode)
+        }
+
+        if (parsed.underlineLinks !== undefined) {
+          applyUnderlineLinks(parsed.underlineLinks)
+        }
+
+        if (parsed.monochromeMode !== undefined) {
+          applyMonochromeMode(parsed.monochromeMode)
+        }
+
+        if (parsed.softShadows !== undefined) {
+          applySoftShadows(parsed.softShadows)
         }
       } catch (e) {
         console.error('Failed to parse saved settings:', e)
       }
     }
+    
+    // Also load notification settings from API
+    const loadNotificationSettings = async () => {
+      try {
+        const response = await fetch('/api/settings/notifications')
+        if (response.ok) {
+          const notifSettings = await response.json()
+          setSettings(prev => ({ ...prev, ...notifSettings }))
+        }
+      } catch (error) {
+        console.error('Failed to load notification settings:', error)
+      }
+    }
+    loadNotificationSettings()
   }, [])
 
   // Sync settings.theme with next-themes
@@ -130,25 +228,101 @@ export default function SettingsPage() {
     }
   }, [theme])
 
+  // Utility to convert hex to RGB
+  const hexToRgb = (hex: string): string => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+    if (result) {
+      return `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
+    }
+    return '59, 130, 246'
+  }
+  
+  // Calculate the best foreground color (white or black) based on background
+  const getContrastColor = (hexColor: string): string => {
+    const hex = hexColor.replace('#', '')
+    const r = parseInt(hex.substr(0, 2), 16)
+    const g = parseInt(hex.substr(2, 2), 16)
+    const b = parseInt(hex.substr(4, 2), 16)
+    // Calculate relative luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+    return luminance > 0.5 ? '#000000' : '#ffffff'
+  }
+
   // Apply accent color globally
   const applyAccentColor = (color: string) => {
+    document.documentElement.style.setProperty('--user-accent', color)
+    document.documentElement.style.setProperty('--user-accent-rgb', hexToRgb(color))
+    document.documentElement.style.setProperty('--user-accent-foreground', getContrastColor(color))
     document.documentElement.style.setProperty('--accent-color', color)
     document.documentElement.style.setProperty('--accent-color-hover', adjustColorBrightness(color, -10))
     document.documentElement.style.setProperty('--accent-color-light', adjustColorBrightness(color, 20))
+    // Apply accent class to body
+    document.body.classList.add('accent-applied')
   }
 
   // Apply font size globally
   const applyFontSize = (size: number) => {
-    document.documentElement.style.setProperty('--base-font-size', `${size}px`)
-    document.body.style.fontSize = `${size}px`
+    document.documentElement.style.setProperty('--user-font-size', `${size}px`)
+    document.documentElement.style.fontSize = `${size}px`
   }
 
   // Apply dyslexia font
   const applyDyslexiaFont = (enabled: boolean) => {
     if (enabled) {
-      document.body.classList.add('dyslexia-font')
+      document.documentElement.classList.add('dyslexia-font')
     } else {
-      document.body.classList.remove('dyslexia-font')
+      document.documentElement.classList.remove('dyslexia-font')
+    }
+  }
+
+  const applyUnderlineLinks = (enabled: boolean) => {
+    if (enabled) {
+      document.documentElement.classList.add('underline-links')
+    } else {
+      document.documentElement.classList.remove('underline-links')
+    }
+  }
+
+  const applyMonochromeMode = (enabled: boolean) => {
+    if (enabled) {
+      document.documentElement.classList.add('monochrome-mode')
+    } else {
+      document.documentElement.classList.remove('monochrome-mode')
+    }
+  }
+
+  const applySoftShadows = (enabled: boolean) => {
+    if (enabled) {
+      document.documentElement.classList.add('soft-shadows')
+    } else {
+      document.documentElement.classList.remove('soft-shadows')
+    }
+  }
+
+  // Apply reduced motion
+  const applyReducedMotion = (enabled: boolean) => {
+    if (enabled) {
+      document.documentElement.classList.add('reduced-motion')
+    } else {
+      document.documentElement.classList.remove('reduced-motion')
+    }
+  }
+
+  // Apply high contrast
+  const applyHighContrast = (enabled: boolean) => {
+    if (enabled) {
+      document.documentElement.classList.add('high-contrast')
+    } else {
+      document.documentElement.classList.remove('high-contrast')
+    }
+  }
+
+  // Apply compact mode
+  const applyCompactMode = (enabled: boolean) => {
+    if (enabled) {
+      document.documentElement.classList.add('compact-mode')
+    } else {
+      document.documentElement.classList.remove('compact-mode')
     }
   }
 
@@ -191,23 +365,76 @@ export default function SettingsPage() {
 
   // Test email notification
   const handleTestEmail = async () => {
-    toast.loading('Sending test email...')
-    setTimeout(() => {
-      toast.dismiss()
-      toast.success('Test email sent! Check your inbox.')
-    }, 1500)
+    if (!settings.emailNotifications) {
+      toast.error('Email notifications are disabled. Enable them first.')
+      return
+    }
+    if (!settings.notificationEmail) {
+      toast.error('Enter a notification email first.')
+      return
+    }
+    
+    toast.loading('Sending test email...', { id: 'test-email' })
+    
+    try {
+      const response = await fetch('/api/settings/notifications/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'email', email: settings.notificationEmail })
+      })
+      
+      toast.dismiss('test-email')
+      
+      if (response.ok) {
+        const data = await response.json()
+        toast.success(data.message || 'Test email sent! Check your inbox.', {
+          description: 'If you don\'t see it, check your spam folder.',
+          duration: 5000,
+        })
+      } else {
+        toast.error('Failed to send test email')
+      }
+    } catch (error) {
+      toast.dismiss('test-email')
+      toast.error('Failed to send test email')
+    }
   }
 
   // Test in-app notification
   const handleTestInApp = () => {
-    toast.info('This is a test in-app notification!', {
-      description: 'Your in-app notifications are working correctly.',
-      duration: 5000,
+    if (!settings.inAppNotifications) {
+      toast.error('In-app notifications are disabled. Enable them first.')
+      return
+    }
+    
+    // Show different types of toasts
+    toast.success('✨ Success notification', {
+      description: 'This is how success messages will appear.',
+      duration: 3000,
     })
+    
+    setTimeout(() => {
+      toast.info('📌 Info notification', {
+        description: 'This is how informational messages appear.',
+        duration: 3000,
+      })
+    }, 500)
+    
+    setTimeout(() => {
+      toast.warning('⚠️ Warning notification', {
+        description: 'This is how warnings appear.',
+        duration: 3000,
+      })
+    }, 1000)
   }
 
   // Test push notification
   const handleTestPush = async () => {
+    if (!settings.pushNotifications) {
+      toast.error('Push notifications are disabled. Enable them first.')
+      return
+    }
+    
     if (!('Notification' in window)) {
       toast.error('Push notifications are not supported in your browser')
       return
@@ -226,11 +453,58 @@ export default function SettingsPage() {
       }
     }
 
-    new Notification('Test Notification', {
-      body: 'Your push notifications are working correctly!',
+    // Create the notification
+    const notification = new Notification('BookmarkHub Test 🔔', {
+      body: 'Your push notifications are working correctly! You\'ll receive alerts like this.',
       icon: '/favicon.svg',
+      badge: '/favicon.svg',
+      tag: 'test-notification',
+      requireInteraction: false,
     })
+    
+    notification.onclick = () => {
+      window.focus()
+      notification.close()
+    }
+    
     toast.success('Test push notification sent!')
+  }
+  
+  // Save notification settings to API
+  const saveNotificationSettings = async () => {
+    try {
+      const notificationSettings = {
+        emailNotifications: settings.emailNotifications,
+        inAppNotifications: settings.inAppNotifications,
+        pushNotifications: settings.pushNotifications,
+        soundEnabled: settings.soundEnabled,
+        newAIRecommendations: settings.newAIRecommendations,
+        weeklyDigest: settings.weeklyDigest,
+        timeCapsuleReminders: settings.timeCapsuleReminders,
+        collaborativeInvites: settings.collaborativeInvites,
+        analyticsAlerts: settings.analyticsAlerts,
+        brokenLinkAlerts: settings.brokenLinkAlerts,
+        bookmarkReminders: settings.bookmarkReminders,
+        securityAlerts: settings.securityAlerts,
+        quietHours: settings.quietHours,
+        quietHoursStart: settings.quietHoursStart,
+        quietHoursEnd: settings.quietHoursEnd,
+        quietHoursWeekends: settings.quietHoursWeekends,
+        dndEnabled: settings.dndEnabled,
+        digestFrequency: settings.digestFrequency,
+        digestDay: settings.digestDay,
+        digestTime: settings.digestTime,
+        emailDigest: settings.emailDigest,
+      }
+      
+      await fetch('/api/settings/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(notificationSettings)
+      })
+    } catch (error) {
+      console.error('Failed to save notification settings:', error)
+    }
   }
 
   // Handle password change
@@ -261,11 +535,64 @@ export default function SettingsPage() {
     }, 1500)
   }
 
+  const signOutSession = (id: string) => {
+    setSessions((prev) => prev.filter((s) => s.id !== id || s.current))
+    toast.success(id === "current" ? "Signed out" : "Session signed out")
+  }
+
+  const signOutOtherSessions = () => {
+    setSessions((prev) => prev.filter((s) => s.current))
+    toast.success("Signed out all other sessions")
+  }
+
+  const downloadFile = (data: string, filename: string, type: string) => {
+    const blob = new Blob([data], { type })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const convertToCSV = (rows: Record<string, unknown>[]) => {
+    if (!rows.length) return ''
+    const headers = Object.keys(rows[0])
+    const csv = [
+      headers.join(','),
+      ...rows.map(row => headers.map(h => JSON.stringify(row[h] ?? '')).join(',')),
+    ]
+    return csv.join('\n')
+  }
+
+  const handleExportData = async (format: "json" | "csv") => {
+    try {
+      setExporting(true)
+      const res = await fetch('/api/bookmarks')
+      if (!res.ok) throw new Error('Failed to fetch bookmarks')
+      const data = await res.json()
+      const rows = Array.isArray(data) ? data : data.bookmarks || []
+      if (format === "json") {
+        downloadFile(JSON.stringify(rows, null, 2), 'bookmarks-export.json', 'application/json')
+      } else {
+        const csv = convertToCSV(rows)
+        downloadFile(csv, 'bookmarks-export.csv', 'text/csv')
+      }
+      toast.success(`Exported ${rows.length} bookmarks`)
+    } catch (error) {
+      console.error(error)
+      toast.error('Export failed')
+    } finally {
+      setExporting(false)
+    }
+  }
+
   // Handle 2FA toggle
   const handle2FAToggle = async (enabled: boolean) => {
     if (enabled) {
       // Generate mock QR code (in a real app, this would come from the backend)
       setQrCode('https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/BookmarkAI:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=BookmarkAI')
+      setVerificationCode("")
       setShow2FADialog(true)
     } else {
       // Disable 2FA
@@ -275,17 +602,23 @@ export default function SettingsPage() {
         setSettings({ ...settings, enable2FA: false })
         toast.success('Two-factor authentication disabled')
       }, 1000)
+      setVerificationCode("")
     }
   }
 
   // Confirm 2FA setup
   const confirm2FASetup = () => {
+    if (!/^[0-9]{6}$/.test(verificationCode)) {
+      toast.error('Enter the 6-digit code from your authenticator app')
+      return
+    }
     toast.success('Two-factor authentication enabled successfully!')
     setSettings({ ...settings, enable2FA: true })
+    setVerificationCode("")
     setShow2FADialog(false)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Save all settings to localStorage
     localStorage.setItem('userSettings', JSON.stringify(settings))
     
@@ -301,6 +634,23 @@ export default function SettingsPage() {
     // Apply dyslexia font
     applyDyslexiaFont(settings.dyslexiaFont)
     
+    // Apply reduced motion
+    applyReducedMotion(settings.reducedMotion)
+    
+    // Apply high contrast
+    applyHighContrast(settings.highContrast)
+    
+    // Apply compact mode
+    applyCompactMode(settings.compactMode)
+
+    // Apply new appearance options
+    applyUnderlineLinks(settings.underlineLinks)
+    applyMonochromeMode(settings.monochromeMode)
+    applySoftShadows(settings.softShadows)
+    
+    // Save notification settings to API
+    await saveNotificationSettings()
+    
     toast.success("Settings saved successfully!")
   }
 
@@ -314,26 +664,26 @@ export default function SettingsPage() {
 
   return (
     <DashboardAuth>
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white dark:bg-slate-900">
         <div className="container mx-auto py-4 sm:py-8 px-3 sm:px-4">
           {/* Main bordered container */}
-          <div className="border border-gray-300 rounded-lg p-4 sm:p-6 bg-white">
+          <div className="border border-gray-300 dark:border-slate-700 rounded-lg p-4 sm:p-6 bg-white dark:bg-slate-800">
             {/* Top Navigation Bar */}
-            <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b pb-4">
+            <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-gray-200 dark:border-slate-700 pb-4">
               <div className="flex items-center gap-4 sm:gap-8 flex-wrap w-full sm:w-auto">
                 <Button
                   variant="ghost"
                   onClick={() => router.push('/dashboard')}
-                  className="gap-2 text-xs sm:text-sm text-gray-600 hover:text-gray-900 px-0"
+                  className="gap-2 text-xs sm:text-sm text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white px-0"
                 >
                   <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
                   Back to Dashboard
                 </Button>
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <SettingsIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                  <span className="text-sm sm:text-base font-semibold">SETTINGS</span>
-                  <span className="text-gray-400 hidden sm:inline">-</span>
-                  <span className="text-sm sm:text-base text-gray-700 hidden sm:inline">{getCurrentSectionLabel()}</span>
+                  <SettingsIcon className="h-4 w-4 sm:h-5 sm:w-5 dark:text-white" />
+                  <span className="text-sm sm:text-base font-semibold dark:text-white">SETTINGS</span>
+                  <span className="text-gray-400 dark:text-slate-500 hidden sm:inline">-</span>
+                  <span className="text-sm sm:text-base text-gray-700 dark:text-slate-300 hidden sm:inline">{getCurrentSectionLabel()}</span>
                 </div>
               </div>
               <div className="flex items-center gap-1 sm:gap-2">
@@ -353,10 +703,10 @@ export default function SettingsPage() {
               {/* Left sidebar - Settings Sections */}
               <div className="lg:col-span-1 space-y-6">
                 {/* Settings Sections Card */}
-                <Card className="bg-white border shadow-sm">
+                <Card className="bg-white dark:bg-slate-800 border dark:border-slate-700 shadow-sm">
                   <CardHeader className="pb-4">
-                    <h2 className="text-xl font-bold text-black mb-2 uppercase">Settings</h2>
-                    <p className="text-sm text-gray-600">Customize your experience</p>
+                    <h2 className="text-xl font-bold text-black dark:text-white mb-2 uppercase">Settings</h2>
+                    <p className="text-sm text-gray-600 dark:text-slate-400">Customize your experience</p>
                   </CardHeader>
                   <CardContent className="space-y-2 pb-6">
                     {settingsSections.map((section) => {
@@ -370,8 +720,8 @@ export default function SettingsPage() {
                           className={cn(
                             "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors",
                             isActive 
-                              ? "bg-black text-white font-medium" 
-                              : "text-gray-700 hover:bg-gray-100"
+                              ? "bg-black dark:bg-slate-700 text-white font-medium" 
+                              : "text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700"
                           )}
                         >
                           <Icon className="h-5 w-5 flex-shrink-0" />
@@ -381,7 +731,7 @@ export default function SettingsPage() {
                     })}
                     <button
                       onClick={() => router.push("/settings/oracle")}
-                      className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-100"
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700"
                     >
                       <Sparkles className="h-5 w-5 flex-shrink-0" />
                       <span className="flex-1">Oracle AI Chat Bot</span>
@@ -394,149 +744,230 @@ export default function SettingsPage() {
               <div className="lg:col-span-2">
               {/* Appearance Tab */}
               {activeTab === "appearance" && (
-                <Card className="p-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Palette className="h-5 w-5 text-blue-600" />
-                    <h2 className="text-lg font-semibold">APPEARANCE</h2>
+                <Card className="p-5">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Palette className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                    <h2 className="text-base font-semibold text-gray-900 dark:text-white">APPEARANCE</h2>
                   </div>
-                  <p className="text-sm text-gray-600 mb-6">Personalize the look and feel to match your taste and environment</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-5">Customize the look and feel</p>
 
-                  <div className="space-y-8">
-                    {/* Theme Selection */}
+                  <div className="space-y-5">
+                    {/* Theme Selection - Compact */}
                     <div>
-                      <h3 className="font-semibold mb-4">THEME SELECTION</h3>
-                      <div className="space-y-4">
-                        <div>
-                          <Label className="text-sm font-normal text-gray-700">Theme</Label>
-                          <Select value={settings.theme} onValueChange={handleThemeChange}>
-                            <SelectTrigger className="w-full mt-1">
-                              <SelectValue>
-                                <div className="flex items-center gap-2">
-                                  <Sun className="h-4 w-4" />
-                                  {settings.theme === "light" ? "Light" : settings.theme === "dark" ? "Dark" : "Auto"}
-                                </div>
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="light">
-                                <div className="flex items-center gap-2">
-                                  <Sun className="h-4 w-4" />
-                                  Light
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="dark">
-                                <div className="flex items-center gap-2">
-                                  <Sun className="h-4 w-4" />
-                                  Dark
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="system">
-                                <div className="flex items-center gap-2">
-                                  <Sun className="h-4 w-4" />
-                                  System
-                                </div>
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                      <h3 className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">Theme</h3>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleThemeChange("light")}
+                          className={cn(
+                            "flex-1 py-2 px-3 rounded border text-sm font-medium transition-all flex items-center justify-center gap-2",
+                            settings.theme === "light"
+                              ? "border-gray-900 bg-gray-100 dark:border-white dark:bg-gray-800"
+                              : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                          )}
+                        >
+                          <div className="w-4 h-4 rounded-full bg-white border border-gray-300"></div>
+                          Light
+                        </button>
+                        <button
+                          onClick={() => handleThemeChange("dark")}
+                          className={cn(
+                            "flex-1 py-2 px-3 rounded border text-sm font-medium transition-all flex items-center justify-center gap-2",
+                            settings.theme === "dark"
+                              ? "border-gray-900 bg-gray-100 dark:border-white dark:bg-gray-800"
+                              : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                          )}
+                        >
+                          <div className="w-4 h-4 rounded-full bg-gray-900 dark:bg-gray-100"></div>
+                          Dark
+                        </button>
+                        <button
+                          onClick={() => handleThemeChange("system")}
+                          className={cn(
+                            "flex-1 py-2 px-3 rounded border text-sm font-medium transition-all flex items-center justify-center gap-2",
+                            settings.theme === "system"
+                              ? "border-gray-900 bg-gray-100 dark:border-white dark:bg-gray-800"
+                              : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                          )}
+                        >
+                          <div className="w-4 h-4 rounded-full bg-gradient-to-br from-white to-gray-900 border border-gray-300"></div>
+                          System
+                        </button>
+                      </div>
+                    </div>
 
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium text-sm">Auto-schedule themes</p>
-                            <p className="text-sm text-gray-600">Switch themes on a custom time schedule</p>
-                          </div>
+                    <Separator className="my-4" />
+
+                    {/* Accent Color - Compact */}
+                    <div>
+                      <h3 className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">Accent Color</h3>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {ACCENT_COLORS.map((color) => (
+                          <button
+                            key={color.value}
+                            onClick={() => handleAccentColorChange(color.value)}
+                            title={color.name}
+                            className={cn(
+                              "w-7 h-7 rounded-md transition-all",
+                              settings.accentColor === color.value
+                                ? "ring-2 ring-offset-1 ring-gray-900 dark:ring-white"
+                                : "hover:scale-110"
+                            )}
+                            style={{ backgroundColor: color.value }}
+                          >
+                            {settings.accentColor === color.value && (
+                              <Check className="h-3 w-3 text-white mx-auto drop-shadow" />
+                            )}
+                          </button>
+                        ))}
+                        {/* Custom color picker */}
+                        <div className="relative">
+                          <button
+                            onClick={() => setShowCustomColorPicker(!showCustomColorPicker)}
+                            className="w-7 h-7 rounded-md border border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-400 hover:border-gray-400 transition-colors"
+                          >
+                            <span className="text-sm">+</span>
+                          </button>
+                          {showCustomColorPicker && (
+                            <div className="absolute top-full mt-1 left-0 z-10 p-2 bg-white dark:bg-gray-800 rounded shadow-lg border dark:border-gray-700">
+                              <input
+                                type="color"
+                                value={settings.accentColor}
+                                onChange={(e) => handleAccentColorChange(e.target.value)}
+                                className="w-24 h-24 border-0 cursor-pointer rounded"
+                              />
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="w-full mt-1 h-7 text-xs"
+                                onClick={() => setShowCustomColorPicker(false)}
+                              >
+                                Done
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-2">
+                        Applied to buttons, links, and highlights
+                      </p>
+                    </div>
+
+                    <Separator className="my-4" />
+
+                    {/* Font Size - Compact */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">Font Size</h3>
+                        <span className="text-xs font-mono text-gray-500">{settings.fontSize}px</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-gray-400">A</span>
+                        <Slider
+                          value={[settings.fontSize]}
+                          onValueChange={([value]) => handleFontSizeChange(value)}
+                          min={12}
+                          max={22}
+                          step={1}
+                          className="flex-1"
+                        />
+                        <span className="text-sm text-gray-400">A</span>
+                      </div>
+                    </div>
+
+                    <Separator className="my-4" />
+
+                    {/* Accessibility Options - Compact list */}
+                    <div>
+                      <h3 className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">Accessibility</h3>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-sm text-gray-700 dark:text-gray-300">Dyslexia-friendly font</span>
                           <Switch
-                            checked={settings.autoScheduleThemes}
-                            onCheckedChange={(checked) => setSettings({ ...settings, autoScheduleThemes: checked })}
+                            checked={settings.dyslexiaFont}
+                            onCheckedChange={handleDyslexiaFontChange}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-sm text-gray-700 dark:text-gray-300">Reduced motion</span>
+                          <Switch
+                            checked={settings.reducedMotion}
+                            onCheckedChange={(checked) => {
+                              setSettings({ ...settings, reducedMotion: checked })
+                              applyReducedMotion(checked)
+                            }}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-sm text-gray-700 dark:text-gray-300">High contrast</span>
+                          <Switch
+                            checked={settings.highContrast}
+                            onCheckedChange={(checked) => {
+                              setSettings({ ...settings, highContrast: checked })
+                              applyHighContrast(checked)
+                            }}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-sm text-gray-700 dark:text-gray-300">Compact mode</span>
+                          <Switch
+                            checked={settings.compactMode}
+                            onCheckedChange={(checked) => {
+                              setSettings({ ...settings, compactMode: checked })
+                              applyCompactMode(checked)
+                            }}
                           />
                         </div>
                       </div>
                     </div>
 
-                    <Separator />
+                    <Separator className="my-4" />
 
-                    {/* Accent & Highlight Colors */}
-                    <div>
-                      <h3 className="font-semibold mb-4">ACCENT & HIGHLIGHT COLORS</h3>
-                      <div className="space-y-3">
-                        <Label className="text-sm font-normal text-gray-700">Color Palette</Label>
-                        <div className="flex gap-3 flex-wrap">
-                          {ACCENT_COLORS.map((color) => (
-                            <button
-                              key={color.value}
-                              onClick={() => handleAccentColorChange(color.value)}
-                              className={cn(
-                                "w-16 h-12 rounded-lg transition-all",
-                                settings.accentColor === color.value
-                                  ? "ring-2 ring-offset-2 ring-blue-600"
-                                  : "hover:scale-105"
-                              )}
-                              style={{ backgroundColor: color.value }}
-                            />
-                          ))}
-                          <div className="relative">
-                            <button
-                              onClick={() => setShowCustomColorPicker(!showCustomColorPicker)}
-                              className="w-16 h-12 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-xs text-gray-600 hover:border-gray-400 transition-colors"
-                            >
-                              Custom
-                            </button>
-                            {showCustomColorPicker && (
-                              <div className="absolute top-full mt-2 z-10 p-3 bg-white rounded-lg shadow-lg border">
-                                <input
-                                  type="color"
-                                  value={settings.accentColor}
-                                  onChange={(e) => handleAccentColorChange(e.target.value)}
-                                  className="w-32 h-32 border-0 cursor-pointer"
-                                />
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="w-full mt-2"
-                                  onClick={() => setShowCustomColorPicker(false)}
-                                >
-                                  Done
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    {/* Font & Text Size */}
-                    <div>
-                      <h3 className="font-semibold mb-4">FONT & TEXT SIZE</h3>
-                      <div className="space-y-4">
-                        <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <Label className="text-sm font-normal text-gray-700">Font Size</Label>
-                            <span className="text-sm font-medium">{settings.fontSize}px</span>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <span className="text-xs text-gray-500">Small</span>
-                            <Slider
-                              value={[settings.fontSize]}
-                              onValueChange={([value]) => handleFontSizeChange(value)}
-                              min={12}
-                              max={20}
-                              step={1}
-                              className="flex-1"
-                            />
-                            <span className="text-xs text-gray-500">Large</span>
-                          </div>
-                        </div>
-
+                    {/* Visual Tweaks */}
+                    <div className="grid md:grid-cols-3 gap-3">
+                      <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900/50">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="font-medium text-sm">Dyslexia-friendly font</p>
-                            <p className="text-sm text-gray-600">Use OpenDyslexic font for better readability</p>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Underline links</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Show underlines on hover</p>
                           </div>
                           <Switch
-                            checked={settings.dyslexiaFont}
-                            onCheckedChange={handleDyslexiaFontChange}
+                            checked={settings.underlineLinks}
+                            onCheckedChange={(checked) => {
+                              setSettings({ ...settings, underlineLinks: checked })
+                              applyUnderlineLinks(checked)
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900/50">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Soft shadows</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Slightly elevated cards</p>
+                          </div>
+                          <Switch
+                            checked={settings.softShadows}
+                            onCheckedChange={(checked) => {
+                              setSettings({ ...settings, softShadows: checked })
+                              applySoftShadows(checked)
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900/50">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Calm colors</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Slightly reduced saturation</p>
+                          </div>
+                          <Switch
+                            checked={settings.monochromeMode}
+                            onCheckedChange={(checked) => {
+                              setSettings({ ...settings, monochromeMode: checked })
+                              applyMonochromeMode(checked)
+                            }}
                           />
                         </div>
                       </div>
@@ -547,181 +978,402 @@ export default function SettingsPage() {
 
               {/* Notifications Tab */}
               {activeTab === "notifications" && (
-                <Card className="p-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Bell className="h-5 w-5 text-blue-600" />
-                    <h2 className="text-lg font-semibold">NOTIFICATIONS</h2>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-6">Manage how and when the app communicates updates, reminders, and alerts</p>
-
-                  <div className="space-y-8">
-                    {/* Notification Channels */}
+                <Card className="p-6 space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
+                      <Bell className="h-5 w-5" />
+                    </div>
                     <div>
-                      <h3 className="font-semibold mb-4">NOTIFICATION CHANNELS</h3>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <Mail className="h-5 w-5 text-gray-600" />
-                            <div>
-                              <p className="font-medium text-sm">Email</p>
-                              <p className="text-sm text-gray-600">Receive notifications via email</p>
+                      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 uppercase">NOTIFICATIONS</h2>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Control channels, events, quiet hours, and digests</p>
+                    </div>
+                  </div>
+
+                  {/* Channels & Event Types (stacked) */}
+                  <div className="space-y-4">
+                    {/* Channels */}
+                    <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 shadow-sm">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-slate-800">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">Channels</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">How you receive notifications</p>
+                        </div>
+                        <div className="flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400">
+                          <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-slate-800">3 channels</span>
+                        </div>
+                      </div>
+
+                      <div className="p-4 space-y-3">
+                        {/* Email Channel */}
+                        <div className={cn(
+                          "flex items-center justify-between p-3 rounded-xl border transition-all",
+                          settings.emailNotifications 
+                            ? "border-emerald-200 bg-emerald-50/70 dark:border-emerald-700 dark:bg-emerald-900/30" 
+                            : "border-gray-200 dark:border-gray-700"
+                        )}>
+                          <div className="flex-1 space-y-2">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-3">
+                                <div className={cn(
+                                  "w-9 h-9 rounded-lg flex items-center justify-center",
+                                  settings.emailNotifications ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-800/80 dark:text-emerald-200" : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+                                )}>
+                                  <Mail className="h-4 w-4" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Email</p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">Inbox notifications</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {settings.emailNotifications && (
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={handleTestEmail}
+                                    className="h-8 text-xs"
+                                  >
+                                    Test
+                                  </Button>
+                                )}
+                                <Switch
+                                  checked={settings.emailNotifications}
+                                  onCheckedChange={(checked) => {
+                                    setSettings({ ...settings, emailNotifications: checked })
+                                    toast.success(checked ? 'Email enabled' : 'Email disabled')
+                                  }}
+                                />
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Switch
-                              checked={settings.emailNotifications}
-                              onCheckedChange={(checked) => setSettings({ ...settings, emailNotifications: checked })}
-                            />
-                            <Button variant="outline" size="sm" onClick={handleTestEmail}>Test</Button>
+                            {settings.emailNotifications && (
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                <div className="sm:col-span-2">
+                                  <Input 
+                                    type="email"
+                                    placeholder="you@example.com"
+                                    value={settings.notificationEmail}
+                                    onChange={(e) => setSettings({ ...settings, notificationEmail: e.target.value })}
+                                    className="h-9 text-sm"
+                                  />
+                                </div>
+                                <div className="flex items-center text-[11px] text-gray-500 dark:text-gray-400">
+                                  This address receives email notifications
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between p-4 border rounded-lg">
+                        {/* In-App Channel */}
+                        <div className={cn(
+                          "flex items-center justify-between p-3 rounded-xl border transition-all",
+                          settings.inAppNotifications 
+                            ? "border-blue-200 bg-blue-50/70 dark:border-blue-700 dark:bg-blue-900/30" 
+                            : "border-gray-200 dark:border-gray-700"
+                        )}>
                           <div className="flex items-center gap-3">
-                            <Smartphone className="h-5 w-5 text-gray-600" />
+                            <div className={cn(
+                              "w-9 h-9 rounded-lg flex items-center justify-center",
+                              settings.inAppNotifications ? "bg-blue-100 text-blue-700 dark:bg-blue-800/80 dark:text-blue-200" : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+                            )}>
+                              <Smartphone className="h-4 w-4" />
+                            </div>
                             <div>
-                              <p className="font-medium text-sm">In-app</p>
-                              <p className="text-sm text-gray-600">Show badges and toast notifications</p>
+                              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">In-App</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">Toast & badge alerts</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
+                            {settings.inAppNotifications && (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={handleTestInApp}
+                                className="h-8 text-xs"
+                              >
+                                Test
+                              </Button>
+                            )}
                             <Switch
                               checked={settings.inAppNotifications}
-                              onCheckedChange={(checked) => setSettings({ ...settings, inAppNotifications: checked })}
+                              onCheckedChange={(checked) => {
+                                setSettings({ ...settings, inAppNotifications: checked })
+                                toast.success(checked ? 'In-app enabled' : 'In-app disabled')
+                              }}
                             />
-                            <Button variant="outline" size="sm" onClick={handleTestInApp}>Test</Button>
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between p-4 border rounded-lg">
+                        {/* Push Notifications Channel */}
+                        <div className={cn(
+                          "flex items-center justify-between p-3 rounded-xl border transition-all",
+                          settings.pushNotifications 
+                            ? "border-purple-200 bg-purple-50/70 dark:border-purple-700 dark:bg-purple-900/30" 
+                            : "border-gray-200 dark:border-gray-700"
+                        )}>
                           <div className="flex items-center gap-3">
-                            <Chrome className="h-5 w-5 text-gray-600" />
+                            <div className={cn(
+                              "w-9 h-9 rounded-lg flex items-center justify-center",
+                              settings.pushNotifications ? "bg-purple-100 text-purple-700 dark:bg-purple-800/80 dark:text-purple-200" : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+                            )}>
+                              <Chrome className="h-4 w-4" />
+                            </div>
                             <div>
-                              <p className="font-medium text-sm">Push (Browser)</p>
-                              <p className="text-sm text-gray-600">
-                                {typeof window !== 'undefined' && Notification?.permission === 'denied' 
-                                  ? 'Permission denied - enable in browser settings'
-                                  : 'Enable push notifications'}
+                              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Push (Browser)</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {typeof window !== 'undefined' && 'Notification' in window
+                                  ? Notification.permission === 'denied' 
+                                    ? 'Blocked in settings'
+                                    : Notification.permission === 'granted'
+                                    ? 'Enabled'
+                                    : 'Click to enable'
+                                  : 'Not supported'}
                               </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
+                            {settings.pushNotifications && (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={handleTestPush}
+                                className="h-8 text-xs"
+                              >
+                                Test
+                              </Button>
+                            )}
                             <Switch
                               checked={settings.pushNotifications}
-                              onCheckedChange={(checked) => setSettings({ ...settings, pushNotifications: checked })}
+                              onCheckedChange={async (checked) => {
+                                if (checked) {
+                                  if ('Notification' in window) {
+                                    if (Notification.permission === 'denied') {
+                                      toast.error('Push blocked. Enable in browser settings.')
+                                      return
+                                    }
+                                    if (Notification.permission === 'default') {
+                                      const permission = await Notification.requestPermission()
+                                      if (permission !== 'granted') {
+                                        toast.error('Permission denied')
+                                        return
+                                      }
+                                    }
+                                  } else {
+                                    toast.error('Not supported in this browser')
+                                    return
+                                  }
+                                }
+                                setSettings({ ...settings, pushNotifications: checked })
+                                toast.success(checked ? 'Push enabled' : 'Push disabled')
+                              }}
                             />
-                            <Button variant="outline" size="sm" onClick={handleTestPush}>Test</Button>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <Separator />
-
                     {/* Event Types */}
-                    <div>
-                      <h3 className="font-semibold mb-4">EVENT TYPES</h3>
-                      <div className="space-y-4">
+                    <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 shadow-sm">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-slate-800">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">Event Types</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Choose what you get notified about</p>
+                        </div>
+                        <button 
+                          onClick={() => {
+                            setSettings({
+                              ...settings,
+                              newAIRecommendations: true,
+                              weeklyDigest: true,
+                              timeCapsuleReminders: true,
+                              collaborativeInvites: true,
+                              analyticsAlerts: true,
+                              brokenLinkAlerts: true,
+                              bookmarkReminders: true,
+                              securityAlerts: true,
+                            })
+                            toast.success('All enabled')
+                          }}
+                          className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                        >
+                          Enable all
+                        </button>
+                      </div>
+
+                      <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                         {[
-                          { 
-                            label: "New AI Recommendations", 
-                            description: "When AI suggests new bookmarks or insights",
-                            checked: settings.newAIRecommendations,
-                            onChange: (checked: boolean) => setSettings({ ...settings, newAIRecommendations: checked })
-                          },
-                          { 
-                            label: "Weekly Digest", 
-                            description: "Summary of your activity and insights",
-                            checked: settings.weeklyDigest,
-                            onChange: (checked: boolean) => setSettings({ ...settings, weeklyDigest: checked })
-                          },
-                          { 
-                            label: "Time Capsule Reminders", 
-                            description: "Reminders to create or review time capsules",
-                            checked: settings.timeCapsuleReminders,
-                            onChange: (checked: boolean) => setSettings({ ...settings, timeCapsuleReminders: checked })
-                          },
-                          { 
-                            label: "Collaborative Playbook Invites", 
-                            description: "When someone invites you to collaborate",
-                            checked: settings.collaborativeInvites,
-                            onChange: (checked: boolean) => setSettings({ ...settings, collaborativeInvites: checked })
-                          },
-                          { 
-                            label: "Analytics Alerts", 
-                            description: "Traffic spikes and unusual activity",
-                            checked: settings.analyticsAlerts,
-                            onChange: (checked: boolean) => setSettings({ ...settings, analyticsAlerts: checked })
-                          },
+                          { key: 'newAIRecommendations', label: "AI Recommendations", description: "New suggestions & recs", icon: <SparklesIcon className="h-4 w-4" />, checked: settings.newAIRecommendations },
+                          { key: 'weeklyDigest', label: "Weekly Digest", description: "Summary each week", icon: <BarChart3 className="h-4 w-4" />, checked: settings.weeklyDigest },
+                          { key: 'timeCapsuleReminders', label: "Time Capsule", description: "Snapshot reminders", icon: <Timer className="h-4 w-4" />, checked: settings.timeCapsuleReminders },
+                          { key: 'collaborativeInvites', label: "Collaboration", description: "Playbook invites", icon: <Users className="h-4 w-4" />, checked: settings.collaborativeInvites },
+                          { key: 'analyticsAlerts', label: "Analytics", description: "Engagement alerts", icon: <LineChart className="h-4 w-4" />, checked: settings.analyticsAlerts },
+                          { key: 'brokenLinkAlerts', label: "Broken Links", description: "Link health issues", icon: <Link2Off className="h-4 w-4" />, checked: settings.brokenLinkAlerts !== false },
+                          { key: 'bookmarkReminders', label: "Reminders", description: "Bookmark follow-ups", icon: <BookmarkCheck className="h-4 w-4" />, checked: settings.bookmarkReminders !== false },
+                          { key: 'securityAlerts', label: "Security", description: "Account security", icon: <ShieldCheck className="h-4 w-4" />, checked: settings.securityAlerts !== false },
                         ].map((item) => (
-                          <div key={item.label} className="flex items-center justify-between">
-                            <div>
-                              <p className="font-medium text-sm">{item.label}</p>
-                              <p className="text-sm text-gray-600">{item.description}</p>
+                          <div 
+                            key={item.key} 
+                            className={cn(
+                              "flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer",
+                              item.checked 
+                                ? "border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800/60" 
+                                : "border-gray-200 dark:border-gray-700 opacity-70 hover:opacity-100"
+                            )}
+                            onClick={() => {
+                              const newValue = !item.checked
+                              setSettings({ ...settings, [item.key]: newValue })
+                            }}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={cn(
+                                "w-9 h-9 rounded-lg flex items-center justify-center",
+                                item.checked ? "bg-blue-100 text-blue-700 dark:bg-blue-800/80 dark:text-blue-200" : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+                              )}>
+                                {item.icon}
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{item.label}</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">{item.description}</span>
+                              </div>
                             </div>
-                            <Switch checked={item.checked} onCheckedChange={item.onChange} />
+                            <Switch 
+                              checked={item.checked} 
+                              onCheckedChange={(checked) => setSettings({ ...settings, [item.key]: checked })}
+                              className="scale-90"
+                            />
                           </div>
                         ))}
                       </div>
                     </div>
+                  </div>
 
-                    <Separator />
-
+                  {/* Quiet hours & Digest */}
+                  <div className="grid lg:grid-cols-2 gap-4">
                     {/* Quiet Hours */}
-                    <div>
-                      <h3 className="font-semibold mb-4">QUIET HOURS</h3>
+                    <div className={cn(
+                      "rounded-2xl border p-4 transition-all shadow-sm",
+                      settings.quietHours 
+                        ? "border-amber-200 bg-amber-50/70 dark:border-amber-700 dark:bg-amber-900/30" 
+                        : "border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900/50"
+                    )}>
                       <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium text-sm">Enable Quiet Hours</p>
-                          <p className="text-sm text-gray-600">Silence non-critical alerts during specified times</p>
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            "w-9 h-9 rounded-lg flex items-center justify-center",
+                            settings.quietHours ? "bg-amber-100 text-amber-700 dark:bg-amber-800/80 dark:text-amber-200" : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+                          )}>
+                            <Clock className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Quiet hours</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Silence alerts during set times</p>
+                          </div>
                         </div>
                         <Switch
                           checked={settings.quietHours}
-                          onCheckedChange={(checked) => setSettings({ ...settings, quietHours: checked })}
+                          onCheckedChange={(checked) => {
+                            setSettings({ ...settings, quietHours: checked })
+                            toast.success(checked ? 'Quiet hours on' : 'Quiet hours off')
+                          }}
                         />
                       </div>
+
+                      {settings.quietHours && (
+                        <div className="mt-4 grid grid-cols-3 gap-3">
+                          <div>
+                            <Label className="text-xs text-gray-500 dark:text-gray-400">Start</Label>
+                            <Input 
+                              type="time" 
+                              value={settings.quietHoursStart || '22:00'} 
+                              onChange={(e) => setSettings({ ...settings, quietHoursStart: e.target.value })}
+                              className="h-9 text-xs mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs text-gray-500 dark:text-gray-400">End</Label>
+                            <Input 
+                              type="time" 
+                              value={settings.quietHoursEnd || '07:00'} 
+                              onChange={(e) => setSettings({ ...settings, quietHoursEnd: e.target.value })}
+                              className="h-9 text-xs mt-1"
+                            />
+                          </div>
+                          <div className="flex items-end">
+                            <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={settings.quietHoursWeekends !== false}
+                                onChange={(e) => setSettings({ ...settings, quietHoursWeekends: e.target.checked })}
+                                className="rounded border-gray-300 dark:border-gray-600"
+                              />
+                              Weekends
+                            </label>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
-                    <Separator />
-
                     {/* Digest Scheduling */}
-                    <div>
-                      <h3 className="font-semibold mb-4">DIGEST SCHEDULING</h3>
-                      <div className="grid grid-cols-3 gap-4">
+                    <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 p-4 shadow-sm">
+                      <div className="flex items-center justify-between mb-3">
                         <div>
-                          <Label className="text-sm font-normal text-gray-700 mb-2 block">Frequency</Label>
-                          <Select value={settings.digestFrequency} onValueChange={(value) => setSettings({ ...settings, digestFrequency: value })}>
-                            <SelectTrigger>
+                          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">Digest Schedule</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Control summary delivery</p>
+                        </div>
+                        <span className="text-[11px] px-2 py-1 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400">
+                          {settings.digestFrequency ? settings.digestFrequency : 'off'}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-3">
+                        <div>
+                          <Label className="text-xs text-gray-500 dark:text-gray-400">Frequency</Label>
+                          <Select 
+                            value={settings.digestFrequency} 
+                            onValueChange={(value) => setSettings({ ...settings, digestFrequency: value })}
+                          >
+                            <SelectTrigger className="h-9 text-sm mt-1">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="daily">Daily</SelectItem>
                               <SelectItem value="weekly">Weekly</SelectItem>
                               <SelectItem value="monthly">Monthly</SelectItem>
+                              <SelectItem value="never">Never</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
-                        <div>
-                          <Label className="text-sm font-normal text-gray-700 mb-2 block">Day</Label>
-                          <Select value={settings.digestDay} onValueChange={(value) => setSettings({ ...settings, digestDay: value })}>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="monday">Monday</SelectItem>
-                              <SelectItem value="tuesday">Tuesday</SelectItem>
-                              <SelectItem value="wednesday">Wednesday</SelectItem>
-                              <SelectItem value="thursday">Thursday</SelectItem>
-                              <SelectItem value="friday">Friday</SelectItem>
-                              <SelectItem value="saturday">Saturday</SelectItem>
-                              <SelectItem value="sunday">Sunday</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label className="text-sm font-normal text-gray-700 mb-2 block">Time</Label>
-                          <Input type="time" value={settings.digestTime} onChange={(e) => setSettings({ ...settings, digestTime: e.target.value })} />
-                        </div>
+
+                        {settings.digestFrequency !== 'daily' && settings.digestFrequency !== 'never' && (
+                          <div>
+                            <Label className="text-xs text-gray-500 dark:text-gray-400">Day</Label>
+                            <Select 
+                              value={settings.digestDay} 
+                              onValueChange={(value) => setSettings({ ...settings, digestDay: value })}
+                            >
+                              <SelectTrigger className="h-9 text-sm mt-1">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {['monday','tuesday','wednesday','thursday','friday','saturday','sunday'].map(day => (
+                                  <SelectItem key={day} value={day}>{day.charAt(0).toUpperCase() + day.slice(1)}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+
+                        {settings.digestFrequency !== 'never' && (
+                          <div>
+                            <Label className="text-xs text-gray-500 dark:text-gray-400">Time</Label>
+                            <Input 
+                              type="time" 
+                              value={settings.digestTime} 
+                              onChange={(e) => setSettings({ ...settings, digestTime: e.target.value })} 
+                              className="h-9 text-sm mt-1"
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -735,7 +1387,7 @@ export default function SettingsPage() {
                     <Shield className="h-5 w-5 text-blue-600" />
                     <h2 className="text-lg font-semibold">PRIVACY & SECURITY</h2>
                   </div>
-                  <p className="text-sm text-gray-600 mb-6">Control your data, sessions, and account safety</p>
+                  <p className="text-sm text-gray-600 dark:text-slate-400 mb-6">Control your data, sessions, and account safety</p>
 
                   <div className="space-y-8">
                     {/* Password Management */}
@@ -770,27 +1422,30 @@ export default function SettingsPage() {
                     <div>
                       <h3 className="font-semibold mb-4">SESSION & DEVICE MANAGEMENT</h3>
                       <div className="space-y-3">
-                        <div className="flex items-center justify-between p-4 border rounded-lg">
-                          <div>
-                            <p className="font-medium text-sm">Current Session</p>
-                            <p className="text-sm text-gray-600">MacBook Pro • Chrome • 192.168.1.200 • Active now</p>
+                        {sessions.map((sessionItem) => (
+                          <div key={sessionItem.id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div>
+                              <p className="font-medium text-sm">{sessionItem.name}</p>
+                              <p className="text-sm text-gray-600">
+                                {sessionItem.device} • {sessionItem.ip} • {sessionItem.lastActive}
+                              </p>
+                            </div>
+                            {sessionItem.current ? (
+                              <Badge>Current</Badge>
+                            ) : (
+                              <Button variant="outline" size="sm" onClick={() => signOutSession(sessionItem.id)}>
+                                <LogOut className="h-3 w-3 mr-1" />
+                                Sign Out
+                              </Button>
+                            )}
                           </div>
-                          <Badge>Current</Badge>
-                        </div>
-                        <div className="flex items-center justify-between p-4 border rounded-lg">
-                          <div>
-                            <p className="font-medium text-sm">iPhone 15 Pro</p>
-                            <p className="text-sm text-gray-600">Safari • 192.168.1.156 • 2 hours ago</p>
-                          </div>
-                          <Button variant="outline" size="sm">
-                            <LogOut className="h-3 w-3 mr-1" />
-                            Sign Out
+                        ))}
+                        {sessions.some(s => !s.current) && (
+                          <Button variant="destructive" className="w-full" onClick={signOutOtherSessions}>
+                            <LogOut className="h-4 w-4 mr-2" />
+                            Sign Out All Other Sessions
                           </Button>
-                        </div>
-                        <Button variant="destructive" className="w-full">
-                          <LogOut className="h-4 w-4 mr-2" />
-                          Sign Out All Other Sessions
-                        </Button>
+                        )}
                       </div>
                     </div>
 
@@ -799,10 +1454,14 @@ export default function SettingsPage() {
                     {/* Privacy Policy & Data Export */}
                     <div>
                       <h3 className="font-semibold mb-4">PRIVACY POLICY & DATA EXPORT</h3>
-                      <div className="flex gap-3">
-                        <Button variant="outline">
+                      <div className="flex gap-3 flex-wrap">
+                        <Button variant="outline" disabled={exporting} onClick={() => handleExportData("json")}>
                           <Download className="h-4 w-4 mr-2" />
-                          Download My Data (JSON)
+                          {exporting ? "Preparing..." : "Download My Data (JSON)"}
+                        </Button>
+                        <Button variant="outline" disabled={exporting} onClick={() => handleExportData("csv")}>
+                          <FileText className="h-4 w-4 mr-2" />
+                          {exporting ? "Preparing..." : "Download CSV"}
                         </Button>
                         <Button variant="destructive">
                           <Trash2 className="h-4 w-4 mr-2" />
@@ -810,157 +1469,25 @@ export default function SettingsPage() {
                         </Button>
                       </div>
                     </div>
-                  </div>
-                </Card>
-              )}
-
-              {/* Backup & Export Tab */}
-              {activeTab === "backup" && (
-                <Card className="p-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Download className="h-5 w-5 text-blue-600" />
-                    <h2 className="text-lg font-semibold">BACKUP & EXPORT</h2>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-6">Ensure your data is safe and can be moved freely</p>
-
-                  <div className="space-y-8">
-                    {/* Manual Export */}
-                    <div>
-                      <h3 className="font-semibold mb-4">MANUAL EXPORT</h3>
-                      <div className="flex gap-3 mb-4">
-                        <Button variant="outline">
-                          <FileJson className="h-4 w-4 mr-2" />
-                          Export JSON
-                        </Button>
-                        <Button variant="outline">
-                          <FileText className="h-4 w-4 mr-2" />
-                          Export CSV
-                        </Button>
-                        <Button variant="outline">
-                          <Globe className="h-4 w-4 mr-2" />
-                          Export HTML
-                        </Button>
-                      </div>
-
-                      <div className="space-y-4">
-                        <div>
-                          <Label className="text-sm font-normal text-gray-700 mb-2 block">Select Date Range</Label>
-                          <div className="grid grid-cols-2 gap-3">
-                            <Input type="date" placeholder="mm/dd/yyyy" />
-                            <Input type="date" placeholder="mm/dd/yyyy" />
-                          </div>
-                        </div>
-
-                        <div>
-                          <Label className="text-sm font-normal text-gray-700 mb-2 block">Filter by tags:</Label>
-                          <Input placeholder="Enter tags separated by commas" />
-                        </div>
-                      </div>
-                    </div>
 
                     <Separator />
 
-                    {/* Scheduled Backups */}
-                    <div>
-                      <h3 className="font-semibold mb-4">SCHEDULED BACKUPS</h3>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium text-sm">Enable automatic backups</p>
-                          <p className="text-sm text-gray-600">Schedule regular exports to email or cloud</p>
-                        </div>
-                        <Switch
-                          checked={settings.autoBackups}
-                          onCheckedChange={(checked) => setSettings({ ...settings, autoBackups: checked })}
-                        />
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    {/* Cloud Sync Destinations */}
-                    <div>
-                      <h3 className="font-semibold mb-4">CLOUD SYNC DESTINATIONS</h3>
+                    {/* Backup & Export moved to Time Capsule */}
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-4 border rounded-lg bg-gray-50 dark:bg-slate-800/60">
                       <div>
-                        <Label className="text-sm font-normal text-gray-700 mb-2 block">Cloud Provider</Label>
-                        <Select value={settings.cloudProvider} onValueChange={(value) => setSettings({ ...settings, cloudProvider: value })}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
-                            <SelectItem value="google-drive">Google Drive</SelectItem>
-                            <SelectItem value="dropbox">Dropbox</SelectItem>
-                            <SelectItem value="onedrive">OneDrive</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    {/* AI Metadata Generation */}
-                    <div>
-                      <h3 className="font-semibold mb-4 flex items-center gap-2">
-                        <Sparkles className="h-5 w-5 text-purple-600" />
-                        AI METADATA GENERATION
-                      </h3>
-                      <div className="space-y-4">
-                        <p className="text-sm text-gray-600">
-                          Automatically generate descriptions and tags for all your existing bookmarks using AI.
-                        </p>
-                        <Button
-                          onClick={async () => {
-                            toast.loading("Generating AI metadata for all bookmarks... This may take a few minutes.", {
-                              id: 'generate-metadata',
-                              duration: Infinity
-                            });
-                            
-                            try {
-                              const response = await fetch('/api/bookmarks/generate-metadata', {
-                                method: 'POST'
-                              });
-                              
-                              const data = await response.json();
-                              
-                              toast.dismiss('generate-metadata');
-                              
-                              if (response.ok) {
-                                toast.success(
-                                  `Successfully generated metadata for ${data.success} bookmarks!${data.errors > 0 ? ` (${data.errors} errors)` : ''}`,
-                                  { duration: 5000 }
-                                );
-                              } else {
-                                toast.error(data.error || 'Failed to generate metadata');
-                              }
-                            } catch (error) {
-                              toast.dismiss('generate-metadata');
-                              toast.error('Failed to generate metadata');
-                              console.error('Error:', error);
-                            }
-                          }}
-                        >
-                          <Sparkles className="h-4 w-4 mr-2" />
-                          Generate Descriptions & Tags for All Bookmarks
-                        </Button>
-                        <p className="text-xs text-gray-500">
-                          This will add AI-generated descriptions and tags to all bookmarks that don't have them.
+                        <p className="font-semibold text-sm">Backups live in Time Capsule</p>
+                        <p className="text-sm text-gray-600 dark:text-slate-400">
+                          Manage snapshots, scheduled backups, imports, and exports directly from Time Capsule.
                         </p>
                       </div>
-                    </div>
-
-                    <Separator />
-
-                    {/* Import & Restore */}
-                    <div>
-                      <h3 className="font-semibold mb-4">IMPORT & RESTORE</h3>
-                      <div className="flex gap-3">
-                        <Button>
-                          <Upload className="h-4 w-4 mr-2" />
-                          Import from File
-                        </Button>
-                        <Button variant="outline">
+                      <div className="flex gap-2">
+                        <Button variant="outline" onClick={() => router.push("/time-capsule")}>
                           <Clock className="h-4 w-4 mr-2" />
-                          Restore from Backup
+                          Open Time Capsule
+                        </Button>
+                        <Button onClick={() => router.push("/time-capsule")} className="bg-blue-600 hover:bg-blue-700">
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Create Snapshot
                         </Button>
                       </div>
                     </div>
@@ -975,7 +1502,7 @@ export default function SettingsPage() {
                     <CreditCard className="h-5 w-5 text-blue-600" />
                     <h2 className="text-lg font-semibold">BILLING & SUBSCRIPTION</h2>
                   </div>
-                  <p className="text-sm text-gray-600 mb-6">Manage your subscription, usage, and billing information</p>
+                  <p className="text-sm text-gray-600 dark:text-slate-400 mb-6">Manage your subscription, usage, and billing information</p>
 
                   <div className="space-y-8">
                     {/* Current Plan */}
@@ -1026,106 +1553,149 @@ export default function SettingsPage() {
                     <Separator />
 
                     {/* Available Plans */}
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <Card className="md:col-span-2 border-0 bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-5 shadow-xl">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                          <div>
+                            <p className="text-xs uppercase tracking-[0.18em] opacity-80">Current Plan</p>
+                            <p className="text-3xl font-bold mt-1">FREE PLAN</p>
+                            <p className="text-sm opacity-90">Perfect for getting started</p>
+                          </div>
+                          <div className="flex flex-col items-end gap-2">
+                            <p className="text-lg font-semibold">$0 / month</p>
+                            <Button className="bg-white text-blue-700 hover:bg-slate-100">
+                              <Sparkles className="h-4 w-4 mr-2" />
+                              UPGRADE TO PRO
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="grid sm:grid-cols-3 gap-3 mt-4 text-sm">
+                          <div className="bg-white/10 rounded-lg p-3">
+                            <p className="text-xs uppercase opacity-80">Topics</p>
+                            <p className="text-lg font-semibold">1 / 1</p>
+                            <Progress value={100} className="h-1.5 mt-2" />
+                          </div>
+                          <div className="bg-white/10 rounded-lg p-3">
+                            <p className="text-xs uppercase opacity-80">Favorites</p>
+                            <p className="text-lg font-semibold">45 / 100</p>
+                            <Progress value={45} className="h-1.5 mt-2" />
+                          </div>
+                          <div className="bg-white/10 rounded-lg p-3">
+                            <p className="text-xs uppercase opacity-80">Time Capsules</p>
+                            <p className="text-lg font-semibold">3 / 5</p>
+                            <Progress value={60} className="h-1.5 mt-2" />
+                          </div>
+                        </div>
+                      </Card>
+                      <Card className="p-4 border border-blue-100 dark:border-slate-700">
+                        <p className="text-sm font-semibold mb-2">Next Invoice</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">$0.00</p>
+                        <p className="text-xs text-gray-500 mb-3">Billed monthly • Cancel anytime</p>
+                        <div className="space-y-2 text-sm text-gray-600 dark:text-slate-300">
+                          <p className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500" /> No card on file</p>
+                          <p className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500" /> Unlimited AI reminders</p>
+                          <p className="flex items-center gap-2"><Check className="h-4 w-4 text-emerald-500" /> Basic analytics</p>
+                        </div>
+                      </Card>
+                    </div>
+
                     <div>
-                      <h3 className="font-semibold mb-4">AVAILABLE PLANS</h3>
-                      <div className="grid grid-cols-3 gap-4">
-                        {/* Free Plan */}
-                        <Card className="p-5 relative">
-                          <div className="text-center mb-4">
-                            <p className="font-semibold text-gray-900">Free</p>
-                            <div className="flex items-baseline justify-center my-3">
-                              <span className="text-3xl font-bold uppercase">$0</span>
-                              <span className="text-sm text-gray-600 ml-1">per month</span>
-                            </div>
-                          </div>
-                          <ul className="space-y-2 mb-4 text-sm">
-                            <li className="flex items-start gap-2">
-                              <span className="text-gray-600">• 1 Topic</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span className="text-gray-600">• 100 favorites</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span className="text-gray-600">• 5 time capsules</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span className="text-gray-600">• Basic analytics</span>
-                            </li>
+                      <h3 className="font-semibold mb-3">CHOOSE YOUR PLAN</h3>
+                      <div className="grid md:grid-cols-3 gap-4">
+                        <Card className="p-5 border border-gray-200 dark:border-slate-700">
+                          <p className="font-semibold text-gray-900 dark:text-white">Free</p>
+                          <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">$0</p>
+                          <p className="text-sm text-gray-500">Forever</p>
+                          <ul className="mt-3 space-y-2 text-sm text-gray-600 dark:text-slate-300">
+                            <li>• 1 Topic</li>
+                            <li>• 100 Favorites</li>
+                            <li>• 5 Time Capsules</li>
+                            <li>• Community Support</li>
                           </ul>
-                          <Badge variant="outline" className="w-full justify-center">Current Plan</Badge>
+                          <Button variant="outline" className="w-full mt-5">Current Plan</Button>
                         </Card>
 
-                        {/* Pro Plan */}
-                        <Card className="p-5 relative border-blue-600 border-2">
-                          <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600">Popular</Badge>
-                          <div className="text-center mb-4">
-                            <p className="font-semibold text-gray-900">Pro</p>
-                            <div className="flex items-baseline justify-center my-3">
-                              <span className="text-3xl font-bold uppercase">$9</span>
-                              <span className="text-sm text-gray-600 ml-1">per month</span>
-                            </div>
-                          </div>
-                          <ul className="space-y-2 mb-4 text-sm">
-                            <li className="flex items-start gap-2">
-                              <span className="text-gray-600">• 3 Topics</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span className="text-gray-600">• Unlimited favorites</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span className="text-gray-600">• Unlimited capsules</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span className="text-gray-600">• Advanced analytics</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span className="text-gray-600">• Priority support</span>
-                            </li>
+                        <Card className="p-5 border border-blue-200 shadow-lg shadow-blue-100 dark:border-blue-700 relative overflow-hidden">
+                          <Badge className="absolute -top-3 right-3 bg-blue-600 text-white">POPULAR</Badge>
+                          <p className="font-semibold text-gray-900 dark:text-white">Pro</p>
+                          <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">$15</p>
+                          <p className="text-sm text-gray-500">Per month</p>
+                          <ul className="mt-3 space-y-2 text-sm text-gray-600 dark:text-slate-300">
+                            <li>• Unlimited Topics</li>
+                            <li>• 5,000 Favorites</li>
+                            <li>• Unlimited Time Capsules</li>
+                            <li>• AI Summaries</li>
+                            <li>• Priority Support</li>
                           </ul>
-                          <Button className="w-full bg-blue-600 hover:bg-blue-700">Upgrade to Pro</Button>
+                          <Button className="w-full mt-5 bg-blue-600 hover:bg-blue-700">Upgrade</Button>
                         </Card>
 
-                        {/* Elite Plan */}
-                        <Card className="p-5">
-                          <div className="text-center mb-4">
-                            <p className="font-semibold text-gray-900">Elite</p>
-                            <div className="flex items-baseline justify-center my-3">
-                              <span className="text-3xl font-bold uppercase">$19</span>
-                              <span className="text-sm text-gray-600 ml-1">per month</span>
-                            </div>
-                          </div>
-                          <ul className="space-y-2 mb-4 text-sm">
-                            <li className="flex items-start gap-2">
-                              <span className="text-gray-600">• 5 Topics</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span className="text-gray-600">• Everything in Pro</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span className="text-gray-600">• Custom AI models</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span className="text-gray-600">• API access</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span className="text-gray-600">• White-label options</span>
-                            </li>
+                        <Card className="p-5 border border-gray-200 dark:border-slate-700">
+                          <p className="font-semibold text-gray-900 dark:text-white">Enterprise</p>
+                          <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">Custom</p>
+                          <p className="text-sm text-gray-500">Tailored</p>
+                          <ul className="mt-3 space-y-2 text-sm text-gray-600 dark:text-slate-300">
+                            <li>• Dedicated Success Manager</li>
+                            <li>• SSO & Compliance</li>
+                            <li>• Advanced Analytics</li>
+                            <li>• Custom Limits</li>
                           </ul>
-                          <Button variant="outline" className="w-full">Upgrade to Elite</Button>
+                          <Button variant="outline" className="w-full mt-5">Talk to Sales</Button>
                         </Card>
                       </div>
                     </div>
 
-                    <Separator />
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <Card className="p-4 border dark:border-slate-700">
+                        <h3 className="font-semibold mb-3">PAYMENT METHOD</h3>
+                        <div className="flex items-center justify-between p-3 border rounded-lg dark:border-slate-700">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-7 rounded bg-gradient-to-r from-blue-500 to-blue-700 text-white flex items-center justify-center text-xs font-bold">
+                              VISA
+                            </div>
+                            <div>
+                              <p className="font-semibold text-sm">Visa ending in 4242</p>
+                              <p className="text-xs text-gray-500">Expires 12/27</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm">Set Default</Button>
+                            <Button variant="destructive" size="sm">Remove</Button>
+                          </div>
+                        </div>
+                        <Button variant="outline" className="mt-3">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Payment Method
+                        </Button>
+                      </Card>
 
-                    {/* Billing Settings */}
-                    <div>
-                      <h3 className="font-semibold mb-4">BILLING SETTINGS</h3>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
+                      <Card className="p-4 border dark:border-slate-700">
+                        <h3 className="font-semibold mb-3">BILLING HISTORY</h3>
+                        <div className="space-y-3">
+                          {["Pro Plan - Jan 2025", "Pro Plan - Dec 2024"].map((item, idx) => (
+                            <div key={item} className="flex items-center justify-between p-3 border rounded-lg dark:border-slate-700">
+                              <div>
+                                <p className="font-medium text-sm">{item}</p>
+                                <p className="text-xs text-gray-500">Invoice #{idx === 0 ? "12345" : "12344"}</p>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">Paid</Badge>
+                                <span className="font-semibold">$15.00</span>
+                                <Button variant="outline" size="sm">Download</Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </Card>
+                    </div>
+
+                    <Card className="p-4 border dark:border-slate-700">
+                      <h3 className="font-semibold mb-3">AUTO-RENEWAL & PROMOS</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 border rounded-lg dark:border-slate-700">
                           <div>
                             <p className="font-medium text-sm">Auto-renewal</p>
-                            <p className="text-sm text-gray-600">Automatically renew subscription</p>
+                            <p className="text-sm text-gray-600 dark:text-slate-400">Automatically renew subscription</p>
                           </div>
                           <Switch
                             checked={settings.autoRenewal}
@@ -1137,7 +1707,7 @@ export default function SettingsPage() {
                           <Button variant="outline">Apply</Button>
                         </div>
                       </div>
-                    </div>
+                    </Card>
                   </div>
                 </Card>
               )}
@@ -1231,6 +1801,8 @@ export default function SettingsPage() {
                   id="verification-code"
                   placeholder="Enter 6-digit code"
                   maxLength={6}
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value)}
                 />
                 <p className="text-xs text-gray-600">
                   Enter the 6-digit code from your authenticator app

@@ -164,96 +164,106 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { title, url, description, favicon, priority, categoryIds, tagIds, companyIds } = await request.json()
+    const { title, url, description, favicon, priority, categoryIds, tagIds, companyIds, isCustomCard, customImage } = await request.json()
 
-    if (!title || !url) {
-      return NextResponse.json({ error: "Title and URL are required" }, { status: 400 })
+    // Title is always required, URL is optional for custom cards
+    if (!title) {
+      return NextResponse.json({ error: "Title is required" }, { status: 400 })
+    }
+
+    // If not a custom card, URL is required
+    const isBlankCard = isCustomCard || !url || url.trim() === '';
+    if (!isBlankCard && !url) {
+      return NextResponse.json({ error: "URL is required for regular bookmarks" }, { status: 400 })
     }
 
     // Get active company for default assignment
     const activeCompanyId = await getActiveCompanyId(session.user.id);
 
-    // ⚠️ CHECK FOR DUPLICATE URLs - Prevent duplicates in the same company
-    const existingBookmark = await prisma.bookmark.findFirst({
-      where: {
-        userId: session.user.id,
-        url: url,
-        ...(activeCompanyId && { companyId: activeCompanyId }),
-      },
-      select: {
-        id: true,
-        title: true,
-        url: true,
-        createdAt: true,
-      },
-    });
+    // ⚠️ CHECK FOR DUPLICATE URLs - Only for bookmarks with URLs
+    if (url && url.trim() !== '') {
+      const existingBookmark = await prisma.bookmark.findFirst({
+        where: {
+          userId: session.user.id,
+          url: url,
+          ...(activeCompanyId && { companyId: activeCompanyId }),
+        },
+        select: {
+          id: true,
+          title: true,
+          url: true,
+          createdAt: true,
+        },
+      });
 
-    if (existingBookmark) {
-      return NextResponse.json(
-        { 
-          error: "Duplicate bookmark",
-          message: `This URL already exists in your bookmarks: "${existingBookmark.title}"`,
-          duplicate: true,
-          existingBookmark: existingBookmark,
-        }, 
-        { status: 409 } // 409 Conflict
-      );
+      if (existingBookmark) {
+        return NextResponse.json(
+          { 
+            error: "Duplicate bookmark",
+            message: `This URL already exists in your bookmarks: "${existingBookmark.title}"`,
+            duplicate: true,
+            existingBookmark: existingBookmark,
+          }, 
+          { status: 409 } // 409 Conflict
+        );
+      }
     }
 
-    // Auto-fetch high-quality favicon (always prioritize high-quality PNG sources)
-    // Even if favicon is provided from metadata, we try to get a better quality one
     let finalFavicon = '';
-    try {
-      // Always try to get high-quality favicon from our service
-      const highQualityFavicon = await getFaviconUrl(url);
-      if (highQualityFavicon) {
-        finalFavicon = highQualityFavicon;
-      } else {
-        // Fallback to provided favicon if our service fails
+    let finalDescription = description || '';
+    let finalTagIds = tagIds || [];
+
+    // Only fetch favicon and generate AI metadata for regular bookmarks with URLs
+    if (!isBlankCard && url) {
+      // Auto-fetch high-quality favicon (always prioritize high-quality PNG sources)
+      try {
+        const highQualityFavicon = await getFaviconUrl(url);
+        if (highQualityFavicon) {
+          finalFavicon = highQualityFavicon;
+        } else {
+          finalFavicon = favicon || '';
+        }
+      } catch (error) {
+        console.error('Error fetching favicon:', error);
         finalFavicon = favicon || '';
       }
-    } catch (error) {
-      console.error('Error fetching favicon:', error);
-      finalFavicon = favicon || '';
-    }
 
-    // ✨ ALWAYS AUTO-GENERATE AI DESCRIPTIONS AND TAGS ✨
-    console.log('🤖 Auto-generating AI metadata for:', title);
-    const aiMetadata = await generateMetadataWithAI(title, url);
-    
-    // Always use AI-generated description (user can edit later if needed)
-    const finalDescription = aiMetadata.description || description || '';
-    console.log('✅ AI Description:', finalDescription);
+      // ✨ AUTO-GENERATE AI DESCRIPTIONS AND TAGS for regular bookmarks ✨
+      console.log('🤖 Auto-generating AI metadata for:', title);
+      const aiMetadata = await generateMetadataWithAI(title, url);
+      
+      finalDescription = aiMetadata.description || description || '';
+      console.log('✅ AI Description:', finalDescription);
 
-    // Always create/find AI-generated tags (user can add more later)
-    let finalTagIds = tagIds || [];
-    if (aiMetadata.tags.length > 0) {
-      const createdTags = await Promise.all(
-        aiMetadata.tags.map(async (tagName: string) => {
-          // Check if tag exists
-          let tag = await prisma.tag.findFirst({
-            where: { 
-              name: tagName,
-              userId: session.user.id 
-            }
-          });
-
-          // Create if doesn't exist
-          if (!tag) {
-            tag = await prisma.tag.create({
-              data: {
+      if (aiMetadata.tags.length > 0) {
+        const createdTags = await Promise.all(
+          aiMetadata.tags.map(async (tagName: string) => {
+            let tag = await prisma.tag.findFirst({
+              where: { 
                 name: tagName,
-                userId: session.user.id,
-              },
+                userId: session.user.id 
+              }
             });
-          }
 
-          return tag.id;
-        })
-      );
-      // Merge AI tags with any manually provided tags
-      finalTagIds = [...new Set([...createdTags, ...(tagIds || [])])];
-      console.log('✅ AI Tags:', aiMetadata.tags.join(', '));
+            if (!tag) {
+              tag = await prisma.tag.create({
+                data: {
+                  name: tagName,
+                  userId: session.user.id,
+                },
+              });
+            }
+
+            return tag.id;
+          })
+        );
+        finalTagIds = [...new Set([...createdTags, ...(tagIds || [])])];
+        console.log('✅ AI Tags:', aiMetadata.tags.join(', '));
+      }
+    } else {
+      // For custom cards, use provided favicon/custom image if any
+      finalFavicon = customImage || favicon || '';
+      console.log('📦 Creating custom card (no URL):', title);
     }
 
     // Determine which company to assign (use active company if not specified)
@@ -262,10 +272,11 @@ export async function POST(request: Request) {
     const bookmark = await prisma.bookmark.create({
       data: {
         title,
-        url,
+        url: isBlankCard ? null : url,
         description: finalDescription,
         favicon: finalFavicon || "",
         priority: priority || "MEDIUM",
+        isCustomCard: isBlankCard,
         userId: session.user.id,
         companyId: targetCompanyId,
         categories: categoryIds?.length > 0 ? {
@@ -297,7 +308,7 @@ export async function POST(request: Request) {
     await prisma.bookmarkHistory.create({
       data: {
         action: "CREATED",
-        details: "Bookmark created",
+        details: isBlankCard ? "Custom card created" : "Bookmark created",
         bookmarkId: bookmark.id,
       },
     })

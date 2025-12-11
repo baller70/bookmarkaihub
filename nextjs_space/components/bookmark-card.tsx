@@ -259,12 +259,20 @@ export function BookmarkCard({
 
   const handleVisit = (e: React.MouseEvent) => {
     e.stopPropagation()
+    if (!bookmark.url) {
+      toast.info("This is a custom card without a URL")
+      return
+    }
     window.open(bookmark.url, "_blank")
     toast.success("Opening bookmark in new tab")
   }
 
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation()
+    if (!bookmark.url) {
+      toast.info("This is a custom card without a URL")
+      return
+    }
     navigator.clipboard.writeText(bookmark.url)
     toast.success("URL copied to clipboard")
   }
@@ -274,11 +282,17 @@ export function BookmarkCard({
     
     if (isEnhancing) return
     
+    // Check if this is a custom card without URL
+    if (!bookmark.url) {
+      toast.info("Custom cards don't have a URL for logo fetching. You can upload a custom logo instead.", { duration: 4000 })
+      return
+    }
+    
     setIsEnhancing(true)
     
-    // Show loading message for fast local processing
+    // Show loading message
     const loadingToastId = toast.loading(
-      "✨ Enhancing logo with high-quality upscaling... This should only take a few seconds!",
+      "🔍 Finding logo options...",
       { duration: Infinity }
     )
     
@@ -293,22 +307,25 @@ export function BookmarkCard({
       toast.dismiss(loadingToastId)
       
       if (response.ok && data.success) {
-        toast.success(data.message || "Logo enhanced successfully! ✨", { duration: 4000 })
+        // Show message with cycling info
+        // Tier: 0=curated, 1=premium, 2=html, 3=aggregated, 4=favicon, 5=google, 6=similar, 7=letter
+        const tierEmoji = ['🏆', '⭐', '🔍', '📦', '📄', '🌐', '🎨', '🔤'][data.metadata?.tier] || '✨'
+        const cycleHint = data.metadata?.canCycle 
+          ? ' • Click again for more options' 
+          : ''
+        
+        toast.success(`${tierEmoji} ${data.message}${cycleHint}`, { 
+          duration: data.metadata?.canCycle ? 5000 : 4000 
+        })
+        
         onUpdate() // Refresh the bookmark to show the new logo
       } else {
-        toast.error(data.message || "Enhancement failed. Please try again.", { duration: 5000 })
+        toast.error(data.message || "Could not find a logo.", { duration: 5000 })
       }
     } catch (error) {
       console.error("Error enhancing logo:", error)
       toast.dismiss(loadingToastId)
-      
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      
-      if (errorMessage.includes('timeout') || errorMessage.includes('aborted')) {
-        toast.error("The enhancement took too long. The AI model might be busy. Please try again in a few minutes.", { duration: 6000 })
-      } else {
-        toast.error("Failed to enhance logo. Please try again later.", { duration: 5000 })
-      }
+      toast.error("Failed to fetch logo. Please try again.", { duration: 5000 })
     } finally {
       setIsEnhancing(false)
     }
@@ -374,48 +391,49 @@ export function BookmarkCard({
   }
 
   const handleSaveUrl = async () => {
-    if (!editedUrl.trim()) {
-      toast.error("URL cannot be empty")
-      setEditedUrl(bookmark.url)
-      setIsEditingUrl(false)
-      return
-    }
-
-    // Basic URL validation
-    try {
-      new URL(editedUrl.trim())
-    } catch (error) {
-      toast.error("Please enter a valid URL")
-      return
+    const urlToSave = editedUrl.trim()
+    
+    // Allow empty URL for custom cards
+    if (urlToSave) {
+      // Basic URL validation only if URL is provided
+      try {
+        new URL(urlToSave)
+      } catch (error) {
+        toast.error("Please enter a valid URL (or leave empty for custom card)")
+        return
+      }
     }
 
     try {
-      toast.loading("Updating URL and fetching favicon...", { id: 'url-update' })
+      toast.loading(urlToSave ? "Updating URL and fetching favicon..." : "Converting to custom card...", { id: 'url-update' })
       const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: editedUrl.trim() }),
+        body: JSON.stringify({ 
+          url: urlToSave || null,
+          isCustomCard: !urlToSave
+        }),
       })
       
       if (response.ok) {
-        toast.success("URL updated and favicon refreshed", { id: 'url-update' })
+        toast.success(urlToSave ? "URL updated and favicon refreshed" : "Converted to custom card", { id: 'url-update' })
         setIsEditingUrl(false)
         onUpdate()
       } else {
         toast.error("Failed to update URL", { id: 'url-update' })
-        setEditedUrl(bookmark.url)
+        setEditedUrl(bookmark.url || '')
         setIsEditingUrl(false)
       }
     } catch (error) {
       console.error("Error updating URL:", error)
       toast.error("Failed to update URL", { id: 'url-update' })
-      setEditedUrl(bookmark.url)
+      setEditedUrl(bookmark.url || '')
       setIsEditingUrl(false)
     }
   }
 
   const handleCancelEditUrl = () => {
-    setEditedUrl(bookmark.url)
+    setEditedUrl(bookmark.url || '')
     setIsEditingUrl(false)
   }
 
@@ -671,7 +689,7 @@ export function BookmarkCard({
                         if (e.key === 'Escape') handleCancelEditUrl()
                       }}
                       className="h-7 text-xs sm:text-sm"
-                      placeholder="https://example.com"
+                      placeholder="https://example.com (optional)"
                       autoFocus
                     />
                     <Button
@@ -692,16 +710,23 @@ export function BookmarkCard({
                   </div>
                 ) : (
                   <div className="flex items-center gap-1 group/url min-w-0 overflow-hidden">
-                    <p 
-                      className="text-xs sm:text-sm text-blue-600 font-medium truncate font-saira flex-1 min-w-0"
-                      title={bookmark.url}
-                    >
-                      {(() => {
-                        const cleanUrl = bookmark.url?.replace(/^https?:\/\/(www\.)?/, '') || '';
-                        // Truncate to max 60 characters if too long
-                        return cleanUrl.length > 60 ? cleanUrl.substring(0, 57) + '...' : cleanUrl;
-                      })()}
-                    </p>
+                    {bookmark.url ? (
+                      <p 
+                        className="text-xs sm:text-sm text-blue-600 font-medium truncate font-saira flex-1 min-w-0"
+                        title={bookmark.url}
+                      >
+                        {(() => {
+                          const cleanUrl = bookmark.url?.replace(/^https?:\/\/(www\.)?/, '') || '';
+                          // Truncate to max 60 characters if too long
+                          return cleanUrl.length > 60 ? cleanUrl.substring(0, 57) + '...' : cleanUrl;
+                        })()}
+                      </p>
+                    ) : (
+                      <p className="text-xs sm:text-sm text-purple-500 font-medium font-saira flex-1 min-w-0 flex items-center gap-1">
+                        <span className="inline-block w-2 h-2 rounded-full bg-purple-400"></span>
+                        Custom Card
+                      </p>
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -710,6 +735,7 @@ export function BookmarkCard({
                         e.stopPropagation()
                         setIsEditingUrl(true)
                       }}
+                      title={bookmark.url ? "Edit URL" : "Add URL"}
                     >
                       <Pencil className="h-3 w-3 text-gray-500" />
                     </Button>

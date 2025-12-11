@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { DashboardAuth } from "@/components/dashboard-auth"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -39,6 +39,19 @@ import {
   RefreshCw,
   RotateCcw
 } from "lucide-react"
+import { BulkUploaderSection } from "./bulk-uploader-section"
+import { LinkValidatorSection } from "./link-validator-section"
+
+type LinkCandidate = {
+  id?: string
+  title: string
+  url: string
+  tags: string[]
+  categories: string[]
+  createdAt?: string
+  description?: string | null
+  totalVisits?: number
+}
 
 export default function AILinkPilotPage() {
   const router = useRouter()
@@ -162,7 +175,7 @@ export default function AILinkPilotPage() {
   const [confidenceThreshold, setConfidenceThreshold] = useState([48])
   const [tagStyle, setTagStyle] = useState("singular")
   const [languageMode, setLanguageMode] = useState("auto-detect")
-  const [synonymMapping, setSynonymMapping] = useState(false)
+  const [sentimentMapping, setSentimentMapping] = useState(false)
   const [normalization, setNormalization] = useState(true)
   const [manualReview, setManualReview] = useState(true)
   const [stripTracking, setStripTracking] = useState(true)
@@ -172,8 +185,125 @@ export default function AILinkPilotPage() {
   const [suggestFolder, setSuggestFolder] = useState(true)
   const [autoFile, setAutoFile] = useState(false)
   const [smartContext, setSmartContext] = useState(true)
-  const [fallbackFolder, setFallbackFolder] = useState("inbox")
-  const [draftExpiration, setDraftExpiration] = useState("7-days")
+
+  // UI data
+  const [tagCloud, setTagCloud] = useState<string[]>([])
+  const [duplicateUrls, setDuplicateUrls] = useState<string[]>([])
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false)
+
+  // Content discovery states
+  const [suggestionsCount, setSuggestionsCount] = useState<[number]>([5])
+  const [serendipityLevel, setSerendipityLevel] = useState<[number]>([50])
+  const [includeTrending, setIncludeTrending] = useState(true)
+  const [autoIncludeAfterSelection, setAutoIncludeAfterSelection] = useState(true)
+  const [showTldr, setShowTldr] = useState(true)
+  const [recommendations, setRecommendations] = useState<LinkCandidate[]>([])
+  const [isGeneratingRecs, setIsGeneratingRecs] = useState(false)
+
+  // Link finder states
+  const [topicKeywords, setTopicKeywords] = useState("")
+  const [useProfileInterests, setUseProfileInterests] = useState(true)
+  const [dateRange, setDateRange] = useState("past-week")
+  const [selectedLinkTypes, setSelectedLinkTypes] = useState<string[]>(["Article", "Video", "PDF", "Repo", "Dataset"])
+  const [maxResults, setMaxResults] = useState<[number]>([20])
+  const [linkFinderResults, setLinkFinderResults] = useState<LinkCandidate[]>([])
+  const [isFindingLinks, setIsFindingLinks] = useState(false)
+
+  // Data source
+  const [allLinks, setAllLinks] = useState<LinkCandidate[]>([])
+  const [loadingLinks, setLoadingLinks] = useState(false)
+
+  // Persist settings locally to avoid hardcoded defaults
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('ai-linkpilot-auto-processing')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        setManualSaves(parsed.manualSaves ?? true)
+        setBulkUploads(parsed.bulkUploads ?? true)
+        setBrowserCapture(parsed.browserCapture ?? true)
+        setPauseProcessing(parsed.pauseProcessing ?? false)
+        setAutoTagging(parsed.autoTagging ?? true)
+        setConfidenceThreshold([parsed.confidenceThreshold ?? 48])
+        setTagStyle(parsed.tagStyle ?? 'singular')
+        setLanguageMode(parsed.languageMode ?? 'auto-detect')
+        setSentimentMapping(parsed.sentimentMapping ?? false)
+        setNormalization(parsed.normalization ?? true)
+        setManualReview(parsed.manualReview ?? true)
+        setStripTracking(parsed.stripTracking ?? true)
+        setDomainBlacklist(parsed.domainBlacklist ?? '')
+        setMinContentLength(String(parsed.minContentLength ?? '100'))
+        setDuplicateHandling(parsed.duplicateHandling ?? 'skip')
+        setSuggestFolder(parsed.suggestFolder ?? true)
+        setAutoFile(parsed.autoFile ?? false)
+        setSmartContext(parsed.smartContext ?? true)
+      }
+    } catch (err) {
+      console.error('Failed to load AI LinkPilot settings', err)
+    }
+  }, [])
+
+  useEffect(() => {
+    const payload = {
+      manualSaves,
+      bulkUploads,
+      browserCapture,
+      pauseProcessing,
+      autoTagging,
+      confidenceThreshold: confidenceThreshold[0],
+      tagStyle,
+      languageMode,
+      sentimentMapping,
+      normalization,
+      manualReview,
+      stripTracking,
+      domainBlacklist,
+      minContentLength,
+      duplicateHandling,
+      suggestFolder,
+      autoFile,
+      smartContext,
+    }
+    localStorage.setItem('ai-linkpilot-auto-processing', JSON.stringify(payload))
+  }, [
+    manualSaves,
+    bulkUploads,
+    browserCapture,
+    pauseProcessing,
+    autoTagging,
+    confidenceThreshold,
+    tagStyle,
+    languageMode,
+    sentimentMapping,
+    normalization,
+    manualReview,
+    stripTracking,
+    domainBlacklist,
+    minContentLength,
+    duplicateHandling,
+    suggestFolder,
+    autoFile,
+    smartContext,
+  ])
+
+  // Derive tag cloud (best-effort) from auto-applied tags input
+  useEffect(() => {
+    const recentTags: string[] = []
+    const now = new Date()
+    allLinks.forEach(link => {
+      if (!link.createdAt) return
+      const diff = (now.getTime() - new Date(link.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+      if (diff <= 7) {
+        recentTags.push(...link.tags)
+      }
+    })
+    let tags = recentTags
+    if (tags.length === 0 && autoApplyTags) {
+      tags = autoApplyTags.split(',').map(t => t.trim()).filter(Boolean)
+    }
+    const top = [...new Set(tags)].slice(0, 12)
+    setTagCloud(top)
+  }, [autoApplyTags, allLinks])
 
   // Bulk Uploader Functions
   const normalizeUrl = (url: string): string => {
@@ -234,6 +364,179 @@ export default function AILinkPilotPage() {
     return [...new Set(urls)] // Remove duplicates
   }
 
+  // Fetch bookmarks to power recommendations/link finder
+  useEffect(() => {
+    const fetchLinks = async () => {
+      setLoadingLinks(true)
+      try {
+        const res = await fetch('/api/bookmarks?limit=200')
+        if (res.ok) {
+          const data = await res.json()
+          const items: any[] = Array.isArray(data) ? data : data.bookmarks || []
+          const mapped: LinkCandidate[] = items.map((b) => ({
+            id: b.id,
+            title: b.title || b.url || 'Untitled',
+            url: b.url,
+            tags: (b.tags || []).map((t: any) => t.name || t.tag?.name || '').filter(Boolean),
+            categories: (b.categories || []).map((c: any) => c.name || c.category?.name || '').filter(Boolean),
+            createdAt: b.createdAt,
+            description: b.description,
+            totalVisits: b.totalVisits,
+          }))
+          setAllLinks(mapped)
+        }
+      } catch (err) {
+        console.error('Failed to fetch bookmarks for discovery', err)
+      } finally {
+        setLoadingLinks(false)
+      }
+    }
+    fetchLinks()
+  }, [])
+
+  const classifyLinkType = (url: string): string => {
+    const u = url.toLowerCase()
+    if (u.endsWith('.pdf')) return 'PDF'
+    if (u.includes('youtube.com') || u.includes('youtu.be') || u.includes('vimeo.com')) return 'Video'
+    if (u.includes('github.com') || u.includes('gitlab.com')) return 'Repo'
+    if (u.includes('kaggle.com') || u.includes('data.') || u.includes('/dataset')) return 'Dataset'
+    return 'Article'
+  }
+
+  const profileInterests = useMemo(() => {
+    const tagCounts: Record<string, number> = {}
+    allLinks.forEach(link => {
+      link.tags.forEach(t => {
+        tagCounts[t] = (tagCounts[t] || 0) + 1
+      })
+    })
+    const topTags = Object.entries(tagCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([tag]) => tag)
+
+    const manual = autoApplyTags
+      ? autoApplyTags.split(',').map(t => t.trim()).filter(Boolean)
+      : []
+
+    return [...new Set([...manual, ...topTags])]
+  }, [allLinks, autoApplyTags])
+
+  // Derived top categories (DNA-style profile for categories)
+  const profileCategories = useMemo(() => {
+    const catCounts: Record<string, number> = {}
+    allLinks.forEach(link => {
+      link.categories?.forEach(c => {
+        catCounts[c] = (catCounts[c] || 0) + 1
+      })
+    })
+    return Object.entries(catCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([cat]) => cat)
+  }, [allLinks])
+
+  const filterByDateRange = (links: LinkCandidate[], range: string) => {
+    if (!range || range === 'all-time') return links
+    const now = new Date()
+    const days = range === 'past-week' ? 7 : range === 'past-month' ? 30 : 365
+    return links.filter(link => {
+      if (!link.createdAt) return true
+      const created = new Date(link.createdAt)
+      const diff = (now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24)
+      return diff <= days
+    })
+  }
+
+  const buildRecommendationScore = (link: LinkCandidate, profileTags: string[]) => {
+    const recencyBoost = link.createdAt ? Math.max(0, 30 - ((Date.now() - new Date(link.createdAt).getTime()) / (1000 * 60 * 60 * 24))) / 30 : 0
+    const interestMatch = profileTags.length > 0 ? link.tags.filter(t => profileTags.includes(t)).length : 0
+    const visits = link.totalVisits || 0
+    return interestMatch * 3 + recencyBoost * 2 + Math.min(5, visits / 10)
+  }
+
+  const handleGenerateRecommendations = () => {
+    setIsGeneratingRecs(true)
+    const profileTags = profileInterests
+    const trending = includeTrending
+      ? allLinks.filter(l => {
+          if (!l.createdAt) return false
+          const diff = (Date.now() - new Date(l.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+          return diff <= 7
+        })
+      : []
+    const pool = includeTrending ? [...trending, ...allLinks] : [...allLinks]
+    const uniquePool = pool.reduce<LinkCandidate[]>((acc, item) => {
+      if (!acc.find(a => (a.id && item.id && a.id === item.id) || a.url === item.url)) acc.push(item)
+      return acc
+    }, [])
+
+    const scored = uniquePool.map(link => {
+      const base = buildRecommendationScore(link, profileTags)
+      const random = (Math.random() - 0.5) * (serendipityLevel[0] / 50)
+      return { link, score: base + random }
+    })
+    const selected = scored
+      .sort((a, b) => b.score - a.score)
+      .slice(0, suggestionsCount[0])
+      .map(s => s.link)
+
+    setRecommendations(selected)
+    setTimeout(() => setIsGeneratingRecs(false), 200)
+  }
+
+  const handleLinkFinder = () => {
+    setIsFindingLinks(true)
+    const keywords = topicKeywords.toLowerCase().split(',').map(k => k.trim()).filter(Boolean)
+
+    // Base pool
+    let filtered = filterByDateRange([...allLinks], dateRange)
+
+    // Apply type filter up-front
+    if (selectedLinkTypes.length > 0) {
+      filtered = filtered.filter(link => selectedLinkTypes.includes(classifyLinkType(link.url)))
+    }
+
+    // Score links by DNA profile (tags + categories), keywords, recency, engagement
+    const now = Date.now()
+    const scored = filtered.map(link => {
+      const linkType = classifyLinkType(link.url)
+      const tagMatches = profileInterests.length
+        ? link.tags.filter(t => profileInterests.includes(t)).length
+        : 0
+      const categoryMatches = profileCategories.length
+        ? link.categories.filter(c => profileCategories.includes(c)).length
+        : 0
+      const keywordMatches = keywords.length
+        ? keywords.filter(k =>
+            (`${link.title} ${link.description || ''} ${link.url}`.toLowerCase()).includes(k)
+          ).length
+        : 0
+      const recencyBoost = link.createdAt
+        ? Math.max(0, 30 - ((now - new Date(link.createdAt).getTime()) / (1000 * 60 * 60 * 24))) / 30
+        : 0
+      const engagement = Math.min(5, (link.totalVisits || 0) / 10)
+      const typeBoost = selectedLinkTypes.includes(linkType) ? 1 : 0
+
+      const score =
+        tagMatches * 3 +
+        categoryMatches * 2 +
+        keywordMatches * 2 +
+        recencyBoost * 1.5 +
+        engagement +
+        typeBoost
+
+      return { ...link, linkType, score }
+    })
+
+    const ranked = scored
+      .sort((a, b) => (b.score || 0) - (a.score || 0))
+      .slice(0, maxResults[0])
+
+    setLinkFinderResults(ranked)
+    setTimeout(() => setIsFindingLinks(false), 150)
+  }
+
   const createBookmarksFromUrls = async (urls: string[]) => {
     if (urls.length === 0) {
       toast.error('No valid URLs found')
@@ -248,6 +551,7 @@ export default function AILinkPilotPage() {
     let failCount = 0
     let duplicateCount = 0
     const errors: string[] = []
+    const duplicateList: string[] = []
 
     // Prepare tags from autoApplyTags setting
     const tagsToApply = autoApplyTags
@@ -288,6 +592,7 @@ export default function AILinkPilotPage() {
               // Check if it's a duplicate error
               if (response.status === 409 || errorData.error?.includes('already exists') || errorData.error?.includes('duplicate')) {
                 duplicateCount++
+                duplicateList.push(url)
                 return { success: false, duplicate: true }
               }
               
@@ -328,9 +633,14 @@ export default function AILinkPilotPage() {
         setPasteText("")
         setSingleUrl("")
       } else if (duplicateCount > 0) {
-        toast.warning(`All ${duplicateCount} bookmark${duplicateCount > 1 ? 's were' : ' was'} already in your collection`)
+        toast.warning(`All ${duplicateCount} bookmark${duplicateCount > 1 ? 's were' : ' was'} already in your collection. Review duplicates below.`)
       } else {
         toast.error(`Failed to import bookmarks. ${errors.length > 0 ? errors.slice(0, 3).join('\n') : 'Please check the URLs and try again.'}`)
+      }
+
+      if (duplicateList.length > 0) {
+        setDuplicateUrls(duplicateList)
+        setShowDuplicateModal(true)
       }
     } catch (error) {
       toast.dismiss(loadingToast)
@@ -849,7 +1159,18 @@ export default function AILinkPilotPage() {
                   {/* Tag Cloud Snapshot Card */}
                   <Card className="p-4 sm:p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 overflow-hidden">
                     <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2">TAG CLOUD SNAPSHOT</h3>
-                    <p className="text-xs sm:text-sm text-gray-600">Top tags from the past 7 days</p>
+                    <p className="text-xs sm:text-sm text-gray-600 mb-3">Top tags from the past 7 days</p>
+                    {tagCloud.length === 0 ? (
+                      <p className="text-xs sm:text-sm text-gray-500">No tag data yet. Engage with links to generate a tag cloud.</p>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {tagCloud.map((tag) => (
+                          <Badge key={tag} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </Card>
 
                   {/* Intake Scope */}
@@ -985,10 +1306,10 @@ export default function AILinkPilotPage() {
                         <div className="space-y-4">
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="font-medium text-gray-900 text-sm">Synonym mapping</p>
-                              <p className="text-xs text-gray-500">Group related tags together</p>
+                              <p className="font-medium text-gray-900 text-sm">Sentiment mapping</p>
+                              <p className="text-xs text-gray-500">Capture sentiment context with tags</p>
                             </div>
-                            <Switch checked={synonymMapping} onCheckedChange={setSynonymMapping} />
+                            <Switch checked={sentimentMapping} onCheckedChange={setSentimentMapping} />
                           </div>
                           <div className="flex items-center justify-between">
                             <div>
@@ -1113,35 +1434,6 @@ export default function AILinkPilotPage() {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                          <div>
-                            <Label className="mb-2 block text-gray-900 text-sm">Fallback folder</Label>
-                            <Select value={fallbackFolder} onValueChange={setFallbackFolder}>
-                              <SelectTrigger>
-                                <div className="flex items-center gap-2">
-                                  <span>📥</span>
-                                  <SelectValue />
-                                </div>
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="inbox">Inbox</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div>
-                            <Label className="mb-2 block text-gray-900 text-sm">Draft expiration</Label>
-                            <Select value={draftExpiration} onValueChange={setDraftExpiration}>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="7-days">7 days</SelectItem>
-                                <SelectItem value="14-days">14 days</SelectItem>
-                                <SelectItem value="30-days">30 days</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
                       </div>
                     )}
                   </Card>
@@ -1317,9 +1609,9 @@ export default function AILinkPilotPage() {
                           <div>
                             <div className="flex items-center justify-between mb-3">
                               <Label>Suggestions per refresh</Label>
-                              <span className="text-sm font-medium text-gray-900">5</span>
+                              <span className="text-sm font-medium text-gray-900">{suggestionsCount[0]}</span>
                             </div>
-                            <Slider defaultValue={[5]} max={10} step={1} className="mb-2" />
+                            <Slider value={suggestionsCount} onValueChange={setSuggestionsCount} max={10} min={1} step={1} className="mb-2" />
                           </div>
 
                           <div>
@@ -1329,7 +1621,7 @@ export default function AILinkPilotPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                               </svg>
                             </div>
-                            <Slider defaultValue={[50]} max={100} step={1} className="mb-2" />
+                            <Slider value={serendipityLevel} onValueChange={setSerendipityLevel} max={100} min={0} step={1} className="mb-2" />
                             <div className="flex justify-between text-xs text-gray-500">
                               <span>Focused</span>
                               <span>Diverse</span>
@@ -1340,21 +1632,21 @@ export default function AILinkPilotPage() {
                             <div>
                               <p className="font-medium text-gray-900 text-sm">Include trending links</p>
                             </div>
-                            <Switch defaultChecked />
+                            <Switch checked={includeTrending} onCheckedChange={setIncludeTrending} />
                           </div>
 
                           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                             <div>
                               <p className="font-medium text-gray-900 text-sm">Auto-include after selection</p>
                             </div>
-                            <Switch defaultChecked />
+                            <Switch checked={autoIncludeAfterSelection} onCheckedChange={setAutoIncludeAfterSelection} />
                           </div>
 
                           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                             <div>
                               <p className="font-medium text-gray-900 text-sm">Show TL;DR summaries</p>
                             </div>
-                            <Switch defaultChecked />
+                            <Switch checked={showTldr} onCheckedChange={setShowTldr} />
                           </div>
                         </div>
                       </Card>
@@ -1363,10 +1655,62 @@ export default function AILinkPilotPage() {
                       <Card className="p-4 sm:p-6 bg-white border-gray-200">
                         <h3 className="font-semibold text-gray-900 mb-2">GENERATE RECOMMENDATIONS</h3>
                         <p className="text-xs sm:text-sm text-gray-500 mb-4">Get AI-powered content suggestions</p>
-                        <Button className="bg-black text-white hover:bg-gray-800">
-                          <Wand2 className="h-4 w-4 mr-2" />
-                          Generate
-                        </Button>
+                        <div className="flex items-center gap-3">
+                          <Button 
+                            className="bg-black text-white hover:bg-gray-800"
+                            onClick={handleGenerateRecommendations}
+                            disabled={loadingLinks || isGeneratingRecs}
+                          >
+                            {isGeneratingRecs ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Wand2 className="h-4 w-4 mr-2" />}
+                            {isGeneratingRecs ? 'Generating...' : 'Generate'}
+                          </Button>
+                          {loadingLinks && <span className="text-xs text-gray-500">Loading bookmarks...</span>}
+                        </div>
+
+                        {recommendations.length > 0 && (
+                          <div className="mt-4 space-y-3">
+                            {recommendations.map((rec, idx) => (
+                              <div
+                                key={rec.id || rec.url || idx}
+                                className="p-3 border rounded-lg hover:border-gray-300 transition-colors bg-white"
+                                onClick={() => {
+                                  if (autoIncludeAfterSelection) {
+                                    toast.success('Saved recommendation to your list (simulated).')
+                                  } else {
+                                    toast.info('Recommendation selected. Auto-include is off.')
+                                  }
+                                }}
+                              >
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="min-w-0">
+                                    <div className="text-sm font-semibold text-gray-900 truncate">{rec.title}</div>
+                                    <div className="text-xs text-gray-500 truncate">{rec.url}</div>
+                                    {showTldr && (
+                                      <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                        {rec.description || 'Quick summary will appear here based on content.'}
+                                      </p>
+                                    )}
+                                    <div className="flex flex-wrap gap-1 mt-2">
+                                      {rec.tags.slice(0, 4).map((tag) => (
+                                        <Badge key={tag} variant="secondary" className="text-[10px]">
+                                          {tag}
+                                        </Badge>
+                                      ))}
+                                      {rec.categories.slice(0, 2).map((cat) => (
+                                        <Badge key={cat} variant="outline" className="text-[10px]">
+                                          {cat}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <Badge variant="outline" className="text-[10px]">
+                                    Score
+                                  </Badge>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </Card>
                     </>
                   )}
@@ -1385,7 +1729,11 @@ export default function AILinkPilotPage() {
                       <div className="space-y-6">
                         <div>
                           <Label className="mb-2 block">Topic / Keywords</Label>
-                          <Input placeholder="e.g., artificial intelligence, web development" />
+                            <Input
+                              placeholder="e.g., artificial intelligence, web development"
+                              value={topicKeywords}
+                              onChange={(e) => setTopicKeywords(e.target.value)}
+                            />
                         </div>
 
                         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
@@ -1395,12 +1743,12 @@ export default function AILinkPilotPage() {
                             </svg>
                             <Label>Use my profile interests</Label>
                           </div>
-                          <Switch defaultChecked />
+                            <Switch checked={useProfileInterests} onCheckedChange={setUseProfileInterests} />
                         </div>
 
                         <div>
                           <Label className="mb-2 block">Date Range</Label>
-                          <Select defaultValue="past-week">
+                            <Select value={dateRange} onValueChange={setDateRange}>
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
@@ -1415,29 +1763,75 @@ export default function AILinkPilotPage() {
 
                         <div>
                           <Label className="mb-2 block">Link Types</Label>
-                          <div className="flex flex-wrap gap-2">
-                            <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">Article</Badge>
-                            <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">Video</Badge>
-                            <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">PDF</Badge>
-                            <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">Repo</Badge>
-                            <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">Dataset</Badge>
-                          </div>
+                            <div className="flex flex-wrap gap-2">
+                              {["Article", "Video", "PDF", "Repo", "Dataset"].map(type => {
+                                const active = selectedLinkTypes.includes(type)
+                                return (
+                                  <Badge
+                                    key={type}
+                                    variant={active ? "secondary" : "outline"}
+                                    className="cursor-pointer hover:bg-gray-100"
+                                    onClick={() => {
+                                      setSelectedLinkTypes(prev =>
+                                        prev.includes(type)
+                                          ? prev.filter(t => t !== type)
+                                          : [...prev, type]
+                                      )
+                                    }}
+                                  >
+                                    {type}
+                                  </Badge>
+                                )
+                              })}
+                            </div>
                         </div>
 
                         <div>
                           <div className="flex items-center justify-between mb-3">
                             <Label>Max results</Label>
-                            <span className="text-sm font-medium text-gray-900">20</span>
+                              <span className="text-sm font-medium text-gray-900">{maxResults[0]}</span>
                           </div>
-                          <Slider defaultValue={[20]} min={5} max={50} step={5} />
+                            <Slider value={maxResults} onValueChange={setMaxResults} min={5} max={50} step={5} />
                         </div>
 
-                        <Button className="w-full bg-gray-600 hover:bg-gray-700 text-white">
-                          <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                          </svg>
-                          Find Links
-                        </Button>
+                          <Button
+                            className="w-full bg-gray-600 hover:bg-gray-700 text-white"
+                            onClick={handleLinkFinder}
+                            disabled={isFindingLinks || loadingLinks}
+                          >
+                            {isFindingLinks ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : (
+                              <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                              </svg>
+                            )}
+                            {isFindingLinks ? 'Finding...' : 'Find Links'}
+                          </Button>
+
+                          {linkFinderResults.length > 0 && (
+                            <div className="space-y-3">
+                              {linkFinderResults.map((link, idx) => (
+                                <div key={link.id || link.url || idx} className="p-3 border rounded-lg bg-white">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="min-w-0">
+                                      <div className="text-sm font-semibold text-gray-900 truncate">{link.title}</div>
+                                      <div className="text-xs text-gray-500 truncate">{link.url}</div>
+                                      <div className="flex flex-wrap gap-1 mt-2">
+                                        {link.tags.slice(0, 4).map(tag => (
+                                          <Badge key={tag} variant="secondary" className="text-[10px]">{tag}</Badge>
+                                        ))}
+                                        {link.categories.slice(0, 2).map(cat => (
+                                          <Badge key={cat} variant="outline" className="text-[10px]">{cat}</Badge>
+                                        ))}
+                                      </div>
+                                    </div>
+                                    <Badge variant="outline" className="text-[10px]">
+                                      {classifyLinkType(link.url)}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                       </div>
                     </Card>
                   )}
@@ -1445,6 +1839,11 @@ export default function AILinkPilotPage() {
               )}
 
               {activeTab === "bulk-uploader" && (
+                <BulkUploaderSection categories={categories} />
+              )}
+
+              {/* OLD_BULK_UPLOADER_START - This comment marks the start of the old code to be removed */}
+              {false && (
                 <div className="space-y-4 sm:space-y-6">
                   {/* Header */}
                   <div className="flex items-center justify-between">
@@ -2196,10 +2595,55 @@ export default function AILinkPilotPage() {
                       )}
                     </DialogContent>
                   </Dialog>
+
+                  {/* Duplicate Review Dialog */}
+                  <Dialog open={showDuplicateModal} onOpenChange={setShowDuplicateModal}>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Duplicates Detected</DialogTitle>
+                      </DialogHeader>
+                      {duplicateUrls.length === 0 ? (
+                        <p className="text-sm text-gray-600">No duplicates to review.</p>
+                      ) : (
+                        <div className="space-y-3">
+                          <p className="text-sm text-gray-700">
+                            We found {duplicateUrls.length} duplicate URL{duplicateUrls.length > 1 ? 's' : ''}. Keep them, or choose to remove later. No deletions were made automatically.
+                          </p>
+                          <div className="max-h-64 overflow-y-auto space-y-2">
+                            {duplicateUrls.map((url, idx) => (
+                              <div key={idx} className="p-2 rounded border bg-yellow-50 border-yellow-200 text-xs break-all">
+                                {url}
+                              </div>
+                            ))}
+                          </div>
+                          <div className="flex justify-end gap-2 pt-2">
+                            <Button variant="outline" onClick={() => setShowDuplicateModal(false)}>
+                              Keep All
+                            </Button>
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                toast.info('If you want these removed, delete the existing bookmarks from your library.')
+                                setShowDuplicateModal(false)
+                              }}
+                            >
+                              Decide Later
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </DialogContent>
+                  </Dialog>
                 </div>
               )}
+              {/* OLD_BULK_UPLOADER_END */}
 
               {activeTab === "link-validator" && (
+                <LinkValidatorSection />
+              )}
+
+              {/* OLD_LINK_VALIDATOR_START */}
+              {false && (
                 <div className="space-y-4 sm:space-y-6">
                   {/* Header */}
                   <div>
@@ -2373,6 +2817,7 @@ export default function AILinkPilotPage() {
                   </div>
                 </div>
               )}
+              {/* OLD_LINK_VALIDATOR_END */}
 
               {activeTab === "browser-launcher" && (
                 <div className="space-y-6">

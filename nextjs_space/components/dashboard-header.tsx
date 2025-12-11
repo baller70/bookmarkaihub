@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AddBookmarkModal } from "@/components/add-bookmark-modal"
 import { Check, Plus, FolderOpen, MoreVertical, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Logo, LogoCompact, LogoDark } from "@/components/logo"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -71,12 +72,15 @@ export function DashboardHeader({
     <>
       {/* Desktop Header */}
       <div className="hidden lg:flex items-start justify-between">
-        {/* Left: Title and Subtitle */}
+        {/* Left: Logo and Subtitle */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 font-audiowide tracking-tight uppercase">
-            BOOKMARKHUB
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">Your Digital Workspace</p>
+          <div className="dark:hidden">
+            <Logo size="lg" />
+          </div>
+          <div className="hidden dark:block">
+            <Logo size="lg" className="[&_span]:!text-gray-100" />
+          </div>
+          <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Your Digital Workspace</p>
         </div>
 
         {/* Right: Action Buttons */}
@@ -91,7 +95,7 @@ export function DashboardHeader({
                 "h-9 px-4 gap-2 border-2 transition-all",
                 bulkSelectMode 
                   ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600" 
-                  : "bg-white hover:bg-gray-50 text-black border-gray-900"
+                  : "bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-black dark:text-white border-gray-900 dark:border-slate-600"
               )}
             >
               <Check className="h-4 w-4" />
@@ -100,7 +104,7 @@ export function DashboardHeader({
             </Button>
             {bulkSelectMode && selectedCount > 0 && (
               <div className="absolute -bottom-5 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-                <span className="text-xs font-bold text-orange-600 bg-orange-100 px-2 py-0.5 rounded">
+                <span className="text-xs font-bold text-orange-600 bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 rounded">
                   {selectedCount} SELECTED
                 </span>
               </div>
@@ -109,13 +113,13 @@ export function DashboardHeader({
 
           {/* All Categories Dropdown */}
           <Select value={selectedCategory} onValueChange={handleCategoryChange}>
-            <SelectTrigger className="w-[150px] h-9 text-xs text-gray-900 bg-white border-gray-300">
-              <SelectValue />
+            <SelectTrigger className="w-[170px] h-9 text-xs text-gray-900 dark:text-white bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600">
+              <SelectValue placeholder="ALL CATEGORIES" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
+            <SelectContent className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+              <SelectItem value="all" className="uppercase">ALL CATEGORIES</SelectItem>
               {categories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
+                <SelectItem key={category.id} value={category.id} className="text-gray-900 dark:text-white">
                   {category.name}
                 </SelectItem>
               ))}
@@ -135,12 +139,15 @@ export function DashboardHeader({
 
       {/* Mobile Header */}
       <div className="lg:hidden space-y-5">
-        {/* Title */}
-        <div className="text-center">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 font-audiowide tracking-tight uppercase">
-            BOOKMARKHUB
-          </h1>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1">Your Digital Workspace</p>
+        {/* Logo */}
+        <div className="flex flex-col items-center">
+          <div className="dark:hidden">
+            <Logo size="md" />
+          </div>
+          <div className="hidden dark:block">
+            <Logo size="md" className="[&_span]:!text-gray-100" />
+          </div>
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400 mt-1">Your Digital Workspace</p>
         </div>
 
         {/* Main Action Buttons */}
@@ -185,13 +192,13 @@ export function DashboardHeader({
 
         {/* Category Selector */}
         <Select value={selectedCategory} onValueChange={handleCategoryChange}>
-          <SelectTrigger className="w-full h-10 text-xs text-gray-900 bg-white border-gray-300">
-            <SelectValue />
+          <SelectTrigger className="w-full h-10 text-xs text-gray-900 dark:text-white bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600">
+            <SelectValue placeholder="ALL CATEGORIES" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
+          <SelectContent className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+            <SelectItem value="all" className="uppercase">ALL CATEGORIES</SelectItem>
             {categories.map((category) => (
-              <SelectItem key={category.id} value={category.id}>
+              <SelectItem key={category.id} value={category.id} className="text-gray-900 dark:text-white">
                 {category.name}
               </SelectItem>
             ))}
@@ -201,7 +208,7 @@ export function DashboardHeader({
         {/* Bulk Select Status Badge */}
         {bulkSelectMode && selectedCount > 0 && (
           <div className="text-center">
-            <span className="inline-block text-xs font-bold text-orange-600 bg-orange-100 px-3 py-1.5 rounded-full">
+            <span className="inline-block text-xs font-bold text-orange-600 bg-orange-100 dark:bg-orange-900/30 px-3 py-1.5 rounded-full">
               {selectedCount} SELECTED
             </span>
           </div>
