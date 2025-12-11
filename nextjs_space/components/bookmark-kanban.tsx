@@ -771,21 +771,33 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                                   {/* Card actions menu */}
                                   {cardMenuId === bookmark.id && (
                                     <div
-                                      className="absolute z-20 top-9 right-2 sm:right-3 w-52 rounded-lg border bg-white shadow-lg p-3 space-y-3"
+                                      className="absolute z-20 top-9 right-2 sm:right-3 w-60 rounded-xl border border-slate-200 bg-white shadow-xl p-4 space-y-4"
                                       onClick={(e) => e.stopPropagation()}
                                     >
-                                      <div className="text-xs font-semibold text-muted-foreground">Card Options</div>
+                                      <div className="flex items-center justify-between">
+                                        <div>
+                                          <div className="text-[11px] font-semibold text-slate-700 uppercase tracking-wide">Card Options</div>
+                                          <div className="text-[11px] text-slate-500">{bookmark.title || 'Untitled'}</div>
+                                        </div>
+                                        <button
+                                          className="text-slate-400 hover:text-slate-600"
+                                          onClick={() => setCardMenuId(null)}
+                                        >
+                                          ✕
+                                        </button>
+                                      </div>
+
                                       <div className="space-y-2">
-                                        <div className="text-[11px] text-muted-foreground">Accent color</div>
+                                        <div className="text-[11px] font-semibold text-slate-600">Accent color</div>
                                         <div className="grid grid-cols-3 gap-2">
                                           {presetAccentOptions.map((opt) => (
                                             <button
                                               key={opt.label}
                                               onClick={() => handleAccentChange(bookmark.id, opt.value)}
-                                              className={`h-8 rounded border text-[11px] ${
+                                              className={`h-9 rounded-lg border text-[11px] font-medium transition ${
                                                 accentColorOverrides[bookmark.id] === opt.value
-                                                  ? 'border-primary bg-primary text-white'
-                                                  : 'border-muted bg-white'
+                                                  ? 'border-primary bg-primary text-white shadow-sm'
+                                                  : 'border-slate-200 bg-slate-50 hover:border-slate-300'
                                               }`}
                                               style={opt.value ? { backgroundColor: opt.value } : {}}
                                             >
@@ -794,11 +806,12 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                                           ))}
                                         </div>
                                       </div>
-                                      <div className="flex gap-2">
+
+                                      <div className="grid grid-cols-2 gap-2">
                                         <Button
                                           size="sm"
                                           variant="outline"
-                                          className="flex-1 text-xs"
+                                          className="text-xs"
                                           onClick={() => handleToggleFavorite(bookmark.id)}
                                         >
                                           {bookmark.isFavorite ? 'Unfavorite' : 'Favorite'}
@@ -806,10 +819,10 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                                         <Button
                                           size="sm"
                                           variant="secondary"
-                                          className="flex-1 text-xs"
+                                          className="text-xs"
                                           onClick={() => setCardMenuId(null)}
                                         >
-                                          Close
+                                          Done
                                         </Button>
                                       </div>
                                     </div>
