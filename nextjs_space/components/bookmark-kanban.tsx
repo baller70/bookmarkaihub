@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { BookmarkDetailModal } from './bookmark-detail-modal';
 import { 
   Search, 
@@ -193,6 +194,7 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   const [autoSort, setAutoSort] = useState(false);
   const [editingBoardId, setEditingBoardId] = useState<string | null>(null);
   const [boardMenuId, setBoardMenuId] = useState<string | null>(null);
+  const [colorBoardId, setColorBoardId] = useState<string | null>(null);
   
   // Board management functions
   const createBoard = () => {
@@ -574,144 +576,115 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
         </p>
       </div>
 
-      {/* Board Tabs */}
-      <div className="flex items-center gap-2 px-2 overflow-x-auto pb-2">
-        {boards.map((board) => (
+      {/* Board Tabs - Hierarchy Style */}
+      <div className="flex items-center gap-2 flex-wrap mb-3 px-2">
+        {boards.map((board, index) => (
           <div
             key={board.id}
-            className={`group relative flex items-center gap-2 px-4 py-2 rounded-lg border-2 cursor-pointer transition-all min-w-[120px] ${
-              board.id === activeBoardId
-                ? 'border-primary bg-primary/5 shadow-sm'
-                : 'border-gray-200 hover:border-gray-300 bg-white'
-            }`}
+            className="relative rounded-xl border transition shadow-sm hover:shadow-md px-3 py-2 flex items-center gap-3 min-w-[200px] cursor-pointer"
+            style={{
+              borderColor: board.color || '#E5E7EB',
+              backgroundColor: board.id === activeBoardId ? (board.color ? `${board.color}15` : '#EEF2FF') : '#FFFFFF',
+              boxShadow: board.id === activeBoardId ? `0 0 0 3px ${(board.color || '#6366f1')}20` : undefined,
+            }}
             onClick={() => setActiveBoardId(board.id)}
           >
             <div
-              className="w-3 h-3 rounded-full flex-shrink-0"
-              style={{ backgroundColor: board.color }}
-            />
-            {editingBoardId === board.id ? (
-              <Input
-                value={editingValue}
-                onChange={(e) => setEditingValue(e.target.value)}
-                onBlur={() => renameBoard(board.id, editingValue)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') renameBoard(board.id, editingValue);
-                  if (e.key === 'Escape') setEditingBoardId(null);
-                }}
-                className="h-6 w-24 text-xs font-medium"
-                autoFocus
-                onClick={(e) => e.stopPropagation()}
-              />
-            ) : (
-              <span
-                className="text-sm font-medium truncate"
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  setEditingBoardId(board.id);
-                  setEditingValue(board.name);
-                }}
-              >
-                {board.name}
-              </span>
-            )}
-            <div className="flex items-center gap-2 ml-auto">
-              <button
-                className="text-gray-400 hover:text-gray-600 transition"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setBoardMenuId((prev) => (prev === board.id ? null : board.id));
-                }}
-                title="Board options"
-              >
-                <Palette className="w-4 h-4" />
-              </button>
-              {boards.length > 1 && (
-                <button
-                  className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteBoard(board.id);
-                  }}
-                  title="Delete board"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
+              className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold"
+              style={{
+                backgroundColor: board.color ? `${board.color}22` : '#E5E7EB',
+                color: board.color || '#374151',
+              }}
+            >
+              {index + 1}
+            </div>
+            <div className="flex-1 min-w-0">
+              {editingBoardId === board.id ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={editingValue}
+                    onChange={(e) => setEditingValue(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') { e.preventDefault(); renameBoard(board.id, editingValue); }
+                      if (e.key === 'Escape') { e.preventDefault(); setEditingBoardId(null); }
+                    }}
+                    className="h-8 text-sm"
+                    autoFocus
+                  />
+                  <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); renameBoard(board.id, editingValue); }}>Save</Button>
+                  <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); setEditingBoardId(null); }}>Cancel</Button>
+                </div>
+              ) : (
+                <>
+                  <div className="font-semibold text-sm text-gray-900 truncate">
+                    {board.name}
+                  </div>
+                  <div className="text-xs text-gray-500 truncate">Customizable board</div>
+                </>
               )}
             </div>
-
-            {boardMenuId === board.id && (
-              <div
-                className="absolute left-0 top-full mt-2 z-50 w-56 rounded-lg border border-gray-200 bg-white shadow-xl p-3 space-y-3"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="text-xs font-semibold text-gray-600">Board Options</div>
-                  <button
-                    className="text-gray-400 hover:text-gray-600"
-                    onClick={() => setBoardMenuId(null)}
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-[11px] text-gray-500">Rename</div>
-                  <Input
-                    value={editingBoardId === board.id ? editingValue : board.name}
-                    onChange={(e) => setEditingValue(e.target.value)}
-                    onFocus={() => setEditingBoardId(board.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') renameBoard(board.id, editingValue);
-                      if (e.key === 'Escape') setEditingBoardId(null);
-                    }}
-                    onBlur={() => renameBoard(board.id, editingValue || board.name)}
-                    className="h-8 text-sm"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <div className="text-[11px] text-gray-500">Color</div>
-                  <div className="grid grid-cols-4 gap-2">
-                    {BOARD_COLORS.map((color) => (
-                      <button
-                        key={color}
-                        className={`h-8 rounded-md border transition ${
-                          board.color === color
-                            ? 'ring-2 ring-offset-1 ring-primary border-primary'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                        style={{ backgroundColor: color }}
-                        onClick={() => setBoardColor(board.id, color)}
-                      />
-                    ))}
-                  </div>
-                </div>
-                {boards.length > 1 && (
-                  <div className="pt-1">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="w-full text-xs"
-                      onClick={() => {
-                        deleteBoard(board.id);
-                        setBoardMenuId(null);
-                      }}
-                    >
-                      Delete board
-                    </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="p-1.5 rounded hover:bg-gray-100 text-gray-600"
+                  onClick={(e) => e.stopPropagation()}
+                  title="Board options"
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                <DropdownMenuItem onClick={() => {
+                  setEditingBoardId(board.id);
+                  setEditingValue(board.name);
+                }}>
+                  Rename board
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setColorBoardId((prev) => (prev === board.id ? null : board.id))}
+                >
+                  Change color
+                </DropdownMenuItem>
+                {colorBoardId === board.id && (
+                  <div className="px-2 py-2 space-y-2 border-t mt-1">
+                    <div className="text-xs text-gray-500 mb-1">Board color</div>
+                    <div className="grid grid-cols-4 gap-1">
+                      {BOARD_COLORS.map((c) => (
+                        <button
+                          key={c}
+                          className={`w-6 h-6 rounded-md border-2 transition ${board.color === c ? 'border-gray-800 scale-110' : 'border-transparent hover:scale-105'}`}
+                          style={{ backgroundColor: c }}
+                          onClick={() => {
+                            setBoardColor(board.id, c);
+                            setColorBoardId(null);
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <Input
+                      className="h-8 text-xs"
+                      placeholder="Custom #hex"
+                      value={board.color || ''}
+                      onChange={(e) => setBoardColor(board.id, e.target.value)}
+                    />
                   </div>
                 )}
-              </div>
-            )}
+                <DropdownMenuItem
+                  className={`text-red-600 ${boards.length === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={() => {
+                    if (boards.length === 1) return;
+                    deleteBoard(board.id);
+                  }}
+                >
+                  Delete board
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         ))}
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex-shrink-0 h-9"
-          onClick={createBoard}
-        >
-          <Plus className="w-4 h-4 mr-1" />
-          New Board
+        <Button size="sm" variant="outline" onClick={createBoard}>
+          + New Board
         </Button>
       </div>
 
