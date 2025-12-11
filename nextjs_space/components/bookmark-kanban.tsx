@@ -192,6 +192,7 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   const [showCardLabels, setShowCardLabels] = useState(true);
   const [autoSort, setAutoSort] = useState(false);
   const [editingBoardId, setEditingBoardId] = useState<string | null>(null);
+  const [boardMenuId, setBoardMenuId] = useState<string | null>(null);
   
   // Board management functions
   const createBoard = () => {
@@ -228,6 +229,13 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
       prev.map((b) => (b.id === boardId ? { ...b, name: newName } : b))
     );
     setEditingBoardId(null);
+  };
+
+  const setBoardColor = (boardId: string, color: string) => {
+    setBoards((prev) =>
+      prev.map((b) => (b.id === boardId ? { ...b, color } : b))
+    );
+    setBoardMenuId(null);
   };
   
   // Row editing functions
@@ -607,16 +615,92 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                 {board.name}
               </span>
             )}
-            {boards.length > 1 && (
+            <div className="flex items-center gap-2 ml-auto">
               <button
-                className="opacity-0 group-hover:opacity-100 ml-auto text-gray-400 hover:text-red-500 transition-all"
+                className="text-gray-400 hover:text-gray-600 transition"
                 onClick={(e) => {
                   e.stopPropagation();
-                  deleteBoard(board.id);
+                  setBoardMenuId((prev) => (prev === board.id ? null : board.id));
                 }}
+                title="Board options"
               >
-                <X className="w-3.5 h-3.5" />
+                <Palette className="w-4 h-4" />
               </button>
+              {boards.length > 1 && (
+                <button
+                  className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteBoard(board.id);
+                  }}
+                  title="Delete board"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {boardMenuId === board.id && (
+              <div
+                className="absolute left-0 top-full mt-2 z-50 w-56 rounded-lg border border-gray-200 bg-white shadow-xl p-3 space-y-3"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-semibold text-gray-600">Board Options</div>
+                  <button
+                    className="text-gray-400 hover:text-gray-600"
+                    onClick={() => setBoardMenuId(null)}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-[11px] text-gray-500">Rename</div>
+                  <Input
+                    value={editingBoardId === board.id ? editingValue : board.name}
+                    onChange={(e) => setEditingValue(e.target.value)}
+                    onFocus={() => setEditingBoardId(board.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') renameBoard(board.id, editingValue);
+                      if (e.key === 'Escape') setEditingBoardId(null);
+                    }}
+                    onBlur={() => renameBoard(board.id, editingValue || board.name)}
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="text-[11px] text-gray-500">Color</div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {BOARD_COLORS.map((color) => (
+                      <button
+                        key={color}
+                        className={`h-8 rounded-md border transition ${
+                          board.color === color
+                            ? 'ring-2 ring-offset-1 ring-primary border-primary'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        style={{ backgroundColor: color }}
+                        onClick={() => setBoardColor(board.id, color)}
+                      />
+                    ))}
+                  </div>
+                </div>
+                {boards.length > 1 && (
+                  <div className="pt-1">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="w-full text-xs"
+                      onClick={() => {
+                        deleteBoard(board.id);
+                        setBoardMenuId(null);
+                      }}
+                    >
+                      Delete board
+                    </Button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         ))}
