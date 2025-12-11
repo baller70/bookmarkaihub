@@ -201,6 +201,10 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
     setActionMessage('Settings clicked – add settings panel here.');
   };
 
+  const handleColumnMenuClick = (rowId: string, columnId: string) => {
+    setActionMessage(`Column menu clicked for ${columnId} in ${rowId}`);
+  };
+
   const handleCardMenuClick = (bookmarkId: string) => {
     setActionMessage(`Actions menu clicked for ${bookmarkId}`);
   };
@@ -388,7 +392,6 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                           {column.id === 'IN_PROGRESS' && (
                             <div className="flex gap-1 flex-shrink-0">
                               <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
-                              <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
                             </div>
                           )}
                         </div>
@@ -397,7 +400,12 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                         </p>
                       </div>
                     </div>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 -mt-1 flex-shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 -mt-1 flex-shrink-0"
+                      onClick={() => handleColumnMenuClick(row.id, column.id)}
+                    >
                       <MoreVertical className="w-3 h-3 sm:w-4 sm:h-4" />
                     </Button>
                   </div>
