@@ -430,8 +430,8 @@ export function DashboardContent() {
         </div>
       </div>
 
-      {/* Pagination Controls - Only show for GRID view */}
-      {viewMode === "GRID" && (
+      {/* Pagination Controls - Show for GRID, COMPACT, and LIST views */}
+      {(viewMode === "GRID" || viewMode === "COMPACT" || viewMode === "LIST") && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
           <div className="flex items-center gap-3">
             <span className="text-sm text-gray-600">Per page</span>
@@ -484,8 +484,8 @@ export function DashboardContent() {
       {/* Bookmarks */}
       {renderBookmarkView()}
 
-      {/* Bottom Pagination Controls - Only show for GRID view */}
-      {viewMode === "GRID" && !loading && bookmarks.length > 0 && (
+      {/* Bottom Pagination Controls - Show for GRID, COMPACT, and LIST views */}
+      {(viewMode === "GRID" || viewMode === "COMPACT" || viewMode === "LIST") && !loading && bookmarks.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-6 border-t border-gray-200 mt-8">
           <div className="flex items-center gap-3">
             <span className="text-sm text-black font-medium">Items per page:</span>
