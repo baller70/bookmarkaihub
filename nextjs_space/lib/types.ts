@@ -205,7 +205,7 @@ export type FavoriteStats = {
   }
 }
 
-export type ViewMode = 'grid' | 'list' | 'compact' | 'table'
+export type ViewMode = 'grid' | 'list' | 'compact' | 'folder'
 export type SortOption = 'title' | 'dateAdded' | 'lastUpdated' | 'mostVisited' | 'folder'
 
 // Playbook Types

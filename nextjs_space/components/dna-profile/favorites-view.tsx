@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
-import { RefreshCw, Download, Heart, Grid3x3, List, Table, LayoutGrid, ArrowLeft, Eye, TrendingUp, Star, ArrowUpDown, Calendar, FileText } from 'lucide-react'
+import { RefreshCw, Download, Heart, Grid3x3, List, LayoutGrid, Folder, Eye, TrendingUp, ArrowUpDown, Calendar, FileText, Filter } from 'lucide-react'
 import { ViewMode, SortOption, FavoriteStats } from '@/lib/types'
-import { formatDistanceToNow } from 'date-fns'
 
 type Bookmark = {
   id: string
@@ -28,16 +29,14 @@ type Bookmark = {
 export default function FavoritesView() {
   const router = useRouter()
   const [favorites, setFavorites] = useState<Bookmark[]>([])
-  const [stats, setStats] = useState<FavoriteStats>({
-    totalFavorites: 0,
-    totalVisits: 0,
-    avgVisits: 0,
-    mostVisited: { title: 'N/A', visits: 0 }
-  })
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [sortBy, setSortBy] = useState<SortOption>('lastUpdated')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [filterCategory, setFilterCategory] = useState<string>('all')
+  const [minVisits, setMinVisits] = useState<number>(0)
+  const [recency, setRecency] = useState<string>('all')
+  const [searchTerm, setSearchTerm] = useState<string>('')
 
   useEffect(() => {
     fetchFavorites()
@@ -50,7 +49,6 @@ export default function FavoritesView() {
       if (res.ok) {
         const data = await res.json()
         setFavorites(data.favorites)
-        setStats(data.stats)
       } else {
         toast.error('Failed to load favorites')
       }
@@ -74,7 +72,63 @@ export default function FavoritesView() {
     toast.success('Favorites exported!')
   }
 
-  const sortedFavorites = [...favorites].sort((a, b) => {
+  // Analytics tied strictly to the favorites in this section
+  const computedStats: FavoriteStats = (() => {
+    if (!favorites || favorites.length === 0) {
+      return {
+        totalFavorites: 0,
+        totalVisits: 0,
+        avgVisits: 0,
+        mostVisited: { title: 'N/A', visits: 0 }
+      }
+    }
+    const totalFavorites = favorites.length
+    const totalVisits = favorites.reduce((sum, f) => sum + (f.totalVisits || 0), 0)
+    const avgVisits = Math.round(totalVisits / totalFavorites) || 0
+    const mostVisitedBookmark = favorites
+      .slice()
+      .sort((a, b) => (b.totalVisits || 0) - (a.totalVisits || 0))[0]
+
+    return {
+      totalFavorites,
+      totalVisits,
+      avgVisits,
+      mostVisited: {
+        title: mostVisitedBookmark?.title || 'N/A',
+        visits: mostVisitedBookmark?.totalVisits || 0
+      }
+    }
+  })()
+
+  const applyFilters = (items: Bookmark[]) => {
+    const now = Date.now()
+    return items.filter((bookmark) => {
+      if (filterCategory !== 'all') {
+        const cat = bookmark.categories?.[0]?.category?.name || 'Uncategorized'
+        if (cat !== filterCategory) return false
+      }
+      if (minVisits > 0 && (bookmark.totalVisits || 0) < minVisits) return false
+      if (recency !== 'all' && bookmark.lastVisited) {
+        const days = parseInt(recency, 10)
+        const diffDays = (now - new Date(bookmark.lastVisited).getTime()) / (1000 * 60 * 60 * 24)
+        if (diffDays > days) return false
+      }
+      if (searchTerm.trim()) {
+        const term = searchTerm.toLowerCase()
+        if (
+          !bookmark.title.toLowerCase().includes(term) &&
+          !bookmark.url.toLowerCase().includes(term)
+        ) {
+          return false
+        }
+      }
+      return true
+    })
+  }
+
+  const filteredFavorites = applyFilters(favorites)
+
+  const sortedFavorites = [...filteredFavorites].sort((a, b) => {
     let comparison = 0
     switch (sortBy) {
       case 'title':
@@ -88,6 +142,12 @@ export default function FavoritesView() {
         break
       case 'dateAdded':
         comparison = new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+        break
+      case 'folder':
+        comparison =
+          (a.categories?.[0]?.category?.name || 'Uncategorized').localeCompare(
+            b.categories?.[0]?.category?.name || 'Uncategorized'
+          )
         break
       default:
         return 0
@@ -136,7 +196,7 @@ export default function FavoritesView() {
           <CardContent className="pt-6 pb-6">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <div className="text-3xl font-bold text-gray-900 uppercase">{stats.totalFavorites}</div>
+                <div className="text-3xl font-bold text-gray-900 uppercase">{computedStats.totalFavorites}</div>
                 <div className="text-sm text-gray-600 mt-1">
                   Bookmarks marked as favorite
                 </div>
@@ -152,7 +212,7 @@ export default function FavoritesView() {
           <CardContent className="pt-6 pb-6">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <div className="text-3xl font-bold text-gray-900 uppercase">{stats.totalVisits}</div>
+                <div className="text-3xl font-bold text-gray-900 uppercase">{computedStats.totalVisits}</div>
                 <div className="text-sm text-gray-600 mt-1">
                   Combined visits to favorites
                 </div>
@@ -168,7 +228,7 @@ export default function FavoritesView() {
           <CardContent className="pt-6 pb-6">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <div className="text-3xl font-bold text-gray-900 uppercase">{stats.avgVisits}</div>
+                <div className="text-3xl font-bold text-gray-900 uppercase">{computedStats.avgVisits}</div>
                 <div className="text-sm text-gray-600 mt-1">
                   Average visits per favorite
                 </div>
@@ -182,7 +242,7 @@ export default function FavoritesView() {
       </div>
 
       {/* Controls */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600">View:</span>
           <div className="flex gap-1">
@@ -211,20 +271,90 @@ export default function FavoritesView() {
               <LayoutGrid className="w-4 h-4" />
             </Button>
             <Button 
-              variant={viewMode === 'table' ? 'default' : 'outline'} 
+              variant={viewMode === 'folder' ? 'default' : 'outline'} 
               size="sm" 
-              onClick={() => setViewMode('table')}
-              className={`p-2 ${viewMode !== 'table' ? 'bg-white border-gray-300 text-gray-700 hover:!bg-gray-100 hover:!text-gray-900' : ''}`}
+              onClick={() => setViewMode('folder')}
+              className={`p-2 ${viewMode !== 'folder' ? 'bg-white border-gray-300 text-gray-700 hover:!bg-gray-100 hover:!text-gray-900' : ''}`}
             >
-              <Table className="w-4 h-4" />
+              <Folder className="w-4 h-4" />
             </Button>
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="bg-white border-gray-300 text-gray-700 hover:!bg-gray-100 hover:!text-gray-900 gap-2">
+                <Filter className="w-4 h-4" /> Filters
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-64">
+              <DropdownMenuLabel>Filter favorites</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <div className="px-2 py-1 space-y-3">
+                <div className="space-y-1">
+                  <div className="text-xs text-gray-600">Category</div>
+                  <Select value={filterCategory} onValueChange={setFilterCategory}>
+                    <SelectTrigger className="h-8 text-sm">
+                      <SelectValue placeholder="All categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All categories</SelectItem>
+                      {[...new Set(favorites.map(f => f.categories?.[0]?.category?.name || 'Uncategorized'))].map(cat => (
+                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs text-gray-600">Minimum visits</div>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={minVisits}
+                    onChange={(e) => setMinVisits(Number(e.target.value) || 0)}
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs text-gray-600">Recency</div>
+                  <Select value={recency} onValueChange={setRecency}>
+                    <SelectTrigger className="h-8 text-sm">
+                      <SelectValue placeholder="All time" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All time</SelectItem>
+                      <SelectItem value="7">Last 7 days</SelectItem>
+                      <SelectItem value="30">Last 30 days</SelectItem>
+                      <SelectItem value="90">Last 90 days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs text-gray-600">Search</div>
+                  <Input
+                    placeholder="Title or URL"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="flex justify-between pt-1">
+                  <Button variant="ghost" size="sm" className="text-xs" onClick={() => {
+                    setFilterCategory('all')
+                    setMinVisits(0)
+                    setRecency('all')
+                    setSearchTerm('')
+                  }}>Clear</Button>
+                  <Button variant="default" size="sm" className="text-xs">Apply</Button>
+                </div>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <span className="text-sm text-gray-600">Sort:</span>
           <Select value={sortBy} onValueChange={(val) => setSortBy(val as SortOption)}>
-            <SelectTrigger className="w-40 h-9 bg-white border-gray-300 text-gray-700 hover:bg-gray-100">
+            <SelectTrigger className="w-44 h-9 bg-white border-gray-300 text-gray-700 hover:bg-gray-100">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-white">
@@ -232,6 +362,7 @@ export default function FavoritesView() {
               <SelectItem value="dateAdded">Date Added</SelectItem>
               <SelectItem value="title">Title</SelectItem>
               <SelectItem value="mostVisited">Most Visited</SelectItem>
+              <SelectItem value="folder">Folder</SelectItem>
             </SelectContent>
           </Select>
           <Button
@@ -405,70 +536,71 @@ export default function FavoritesView() {
         </div>
       )}
 
-      {/* Bookmarks Table View */}
-      {viewMode === 'table' && (
-        <Card className="bg-white border-border">
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b">
-                  <tr>
-                    <th className="text-left p-4 text-sm font-semibold text-gray-700">Title</th>
-                    <th className="text-left p-4 text-sm font-semibold text-gray-700">URL</th>
-                    <th className="text-left p-4 text-sm font-semibold text-gray-700">Category</th>
-                    <th className="text-left p-4 text-sm font-semibold text-gray-700">Visits</th>
-                    <th className="text-left p-4 text-sm font-semibold text-gray-700">Last Visited</th>
-                    <th className="text-left p-4 text-sm font-semibold text-gray-700"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedFavorites.map(bookmark => (
-                    <tr key={bookmark.id} className="border-b hover:bg-gray-50 cursor-pointer">
-                      <td className="p-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-                            {bookmark.favicon ? (
-                              <img src={bookmark.favicon} alt="" className="w-5 h-5" />
-                            ) : (
-                              <FileText className="w-4 h-4 text-gray-400" />
-                            )}
+      {/* Bookmarks Folder View */}
+      {viewMode === 'folder' && (
+        <div className="space-y-4">
+          {Object.entries(
+            sortedFavorites.reduce<Record<string, Bookmark[]>>((acc, bookmark) => {
+              const folderName = bookmark.categories?.[0]?.category?.name || 'Uncategorized'
+              acc[folderName] = acc[folderName] || []
+              acc[folderName].push(bookmark)
+              return acc
+            }, {})
+          ).map(([folderName, items]) => {
+            const folderVisits = items.reduce((sum, b) => sum + (b.totalVisits || 0), 0)
+            return (
+              <Card key={folderName} className="bg-white border-border">
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Folder className="w-5 h-5 text-gray-600" />
+                        <h3 className="text-lg font-semibold text-gray-900">{folderName}</h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {items.length} item{items.length === 1 ? '' : 's'} · {folderVisits} visits
+                      </p>
+                    </div>
+                    <Badge variant="secondary" className="bg-gray-100 text-gray-700">
+                      {items.length} favorites
+                    </Badge>
+                  </div>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {items.map((bookmark) => (
+                      <Card key={bookmark.id} className="border border-gray-200 hover:shadow-sm transition-shadow">
+                        <CardContent className="p-3">
+                          <div className="flex items-start gap-3 mb-2">
+                            <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                              {bookmark.favicon ? (
+                                <img src={bookmark.favicon} alt="" className="w-5 h-5" />
+                              ) : (
+                                <FileText className="w-4 h-4 text-gray-400" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="font-semibold text-sm truncate">{bookmark.title}</h4>
+                              <p className="text-xs text-muted-foreground truncate">{bookmark.url}</p>
+                            </div>
                           </div>
-                          <span className="font-medium text-sm truncate max-w-xs">
-                            {bookmark.title}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <span className="text-sm text-muted-foreground truncate max-w-xs block">
-                          {bookmark.url}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <span className="text-sm">
-                          {bookmark.categories.length > 0 
-                            ? bookmark.categories[0]?.category?.name || 'Uncategorized'
-                            : 'Uncategorized'
-                          }
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <span className="text-sm">{bookmark.totalVisits}</span>
-                      </td>
-                      <td className="p-4">
-                        <span className="text-sm text-muted-foreground">
-                          {formatDate(bookmark.lastVisited)}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <Heart className="w-4 h-4 fill-red-500 text-red-500" />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Eye className="w-3 h-3" />
+                              {bookmark.totalVisits} visits
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />
+                              {formatDate(bookmark.lastVisited)}
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
       )}
 
       {favorites.length === 0 && (
