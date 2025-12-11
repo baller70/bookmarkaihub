@@ -17,7 +17,7 @@ import { BookmarkGoals } from "@/components/bookmark-goals"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Grid3x3, List, Clock, FolderTree, Folders, Trophy, Kanban, ChevronLeft, ChevronRight, ChevronDown, LucideIcon } from "lucide-react"
+import { Search, LayoutGrid, List, Clock, FolderTree, Folders, Trophy, Kanban, ChevronLeft, ChevronRight, ChevronDown, LucideIcon } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import type { Bookmark, Category } from "@/types/bookmark"
@@ -26,7 +26,7 @@ export type ViewMode = "GRID" | "COMPACT" | "LIST" | "TIMELINE" | "HIERARCHY" | 
 
 const viewModes: { id: ViewMode; label: string; icon: LucideIcon }[] = [
   { id: "GRID", label: "GRID", icon: Grid3x3 },
-  { id: "COMPACT", label: "COMPACT", icon: Grid3x3 },
+  { id: "COMPACT", label: "COMPACT", icon: LayoutGrid },
   { id: "LIST", label: "LIST", icon: List },
   { id: "TIMELINE", label: "TIMELINE", icon: Clock },
   { id: "HIERARCHY", label: "HIERARCHY", icon: FolderTree },
