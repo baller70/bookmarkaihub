@@ -103,10 +103,12 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
       columns: [...defaultColumns],
     },
   ]);
+  const [cards, setCards] = useState<any[]>(bookmarks || []);
   const [editingColumn, setEditingColumn] = useState<{ rowId: string; columnId: string } | null>(null);
   const [editingValue, setEditingValue] = useState('');
   const [cardPositions, setCardPositions] = useState<Record<string, string>>({});
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<string>('');
 
   const getInitialStatusForBookmark = (bookmark: any) => {
     if (bookmark.priority === 'HIGH' || bookmark.priority === 'URGENT') {
@@ -120,6 +122,7 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
 
   // Initialize or refresh card positions when bookmarks change
   useEffect(() => {
+    setCards(bookmarks || []);
     const nextPositions: Record<string, string> = {};
     bookmarks.forEach((bookmark) => {
       nextPositions[bookmark.id] = cardPositions[bookmark.id] || getInitialStatusForBookmark(bookmark);
@@ -147,8 +150,63 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
     setDraggingId(null);
   };
 
+  const handleToggleFavorite = (bookmarkId: string) => {
+    setCards((prev) =>
+      prev.map((card) =>
+        card.id === bookmarkId ? { ...card, isFavorite: !card.isFavorite } : card
+      )
+    );
+    setActionMessage('Updated favorite');
+  };
+
+  const handleAddCard = () => {
+    const newId = `card-${Date.now()}`;
+    const newCard = {
+      id: newId,
+      title: 'New Card',
+      description: 'Describe this card...',
+      priority: 'MEDIUM',
+      tags: [],
+      favicon: '/favicon.svg',
+      isFavorite: false,
+      visitCount: 0,
+    };
+    setCards((prev) => [...prev, newCard]);
+    setCardPositions((prev) => ({ ...prev, [newId]: 'BACKLOG' }));
+    setActionMessage('Added a new card to Backlog');
+  };
+
+  const handleAddColumn = (rowId: string) => {
+    const newId = `COL-${Date.now()}`;
+    const newColumn: KanbanColumn = {
+      id: newId,
+      name: 'NEW COLUMN',
+      description: 'Custom column',
+      statusColor: 'text-purple-600',
+      statusDotColor: 'bg-purple-600',
+    };
+    setRows((prev) =>
+      prev.map((row) =>
+        row.id === rowId ? { ...row, columns: [...row.columns, newColumn] } : row
+      )
+    );
+    setActionMessage('Added a new column');
+  };
+
+  const handleFilter = () => {
+    setActionMessage('Filter clicked – implement filters here.');
+  };
+
+  const handleSettings = () => {
+    setActionMessage('Settings clicked – add settings panel here.');
+  };
+
+  const handleCardMenuClick = (bookmarkId: string) => {
+    setActionMessage(`Actions menu clicked for ${bookmarkId}`);
+  };
+
   // Group bookmarks by column
-  const groupedBookmarks = bookmarks.reduce((groups: any, bookmark: any) => {
+  const groupedBookmarks = cards.reduce((groups: any, bookmark: any) => {
     const status = cardPositions[bookmark.id] || getInitialStatusForBookmark(bookmark);
     if (!groups[status]) {
       groups[status] = [];
@@ -230,20 +288,26 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2.5 justify-end overflow-x-auto">
-          <Button variant="outline" size="sm" className="flex-shrink-0 h-10 px-3">
+          <Button variant="outline" size="sm" className="flex-shrink-0 h-10 px-3" onClick={handleFilter}>
             <Filter className="w-4 h-4 sm:mr-2" />
             <span className="hidden sm:inline">Filter</span>
           </Button>
-          <Button variant="outline" size="sm" className="flex-shrink-0 h-10 px-3">
+          <Button variant="outline" size="sm" className="flex-shrink-0 h-10 px-3" onClick={handleSettings}>
             <Settings className="w-4 h-4 sm:mr-2" />
             <span className="hidden sm:inline">Settings</span>
           </Button>
-          <Button size="sm" className="flex-shrink-0 h-10 px-3">
+          <Button size="sm" className="flex-shrink-0 h-10 px-3" onClick={handleAddCard}>
             <Plus className="w-4 h-4 sm:mr-2" />
             <span className="hidden sm:inline">Add Card</span>
           </Button>
         </div>
       </div>
+
+      {actionMessage && (
+        <div className="px-2 text-xs sm:text-sm text-muted-foreground">
+          {actionMessage}
+        </div>
+      )}
 
       {/* Rows Container */}
       <div className="space-y-4 sm:space-y-6">
@@ -266,7 +330,7 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                 <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
                   {rowIndex === 0 ? totalCards : 0} cards
                 </span>
-                <Button variant="ghost" size="sm" className="flex-shrink-0">
+                <Button variant="ghost" size="sm" className="flex-shrink-0" onClick={() => handleAddColumn(row.id)}>
                   <Plus className="w-4 h-4 sm:mr-2" />
                   <span className="hidden sm:inline">Add Column</span>
                 </Button>
@@ -380,7 +444,7 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                               </h4>
                               
                               <div className="absolute top-2 sm:top-3 right-2 sm:right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button variant="ghost" size="icon" className="h-6 w-6 sm:h-7 sm:w-7">
+                                <Button variant="ghost" size="icon" className="h-6 w-6 sm:h-7 sm:w-7" onClick={() => handleCardMenuClick(bookmark.id)}>
                                   <MoreVertical className="w-3 h-3" />
                                 </Button>
                                 <Button variant="ghost" size="icon" className="h-6 w-6 sm:h-7 sm:w-7 cursor-move">
@@ -444,13 +508,18 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                                   <Paperclip className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                   <span>{Math.floor(Math.random() * 3)}</span>
                                 </div>
-                                <Star
-                                  className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${
-                                    bookmark.isFavorite
-                                      ? 'fill-yellow-400 text-yellow-400'
-                                      : 'text-muted-foreground'
-                                  }`}
-                                />
+                                <button
+                                  onClick={() => handleToggleFavorite(bookmark.id)}
+                                  className="focus:outline-none"
+                                >
+                                  <Star
+                                    className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${
+                                      bookmark.isFavorite
+                                        ? 'fill-yellow-400 text-yellow-400'
+                                        : 'text-muted-foreground'
+                                    }`}
+                                  />
+                                </button>
                               </div>
                             </div>
                           </div>
