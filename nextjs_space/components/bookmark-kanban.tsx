@@ -587,289 +587,289 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
             {row.isExpanded && (
               <div className="w-full">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 md:gap-6 pb-3 sm:pb-4">
-                {row.columns.map((column) => {
-              // Only show bookmarks in the first row (row-1), other rows are blank
-              const columnBookmarks = rowIndex === 0 ? (groupedBookmarks[column.id] || []) : [];
-              
-              return (
-                <div
-                  key={column.id}
-                  className="min-w-0 space-y-3.5"
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, column.id)}
-                >
-                  {/* Column Header */}
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-2 min-w-0 flex-1">
-                      <div className={`w-2 h-2 rounded-full ${column.statusDotColor} mt-1.5 flex-shrink-0`} />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {editingColumn?.rowId === row.id && editingColumn?.columnId === column.id ? (
-                            <Input
-                              value={editingValue}
-                              onChange={(e) => setEditingValue(e.target.value)}
-                              onBlur={() => saveColumnName(row.id, column.id)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  saveColumnName(row.id, column.id);
-                                } else if (e.key === 'Escape') {
-                                  cancelEditingColumn();
-                                }
-                              }}
-                              className="h-6 w-32 text-xs sm:text-sm font-bold"
-                              autoFocus
-                            />
-                          ) : (
-                            <h3 
-                              className={`font-bold text-xs sm:text-sm ${column.statusColor} cursor-pointer hover:opacity-70 transition-opacity truncate`}
-                              onClick={() => startEditingColumn(row.id, column.id, column.name)}
-                              title="Click to edit"
-                            >
-                              {column.name}
-                            </h3>
-                          )}
-                          <span className="text-xs sm:text-sm text-muted-foreground flex-shrink-0">
-                            {columnBookmarks.length}
-                          </span>
-                          {column.id === 'IN_PROGRESS' && (
-                            <div className="flex gap-1 flex-shrink-0">
-                              <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
-                            </div>
-                          )}
-                        </div>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                          {column.description}
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 -mt-1 flex-shrink-0"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleColumnMenuClick(row.id, column.id);
-                      }}
-                    >
-                      <MoreVertical className="w-3 h-3 sm:w-4 sm:h-4" />
-                    </Button>
-                  </div>
+                  {row.columns.map((column) => {
+                    // Only show bookmarks in the first row (row-1), other rows are blank
+                    const columnBookmarks = rowIndex === 0 ? (groupedBookmarks[column.id] || []) : [];
 
-                  {/* Cards Container */}
-                  <div className="space-y-3 sm:space-y-3.5">
-                    {columnBookmarks.length === 0 ? (
-                      <div className="text-center py-8 sm:py-10 text-muted-foreground text-xs sm:text-sm">
-                        No cards in {column.name.toLowerCase()}
-                      </div>
-                    ) : (
-                      columnBookmarks.map((bookmark: any) => {
-                        const priorityConfig = getPriorityConfig(bookmark.priority);
-                        const accentOverride = accentColorOverrides[bookmark.id];
-                        const accentClass = accentOverride ? 'border-l-4' : getCardAccentColor(bookmark.priority);
-                        const accentStyle = accentOverride
-                          ? { borderLeftColor: accentOverride, borderLeftWidth: '4px' }
-                          : accentClass
-                            ? { borderLeftWidth: '4px' }
-                            : undefined;
-                        const progress = Math.floor(Math.random() * 100); // Simulated progress
-                        const tags = bookmark.tags?.slice(0, 2) || [];
-                        const extraTagsCount = bookmark.tags?.length > 2 ? bookmark.tags.length - 2 : 0;
-
-                        return (
-                          <div
-                            key={bookmark.id}
-                            draggable
-                            onDragStart={(e) => handleDragStart(e, bookmark.id)}
-                            onDragEnd={() => setDraggingId(null)}
-                            onClick={() => handleOpenCard(bookmark)}
-                            className={`group relative bg-white border rounded-lg p-4 sm:p-4.5 hover:shadow-md transition-all cursor-pointer touch-target ${accentClass} ${
-                              draggingId === bookmark.id ? 'opacity-70 ring-2 ring-primary/40' : ''
-                            }`}
-                            style={accentStyle}
-                          >
-                            {/* Card Header with Logo */}
-                            <div className="flex items-start gap-2 mb-3 sm:mb-3.5">
-                              {/* Favicon */}
-                              <div className="relative w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0 rounded-md overflow-hidden bg-white border">
-                                <Image
-                                  src={bookmark.favicon || '/favicon.svg'}
-                                  alt={bookmark.title}
-                                  fill
-                                  className="object-contain p-0.5"
-                                  unoptimized
-                                />
-                              </div>
-                              
-                              <h4 className="font-bold text-xs sm:text-sm pr-12 line-clamp-2 leading-relaxed flex-1">
-                                {bookmark.title.toUpperCase()}
-                              </h4>
-                              
-                              <div className="absolute top-2 sm:top-3 right-2 sm:right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6 sm:h-7 sm:w-7"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleCardMenuClick(bookmark.id);
-                                  }}
-                                >
-                                  <MoreVertical className="w-3 h-3" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6 sm:h-7 sm:w-7 cursor-move"
-                                  onMouseDown={(e) => e.stopPropagation()}
-                                >
-                                  <GripVertical className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            </div>
-
-                            {/* Card actions menu */}
-                            {cardMenuId === bookmark.id && (
-                              <div
-                                className="absolute z-20 top-9 right-2 sm:right-3 w-52 rounded-lg border bg-white shadow-lg p-3 space-y-3"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <div className="text-xs font-semibold text-muted-foreground">Card Options</div>
-                                <div className="space-y-2">
-                                  <div className="text-[11px] text-muted-foreground">Accent color</div>
-                                  <div className="grid grid-cols-3 gap-2">
-                                    {presetAccentOptions.map((opt) => (
-                                      <button
-                                        key={opt.label}
-                                        onClick={() => handleAccentChange(bookmark.id, opt.value)}
-                                        className={`h-8 rounded border text-[11px] ${
-                                          accentColorOverrides[bookmark.id] === opt.value
-                                            ? 'border-primary bg-primary text-white'
-                                            : 'border-muted bg-white'
-                                        }`}
-                                        style={opt.value ? { backgroundColor: opt.value } : {}}
-                                      >
-                                        {opt.label}
-                                      </button>
-                                    ))}
+                    return (
+                      <div
+                        key={column.id}
+                        className="min-w-0 space-y-3.5"
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, column.id)}
+                      >
+                        {/* Column Header */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-start gap-2 min-w-0 flex-1">
+                            <div className={`w-2 h-2 rounded-full ${column.statusDotColor} mt-1.5 flex-shrink-0`} />
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {editingColumn?.rowId === row.id && editingColumn?.columnId === column.id ? (
+                                  <Input
+                                    value={editingValue}
+                                    onChange={(e) => setEditingValue(e.target.value)}
+                                    onBlur={() => saveColumnName(row.id, column.id)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        saveColumnName(row.id, column.id);
+                                      } else if (e.key === 'Escape') {
+                                        cancelEditingColumn();
+                                      }
+                                    }}
+                                    className="h-6 w-32 text-xs sm:text-sm font-bold"
+                                    autoFocus
+                                  />
+                                ) : (
+                                  <h3
+                                    className={`font-bold text-xs sm:text-sm ${column.statusColor} cursor-pointer hover:opacity-70 transition-opacity truncate`}
+                                    onClick={() => startEditingColumn(row.id, column.id, column.name)}
+                                    title="Click to edit"
+                                  >
+                                    {column.name}
+                                  </h3>
+                                )}
+                                <span className="text-xs sm:text-sm text-muted-foreground flex-shrink-0">
+                                  {columnBookmarks.length}
+                                </span>
+                                {column.id === 'IN_PROGRESS' && (
+                                  <div className="flex gap-1 flex-shrink-0">
+                                    <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
                                   </div>
-                                </div>
-                                <div className="flex gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="flex-1 text-xs"
-                                    onClick={() => handleToggleFavorite(bookmark.id)}
-                                  >
-                                    {bookmark.isFavorite ? 'Unfavorite' : 'Favorite'}
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="secondary"
-                                    className="flex-1 text-xs"
-                                    onClick={() => setCardMenuId(null)}
-                                  >
-                                    Close
-                                  </Button>
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Description */}
-                            {!compactCards && (
-                              <p className="text-[10px] sm:text-xs text-muted-foreground mb-3 sm:mb-3.5 line-clamp-2 leading-relaxed">
-                                {bookmark.description || `${bookmark.title} is a website that introduces innovative solutions...`}
-                              </p>
-                            )}
-
-                            {/* Tags */}
-                            {showTags && (
-                              <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-3.5">
-                                {tags.map((tag: any, idx: number) => (
-                                  <Badge
-                                    key={idx}
-                                    variant="secondary"
-                                    className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0 h-4 sm:h-5 bg-muted hover:bg-muted"
-                                  >
-                                    {tag.tag?.name || `tag${idx + 1}`}
-                                  </Badge>
-                                ))}
-                                {extraTagsCount > 0 && (
-                                  <Badge
-                                    variant="secondary"
-                                    className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0 h-4 sm:h-5 bg-muted hover:bg-muted"
-                                  >
-                                    +{extraTagsCount}
-                                  </Badge>
                                 )}
                               </div>
-                            )}
-
-                            {/* Progress Bar */}
-                            {showProgressBar && (
-                              <div className="mb-2 sm:mb-3">
-                                <div className="flex justify-between text-[10px] sm:text-xs text-muted-foreground mb-1">
-                                  <span>Progress</span>
-                                  <span>{progress}%</span>
-                                </div>
-                                <div className="w-full bg-muted rounded-full h-1 sm:h-1.5">
-                                  <div
-                                    className="bg-primary h-1 sm:h-1.5 rounded-full transition-all"
-                                    style={{ width: `${progress}%` }}
-                                  />
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Footer */}
-                            <div className="flex items-center justify-between text-[10px] sm:text-xs">
-                              <div className="flex items-center gap-1">
-                                <div className={`w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full ${priorityConfig.dotColor}`} />
-                                <span className={priorityConfig.color}>{priorityConfig.text}</span>
-                              </div>
-                              <div className="flex items-center gap-2 sm:gap-3 text-muted-foreground">
-                                <div className="flex items-center gap-1">
-                                  <MessageSquare className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                  <span>{Math.floor(Math.random() * 5)}</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Paperclip className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                  <span>{Math.floor(Math.random() * 3)}</span>
-                                </div>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleToggleFavorite(bookmark.id);
-                                  }}
-                                  className="focus:outline-none"
-                                >
-                                  <Star
-                                    className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${
-                                      bookmark.isFavorite
-                                        ? 'fill-yellow-400 text-yellow-400'
-                                        : 'text-muted-foreground'
-                                    }`}
-                                  />
-                                </button>
-                              </div>
+                              <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                                {column.description}
+                              </p>
                             </div>
                           </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 -mt-1 flex-shrink-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleColumnMenuClick(row.id, column.id);
+                            }}
+                          >
+                            <MoreVertical className="w-3 h-3 sm:w-4 sm:h-4" />
+                          </Button>
+                        </div>
+
+                        {/* Cards Container */}
+                        <div className="space-y-3 sm:space-y-3.5">
+                          {columnBookmarks.length === 0 ? (
+                            <div className="text-center py-8 sm:py-10 text-muted-foreground text-xs sm:text-sm">
+                              No cards in {column.name.toLowerCase()}
+                            </div>
+                          ) : (
+                            columnBookmarks.map((bookmark: any) => {
+                              const priorityConfig = getPriorityConfig(bookmark.priority);
+                              const accentOverride = accentColorOverrides[bookmark.id];
+                              const accentClass = accentOverride ? 'border-l-4' : getCardAccentColor(bookmark.priority);
+                              const accentStyle = accentOverride
+                                ? { borderLeftColor: accentOverride, borderLeftWidth: '4px' }
+                                : accentClass
+                                  ? { borderLeftWidth: '4px' }
+                                  : undefined;
+                              const progress = Math.floor(Math.random() * 100); // Simulated progress
+                              const tags = bookmark.tags?.slice(0, 2) || [];
+                              const extraTagsCount = bookmark.tags?.length > 2 ? bookmark.tags.length - 2 : 0;
+
+                              return (
+                                <div
+                                  key={bookmark.id}
+                                  draggable
+                                  onDragStart={(e) => handleDragStart(e, bookmark.id)}
+                                  onDragEnd={() => setDraggingId(null)}
+                                  onClick={() => handleOpenCard(bookmark)}
+                                  className={`group relative bg-white border rounded-lg p-4 sm:p-4.5 hover:shadow-md transition-all cursor-pointer touch-target ${accentClass} ${
+                                    draggingId === bookmark.id ? 'opacity-70 ring-2 ring-primary/40' : ''
+                                  }`}
+                                  style={accentStyle}
+                                >
+                                  {/* Card Header with Logo */}
+                                  <div className="flex items-start gap-2 mb-3 sm:mb-3.5">
+                                    {/* Favicon */}
+                                    <div className="relative w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0 rounded-md overflow-hidden bg-white border">
+                                      <Image
+                                        src={bookmark.favicon || '/favicon.svg'}
+                                        alt={bookmark.title}
+                                        fill
+                                        className="object-contain p-0.5"
+                                        unoptimized
+                                      />
+                                    </div>
+
+                                    <h4 className="font-bold text-xs sm:text-sm pr-12 line-clamp-2 leading-relaxed flex-1">
+                                      {bookmark.title.toUpperCase()}
+                                    </h4>
+
+                                    <div className="absolute top-2 sm:top-3 right-2 sm:right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-6 w-6 sm:h-7 sm:w-7"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleCardMenuClick(bookmark.id);
+                                        }}
+                                      >
+                                        <MoreVertical className="w-3 h-3" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-6 w-6 sm:h-7 sm:w-7 cursor-move"
+                                        onMouseDown={(e) => e.stopPropagation()}
+                                      >
+                                        <GripVertical className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  </div>
+
+                                  {/* Card actions menu */}
+                                  {cardMenuId === bookmark.id && (
+                                    <div
+                                      className="absolute z-20 top-9 right-2 sm:right-3 w-52 rounded-lg border bg-white shadow-lg p-3 space-y-3"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <div className="text-xs font-semibold text-muted-foreground">Card Options</div>
+                                      <div className="space-y-2">
+                                        <div className="text-[11px] text-muted-foreground">Accent color</div>
+                                        <div className="grid grid-cols-3 gap-2">
+                                          {presetAccentOptions.map((opt) => (
+                                            <button
+                                              key={opt.label}
+                                              onClick={() => handleAccentChange(bookmark.id, opt.value)}
+                                              className={`h-8 rounded border text-[11px] ${
+                                                accentColorOverrides[bookmark.id] === opt.value
+                                                  ? 'border-primary bg-primary text-white'
+                                                  : 'border-muted bg-white'
+                                              }`}
+                                              style={opt.value ? { backgroundColor: opt.value } : {}}
+                                            >
+                                              {opt.label}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      </div>
+                                      <div className="flex gap-2">
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="flex-1 text-xs"
+                                          onClick={() => handleToggleFavorite(bookmark.id)}
+                                        >
+                                          {bookmark.isFavorite ? 'Unfavorite' : 'Favorite'}
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="secondary"
+                                          className="flex-1 text-xs"
+                                          onClick={() => setCardMenuId(null)}
+                                        >
+                                          Close
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Description */}
+                                  {!compactCards && (
+                                    <p className="text-[10px] sm:text-xs text-muted-foreground mb-3 sm:mb-3.5 line-clamp-2 leading-relaxed">
+                                      {bookmark.description || `${bookmark.title} is a website that introduces innovative solutions...`}
+                                    </p>
+                                  )}
+
+                                  {/* Tags */}
+                                  {showTags && (
+                                    <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-3.5">
+                                      {tags.map((tag: any, idx: number) => (
+                                        <Badge
+                                          key={idx}
+                                          variant="secondary"
+                                          className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0 h-4 sm:h-5 bg-muted hover:bg-muted"
+                                        >
+                                          {tag.tag?.name || `tag${idx + 1}`}
+                                        </Badge>
+                                      ))}
+                                      {extraTagsCount > 0 && (
+                                        <Badge
+                                          variant="secondary"
+                                          className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0 h-4 sm:h-5 bg-muted hover:bg-muted"
+                                        >
+                                          +{extraTagsCount}
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  )}
+
+                                  {/* Progress Bar */}
+                                  {showProgressBar && (
+                                    <div className="mb-2 sm:mb-3">
+                                      <div className="flex justify-between text-[10px] sm:text-xs text-muted-foreground mb-1">
+                                        <span>Progress</span>
+                                        <span>{progress}%</span>
+                                      </div>
+                                      <div className="w-full bg-muted rounded-full h-1 sm:h-1.5">
+                                        <div
+                                          className="bg-primary h-1 sm:h-1.5 rounded-full transition-all"
+                                          style={{ width: `${progress}%` }}
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Footer */}
+                                  <div className="flex items-center justify-between text-[10px] sm:text-xs">
+                                    <div className="flex items-center gap-1">
+                                      <div className={`w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full ${priorityConfig.dotColor}`} />
+                                      <span className={priorityConfig.color}>{priorityConfig.text}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 sm:gap-3 text-muted-foreground">
+                                      <div className="flex items-center gap-1">
+                                        <MessageSquare className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                        <span>{Math.floor(Math.random() * 5)}</span>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <Paperclip className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                        <span>{Math.floor(Math.random() * 3)}</span>
+                                      </div>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleToggleFavorite(bookmark.id);
+                                        }}
+                                        className="focus:outline-none"
+                                      >
+                                        <Star
+                                          className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${
+                                            bookmark.isFavorite
+                                              ? 'fill-yellow-400 text-yellow-400'
+                                              : 'text-muted-foreground'
+                                          }`}
+                                        />
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-        )}
-      </div>
+            )}
+          </div>
         ))}
 
         {/* Add Row Button */}
-        <Button 
-          variant="outline" 
-          size="lg" 
+        <Button
+          variant="outline"
+          size="lg"
           onClick={handleAddRow}
           className="w-full border-dashed border-2 touch-target"
         >
