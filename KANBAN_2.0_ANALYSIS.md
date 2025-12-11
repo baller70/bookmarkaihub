@@ -1,13 +1,13 @@
 
-# Kanban 2.0 View - Comprehensive Analysis
+# Kanban View - Comprehensive Analysis
 
 ## Overview
-Kanban 2.0 is an advanced task management view with visual workflow tracking, displayed as a board with multiple columns representing different stages of work.
+Kanban is an advanced task management view with visual workflow tracking, displayed as a board with multiple columns representing different stages of work.
 
 ## Page Structure
 
 ### 1. Header Section
-- **Title**: "Kanban 2.0"
+- **Title**: "Kanban"
 - **Subtitle**: "Advanced task management with visual workflow tracking"
 
 ### 2. Control Bar

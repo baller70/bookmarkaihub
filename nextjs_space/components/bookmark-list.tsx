@@ -46,7 +46,17 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { BookmarkDetailModal } from "@/components/bookmark-detail-modal"
+import { FitnessRings, RingData } from "@/components/ui/fitness-rings"
+import { FitnessRingsModal } from "@/components/ui/fitness-rings-modal"
+import { RingColorCustomizer } from "@/components/ui/ring-color-customizer"
 import { toast } from "sonner"
+
+// Default ring colors for fitness rings
+const DEFAULT_RING_COLORS = {
+  visits: "#EF4444", // Red
+  tasks: "#22C55E",  // Green
+  time: "#06B6D4",   // Cyan
+}
 
 // Icon mapping for all available icons
 const iconMap: Record<string, any> = {
@@ -173,44 +183,268 @@ interface BookmarkListProps {
 
 export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
   const { data: session } = useSession() || {}
-  const [selectedCategory, setSelectedCategory] = useState<{id: string; name: string; color: string; backgroundColor?: string} | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<{id: string; name: string; color: string; backgroundColor?: string; icon?: string} | null>(null)
   const [selectedBookmark, setSelectedBookmark] = useState<any>(null)
   const [showColorPicker, setShowColorPicker] = useState(false)
   const [editingCategory, setEditingCategory] = useState<any>(null)
   const [folderColor, setFolderColor] = useState("#22c55e")
   const [backgroundColor, setBackgroundColor] = useState("#dcfce7")
   
-  // Group bookmarks by category
-  const categorizedBookmarks = useMemo(() => {
-    const grouped: { category: any; bookmarks: any[] }[] = []
-    const indexMap: Record<string, number> = {}
+  // Categories fetched independently (like compact view)
+  const [categories, setCategories] = useState<any[]>([])
+  const [categoriesLoading, setCategoriesLoading] = useState(true)
+  const [categoryBookmarks, setCategoryBookmarks] = useState<any[]>([])
+  const [categoryBookmarksLoading, setCategoryBookmarksLoading] = useState(false)
+  const [globalCustomLogo, setGlobalCustomLogo] = useState<string | null>(null)
+  
+  // Subfolder state
+  const [subfolders, setSubfolders] = useState<any[]>([])
+  const [selectedSubfolder, setSelectedSubfolder] = useState<any>(null)
+  const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false)
+  const [newFolderName, setNewFolderName] = useState("")
+  const [newFolderColor, setNewFolderColor] = useState("#3B82F6")
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false)
+  const [editingSubfolder, setEditingSubfolder] = useState<any>(null)
+  
+  // Selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
+  
+  // Fitness rings modal state
+  const [showRingsModal, setShowRingsModal] = useState(false)
+  const [showColorCustomizer, setShowColorCustomizer] = useState(false)
+  const [selectedBookmarkForRings, setSelectedBookmarkForRings] = useState<any>(null)
 
-    bookmarks?.forEach((bookmark) => {
-      const categoryId = bookmark.category?.id || "uncategorized"
-      const categoryName = bookmark.category?.name || "UNCATEGORIZED"
-      const categoryColor = bookmark.category?.color || "#94A3B8"
-      const categoryBgColor = bookmark.category?.backgroundColor || "#e2e8f0"
-      const categoryIcon = bookmark.category?.icon || "folder"
+  const FOLDER_COLORS = [
+    "#3B82F6", "#8B5CF6", "#10B981", "#F59E0B", "#EF4444",
+    "#EC4899", "#14B8A6", "#6B7280", "#F97316", "#06B6D4",
+  ]
 
-      if (!(categoryId in indexMap)) {
-        indexMap[categoryId] = grouped.length
-        grouped.push({
-          category: {
-            id: categoryId,
-            name: categoryName,
-            color: categoryColor,
-            backgroundColor: categoryBgColor,
-            icon: categoryIcon,
-          },
-          bookmarks: [],
-        })
+  // Ring colors for fitness rings
+  const ringColors = DEFAULT_RING_COLORS
+
+  // Create ring data for a bookmark
+  const createRingsData = (bookmark: any): RingData[] => {
+    return [
+      {
+        id: "visits",
+        label: "Visits",
+        value: bookmark.analytics?.[0]?.totalVisits || bookmark.visitCount || 0,
+        target: 100,
+        color: ringColors.visits,
+      },
+      {
+        id: "tasks",
+        label: "Tasks",
+        value: bookmark.analytics?.[0]?.engagementScore || 0,
+        target: 100,
+        color: ringColors.tasks,
+      },
+      {
+        id: "time",
+        label: "Time",
+        value: bookmark.analytics?.[0]?.avgTimeSpent || 0,
+        target: 60,
+        color: ringColors.time,
+      },
+    ]
+  }
+
+  // Fetch all categories and global logo on mount (like compact view)
+  useEffect(() => {
+    fetchCategories()
+    fetchGlobalLogo()
+  }, [])
+
+  const fetchGlobalLogo = async () => {
+    try {
+      const response = await fetch('/api/user/custom-logo')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.customLogoUrl) {
+          setGlobalCustomLogo(data.customLogoUrl)
+        }
       }
-      const index = indexMap[categoryId]
-      grouped[index].bookmarks.push(bookmark)
-    })
+    } catch (error) {
+      console.error('Error fetching global custom logo:', error)
+    }
+  }
 
-    return grouped
-  }, [bookmarks])
+  const fetchCategories = async () => {
+    setCategoriesLoading(true)
+    try {
+      const response = await fetch("/api/categories", { cache: "no-store" })
+      if (response.ok) {
+        const data = await response.json()
+        const categoriesArray = data?.categories || data
+        setCategories(Array.isArray(categoriesArray) ? categoriesArray : [])
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error)
+    } finally {
+      setCategoriesLoading(false)
+    }
+  }
+
+  // Fetch bookmarks when a category is selected
+  useEffect(() => {
+    if (selectedCategory) {
+      fetchCategoryBookmarks(selectedCategory.id)
+      if (selectedCategory.id !== 'uncategorized' && selectedCategory.id !== 'all') {
+        fetchSubfolders(selectedCategory.id)
+      } else {
+        setSubfolders([])
+      }
+    } else {
+      setCategoryBookmarks([])
+      setSubfolders([])
+    }
+    setSelectedSubfolder(null)
+    setSelectedIds(new Set())
+    setIsSelectionMode(false)
+  }, [selectedCategory])
+
+  const fetchCategoryBookmarks = async (categoryId: string) => {
+    setCategoryBookmarksLoading(true)
+    try {
+      const url = categoryId === 'all' 
+        ? '/api/bookmarks'
+        : `/api/bookmarks?categoryId=${categoryId}`
+      const response = await fetch(url, { cache: "no-store" })
+      if (response.ok) {
+        const data = await response.json()
+        setCategoryBookmarks(Array.isArray(data) ? data : data.bookmarks || [])
+      }
+    } catch (error) {
+      console.error("Error fetching bookmarks:", error)
+    } finally {
+      setCategoryBookmarksLoading(false)
+    }
+  }
+
+  const fetchSubfolders = async (categoryId: string) => {
+    try {
+      const res = await fetch(`/api/bookmark-folders?categoryId=${categoryId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setSubfolders(data)
+      }
+    } catch (e) {
+      setSubfolders([])
+    }
+  }
+
+  const openCreateFolderDialog = () => {
+    setNewFolderName("")
+    setNewFolderColor("#3B82F6")
+    setEditingSubfolder(null)
+    setIsCreateFolderOpen(true)
+  }
+
+  const openEditFolderDialog = (folder: any, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setNewFolderName(folder.name)
+    setNewFolderColor(folder.color || "#3B82F6")
+    setEditingSubfolder(folder)
+    setIsCreateFolderOpen(true)
+  }
+
+  const createOrUpdateFolder = async () => {
+    if (!selectedCategory || !newFolderName.trim()) return
+    setIsCreatingFolder(true)
+    try {
+      if (editingSubfolder) {
+        const res = await fetch(`/api/bookmark-folders`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingSubfolder.id, name: newFolderName.trim(), color: newFolderColor })
+        })
+        if (res.ok) {
+          await fetchSubfolders(selectedCategory.id)
+          toast.success("Folder updated")
+          setIsCreateFolderOpen(false)
+        } else {
+          toast.error("Failed to update folder")
+        }
+      } else {
+        const res = await fetch(`/api/bookmark-folders`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: newFolderName.trim(), categoryId: selectedCategory.id, color: newFolderColor })
+        })
+        if (res.ok) {
+          await fetchSubfolders(selectedCategory.id)
+          toast.success("Folder created")
+          setIsCreateFolderOpen(false)
+        } else {
+          toast.error("Failed to create folder")
+        }
+      }
+    } catch (e) {
+      toast.error("Failed to save folder")
+    } finally {
+      setIsCreatingFolder(false)
+    }
+  }
+
+  const deleteSubfolder = async (folderId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!confirm("Delete this folder? Bookmarks inside will be moved out.")) return
+    try {
+      const res = await fetch(`/api/bookmark-folders`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: folderId })
+      })
+      if (res.ok) {
+        await fetchSubfolders(selectedCategory!.id)
+        onUpdate()
+        toast.success("Folder deleted")
+      } else {
+        toast.error("Failed to delete folder")
+      }
+    } catch (e) {
+      toast.error("Failed to delete folder")
+    }
+  }
+
+  const toggleSelection = (bookmarkId: string) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(bookmarkId)) {
+        newSet.delete(bookmarkId)
+      } else {
+        newSet.add(bookmarkId)
+      }
+      return newSet
+    })
+  }
+
+  const moveSelectedToFolder = async (folderId: string | null) => {
+    if (selectedIds.size === 0) return
+    const promises = Array.from(selectedIds).map(async (bookmarkId) => {
+      try {
+        const res = await fetch(`/api/bookmarks/${bookmarkId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ folderId })
+        })
+        return res.ok
+      } catch {
+        return false
+      }
+    })
+    const results = await Promise.all(promises)
+    const successCount = results.filter(Boolean).length
+    if (successCount > 0) {
+      toast.success(`Moved ${successCount} bookmark${successCount > 1 ? 's' : ''}`)
+      setSelectedIds(new Set())
+      setIsSelectionMode(false)
+      onUpdate()
+    } else {
+      toast.error("Failed to move bookmarks")
+    }
+  }
 
   // Save folder colors
   const handleSaveFolderColors = async () => {
@@ -230,18 +464,12 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
 
       toast.success("Folder colors updated!")
       setShowColorPicker(false)
+      fetchCategories() // Refresh categories
       onUpdate()
     } catch (error) {
       toast.error("Failed to update colors")
     }
   }
-
-  // Get bookmarks for selected category
-  const currentCategoryBookmarks = useMemo(() => {
-    if (!selectedCategory) return []
-    const found = categorizedBookmarks.find(c => c.category.id === selectedCategory.id)
-    return found?.bookmarks || []
-  }, [selectedCategory, categorizedBookmarks])
 
   const handleToggleFavorite = async (bookmarkId: string, isFavorite: boolean) => {
     try {
@@ -260,54 +488,206 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
     }
   }
 
-  if (!bookmarks?.length) {
+  // Get filtered bookmarks based on subfolder selection (must be before any returns)
+  const displayedBookmarks = useMemo(() => {
+    if (selectedSubfolder) {
+      return categoryBookmarks.filter((b: any) => b.folderId === selectedSubfolder.id)
+    }
+    return categoryBookmarks
+  }, [categoryBookmarks, selectedSubfolder])
+
+  // Calculate total bookmarks count
+  const totalBookmarksCount = bookmarks?.length || 0
+
+  // Loading state for categories
+  if (categoriesLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    )
+  }
+
+  if (categories.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-          </svg>
-        </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No bookmarks found</h3>
-        <p className="text-gray-500">Create your first bookmark to get started</p>
+        <Folder className="w-16 h-16 text-gray-400 mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No Categories Yet</h3>
+        <p className="text-gray-500">Create your first category to organize bookmarks</p>
       </div>
     )
   }
 
   // Second level: Show individual bookmarks as full-width horizontal cards
   if (selectedCategory) {
+    const handleBack = () => {
+      if (selectedSubfolder) {
+        setSelectedSubfolder(null)
+      } else {
+        setSelectedCategory(null)
+      }
+    }
+
+    // Show loading when fetching bookmarks
+    if (categoryBookmarksLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4 pb-4 border-b">
+            <Button variant="ghost" size="sm" onClick={() => setSelectedCategory(null)} className="gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Folders</span>
+            </Button>
+            <div className="flex items-center gap-3">
+              <Folder className="w-6 h-6" style={{ color: selectedCategory.color }} />
+              <h2 className="text-lg font-bold uppercase">{selectedCategory.name}</h2>
+            </div>
+          </div>
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="space-y-6">
         {/* Header with back button */}
-        <div className="flex items-center gap-4 pb-4 border-b">
+        <div className="flex items-center justify-between gap-4 pb-4 border-b">
+          <div className="flex items-center gap-4">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setSelectedCategory(null)}
+              onClick={handleBack}
             className="gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back to Folders</span>
+              <span>{selectedSubfolder ? `Back to ${selectedCategory.name}` : 'Back to Folders'}</span>
           </Button>
           <div className="flex items-center gap-3">
             <Folder
               className="w-6 h-6"
-              style={{ color: selectedCategory.color }}
-              fill={selectedCategory.color}
+                style={{ color: selectedSubfolder?.color || selectedCategory.color }}
+                fill={selectedSubfolder?.color || selectedCategory.color}
               fillOpacity={0.15}
             />
-            <h2 className="text-lg font-bold uppercase">{selectedCategory.name}</h2>
-            <Badge variant="secondary">{currentCategoryBookmarks.length} BOOKMARKS</Badge>
+              <h2 className="text-lg font-bold uppercase">{selectedSubfolder?.name || selectedCategory.name}</h2>
+              <Badge variant="secondary">{displayedBookmarks.length} BOOKMARKS</Badge>
           </div>
+          </div>
+          {!selectedSubfolder && selectedCategory.id !== 'uncategorized' && (
+            <Button onClick={openCreateFolderDialog} size="sm" className="gap-2">
+              <Plus className="w-4 h-4" />
+              New Subfolder
+            </Button>
+          )}
         </div>
+
+        {/* Subfolders section */}
+        {!selectedSubfolder && subfolders.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-gray-500 uppercase">Subfolders</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {subfolders.map((folder) => {
+                const folderCount = categoryBookmarks.filter((b: any) => b.folderId === folder.id).length
+                return (
+                  <div
+                    key={folder.id}
+                    onClick={() => setSelectedSubfolder(folder)}
+                    className="bg-white border-2 border-gray-300 hover:border-black rounded-lg p-3 hover:shadow-md transition-all cursor-pointer relative group"
+                  >
+                    <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                      <button onClick={(e) => openEditFolderDialog(folder, e)} className="p-1 bg-white rounded shadow hover:bg-gray-100">
+                        <Edit2 className="w-3 h-3 text-gray-600" />
+                      </button>
+                      <button onClick={(e) => deleteSubfolder(folder.id, e)} className="p-1 bg-white rounded shadow hover:bg-red-100">
+                        <X className="w-3 h-3 text-red-600" />
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-8 h-8 rounded flex items-center justify-center"
+                        style={{ backgroundColor: folder.color || selectedCategory.color || '#60A5FA' }}
+                      >
+                        <Folder className="w-5 h-5 text-white" strokeWidth={2} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-xs uppercase truncate">{folder.name}</h4>
+                        <p className="text-[10px] text-gray-500">{folderCount} bookmark{folderCount !== 1 ? 's' : ''}</p>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Selection controls */}
+        {subfolders.length > 0 && !selectedSubfolder && (
+          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
+            <Button
+              variant={isSelectionMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setIsSelectionMode(!isSelectionMode)
+                if (isSelectionMode) setSelectedIds(new Set())
+              }}
+            >
+              {isSelectionMode ? "Cancel Selection" : "Select Bookmarks"}
+            </Button>
+            {isSelectionMode && (
+              <>
+                <Button variant="outline" size="sm" onClick={() => setSelectedIds(new Set(displayedBookmarks.map((b: any) => b.id)))}>
+                  Select All
+                </Button>
+                {selectedIds.size > 0 && (
+                  <>
+                    <span className="text-sm text-gray-600">{selectedIds.size} selected</span>
+                    <select
+                      className="border rounded px-2 py-1 text-sm"
+                      onChange={(e) => moveSelectedToFolder(e.target.value === "__none__" ? null : e.target.value)}
+                      defaultValue=""
+                    >
+                      <option value="" disabled>Move to folder...</option>
+                      <option value="__none__">Remove from folder</option>
+                      {subfolders.map((f) => (
+                        <option key={f.id} value={f.id}>{f.name}</option>
+                      ))}
+                    </select>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        )}
 
         {/* Bookmarks as full-width horizontal cards */}
         <div className="space-y-4">
-          {currentCategoryBookmarks.map((bookmark: any) => (
+          {displayedBookmarks.map((bookmark: any) => {
+            const isSelected = selectedIds.has(bookmark.id)
+            return (
             <div
               key={bookmark.id}
-              className="relative bg-gradient-to-br from-pink-50/30 via-purple-50/20 to-blue-50/30 border border-black rounded-lg overflow-hidden hover:shadow-md transition-all group"
+              className={`relative bg-gradient-to-br from-pink-50/30 via-purple-50/20 to-blue-50/30 border rounded-lg overflow-hidden hover:shadow-md transition-all group ${
+                isSelected ? 'border-2 border-blue-500 ring-2 ring-blue-200' : 'border border-black'
+              }`}
             >
+              {/* Selection checkbox */}
+              {isSelectionMode && (
+                <div 
+                  className="absolute top-3 left-3 z-20 cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    toggleSelection(bookmark.id)
+                  }}
+                >
+                  <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${
+                    isSelected ? 'bg-blue-500 border-blue-500' : 'bg-white border-gray-400 hover:border-blue-400'
+                  }`}>
+                    {isSelected && <Check className="w-4 h-4 text-white" />}
+                  </div>
+                </div>
+              )}
               {/* Full card faded watermark background */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden opacity-5">
                 {(bookmark.favicon) ? (
@@ -362,13 +742,20 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                 </div>
               </div>
 
-              {/* Circular percentage indicator - BOTTOM RIGHT */}
-              <div className="absolute bottom-4 right-4 z-10">
-                <div className="w-16 h-16 bg-red-50 border-2 border-red-400 rounded-full flex items-center justify-center">
-                  <span className="text-base font-bold text-red-600">
-                    {bookmark.analytics?.[0]?.engagementScore || 0}%
-                  </span>
-                </div>
+              {/* Fitness Rings - BOTTOM RIGHT */}
+              <div className="absolute bottom-4 right-4 z-30">
+                <FitnessRings
+                  rings={createRingsData(bookmark)}
+                  size={56}
+                  strokeWidth={5}
+                  animated={false}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    e.preventDefault()
+                    setSelectedBookmarkForRings(bookmark)
+                    setShowRingsModal(true)
+                  }}
+                />
               </div>
 
               <div className="relative flex items-start gap-6 p-6 pr-44 cursor-pointer z-0" onClick={() => setSelectedBookmark(bookmark)}>
@@ -447,7 +834,7 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                 </div>
               </div>
             </div>
-          ))}
+          )})}
         </div>
 
         {/* Bookmark Detail Modal */}
@@ -459,6 +846,105 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
             onUpdate={onUpdate}
           />
         )}
+
+        {/* Create/Edit Folder Dialog */}
+        <Dialog open={isCreateFolderOpen} onOpenChange={setIsCreateFolderOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>{editingSubfolder ? 'Edit Subfolder' : 'Create New Subfolder'}</DialogTitle>
+              <DialogDescription>
+                {editingSubfolder ? 'Update the folder name and color' : 'Enter a name and choose a color for your new subfolder'}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <Label htmlFor="folderName">Folder Name</Label>
+                <Input
+                  id="folderName"
+                  value={newFolderName}
+                  onChange={(e) => setNewFolderName(e.target.value)}
+                  placeholder="Enter folder name"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label className="mb-2 block">Folder Color</Label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {FOLDER_COLORS.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => setNewFolderColor(color)}
+                      className={`w-8 h-8 rounded-full border-2 transition-all ${
+                        newFolderColor === color ? 'border-gray-900 scale-110' : 'border-transparent hover:scale-105'
+                      }`}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={newFolderColor}
+                    onChange={(e) => setNewFolderColor(e.target.value)}
+                    className="w-10 h-10 rounded cursor-pointer border-0 p-0"
+                  />
+                  <Input
+                    value={newFolderColor}
+                    onChange={(e) => setNewFolderColor(e.target.value)}
+                    placeholder="#3B82F6"
+                    className="w-28 font-mono text-sm"
+                  />
+                  <div 
+                    className="w-10 h-10 rounded-md flex items-center justify-center"
+                    style={{ backgroundColor: newFolderColor }}
+                  >
+                    <Folder className="w-6 h-6 text-white" strokeWidth={2} />
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setIsCreateFolderOpen(false)}>Cancel</Button>
+                <Button onClick={createOrUpdateFolder} disabled={isCreatingFolder || !newFolderName.trim()}>
+                  {isCreatingFolder ? 'Saving...' : editingSubfolder ? 'Save Changes' : 'Create Folder'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Fitness Rings Detail Modal */}
+        {selectedBookmarkForRings && (
+          <FitnessRingsModal
+            open={showRingsModal}
+            onOpenChange={(open) => {
+              setShowRingsModal(open)
+              if (!open) setSelectedBookmarkForRings(null)
+            }}
+            rings={createRingsData(selectedBookmarkForRings)}
+            onCustomize={() => {
+              setShowRingsModal(false)
+              setShowColorCustomizer(true)
+            }}
+          />
+        )}
+
+        {/* Ring Color Customizer Modal */}
+        {selectedBookmarkForRings && (
+          <RingColorCustomizer
+            open={showColorCustomizer}
+            onOpenChange={(open) => {
+              setShowColorCustomizer(open)
+              if (!open) setSelectedBookmarkForRings(null)
+            }}
+            rings={createRingsData(selectedBookmarkForRings)}
+            onSave={(colors) => {
+              toast.success("Ring colors saved!")
+              setShowColorCustomizer(false)
+              setSelectedBookmarkForRings(null)
+            }}
+          />
+        )}
       </div>
     )
   }
@@ -466,11 +952,61 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
   // First level: Show category folders as full-width rows
   return (
     <div className="space-y-3">
-      {categorizedBookmarks.map(({ category, bookmarks: categoryBookmarks }) => (
+      {/* ALL BOOKMARKS Row - Always first */}
+      <div
+        onClick={() => setSelectedCategory({ id: 'all', name: 'All Bookmarks', color: '#3B82F6', backgroundColor: '#DBEAFE' })}
+        className="group relative bg-white border-2 border-black rounded-lg p-4 hover:shadow-md hover:border-gray-800 transition-all cursor-pointer"
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 min-w-0 flex-1">
+            <div className="flex-shrink-0">
+              <div className="w-14 h-14 rounded flex items-center justify-center bg-blue-100">
+                <Folder className="w-12 h-12 text-blue-500" fill="none" strokeWidth={2.5} />
+              </div>
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-bold text-base text-gray-900 mb-1 uppercase">ALL BOOKMARKS</h3>
+              <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                </svg>
+                <span>{totalBookmarksCount} BOOKMARK{totalBookmarksCount !== 1 ? 'S' : ''}</span>
+              </div>
+            </div>
+          </div>
+          {/* Right side: Global logo or default */}
+          {globalCustomLogo ? (
+            <div className="relative w-12 h-12 rounded-full overflow-hidden bg-white border-2 border-gray-300 flex-shrink-0 shadow-sm">
+              <Image
+                src={globalCustomLogo}
+                alt="All Bookmarks"
+                fill
+                className="object-contain p-1"
+                unoptimized
+              />
+            </div>
+          ) : (
+            <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-sm bg-blue-500">
+              <Folder className="w-6 h-6 text-white" />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Category folders */}
+      {categories.map((category) => {
+        const bookmarkCount = category._count?.bookmarks || 0
+        return (
         <div
           key={category.id}
-          onClick={() => setSelectedCategory(category)}
-          className="group relative bg-white border-2 border-black rounded-lg p-4 hover:shadow-md hover:border-gray-800 transition-all cursor-pointer"
+            onClick={() => setSelectedCategory({
+              id: category.id,
+              name: category.name,
+              color: category.color || '#94A3B8',
+              backgroundColor: category.backgroundColor || '#e2e8f0',
+              icon: category.icon
+            })}
+            className="group relative bg-white border-2 border-black rounded-lg p-4 hover:shadow-md hover:border-gray-800 transition-all cursor-pointer"
         >
           <div className="flex items-center justify-between gap-4">
             {/* Left: Folder icon with background square + Category info */}
@@ -499,14 +1035,25 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                   </svg>
-                  <span>{categoryBookmarks.length} BOOKMARK{categoryBookmarks.length !== 1 ? 'S' : ''}</span>
+                    <span>{bookmarkCount} BOOKMARK{bookmarkCount !== 1 ? 'S' : ''}</span>
                 </div>
               </div>
             </div>
 
-            {/* Right: Category icon in circle + Three-dot menu */}
+            {/* Right: Logo or icon in circle + Three-dot menu */}
             <div className="flex items-center gap-3 flex-shrink-0">
-              {/* Category icon in circle - color matches folder outline */}
+              {/* Category logo or global logo or icon */}
+              {category.logo || globalCustomLogo ? (
+                <div className="relative w-12 h-12 rounded-full overflow-hidden bg-white border-2 border-gray-300 flex-shrink-0 shadow-sm">
+                  <Image
+                    src={category.logo || globalCustomLogo || ''}
+                    alt={category.name}
+                    fill
+                    className="object-contain p-1"
+                    unoptimized
+                  />
+                </div>
+              ) : (
               <div 
                 className="w-12 h-12 rounded-full flex items-center justify-center shadow-sm"
                 style={{ backgroundColor: category.color || '#94A3B8' }}
@@ -518,6 +1065,7 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                   )
                 })()}
               </div>
+              )}
 
               {/* Three-dot menu */}
               <DropdownMenu>
@@ -533,7 +1081,13 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem onClick={(e) => {
                     e.stopPropagation()
-                    setSelectedCategory(category)
+                      setSelectedCategory({
+                        id: category.id,
+                        name: category.name,
+                        color: category.color || '#94A3B8',
+                        backgroundColor: category.backgroundColor || '#e2e8f0',
+                        icon: category.icon
+                      })
                   }}>
                     View Bookmarks
                   </DropdownMenuItem>
@@ -555,7 +1109,8 @@ export function BookmarkList({ bookmarks, onUpdate }: BookmarkListProps) {
             </div>
           </div>
         </div>
-      ))}
+        )
+      })}
 
       {/* Color Picker Modal */}
       <Dialog open={showColorPicker} onOpenChange={setShowColorPicker}>

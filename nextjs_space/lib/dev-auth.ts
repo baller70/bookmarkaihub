@@ -19,10 +19,17 @@ export async function getDevSession() {
     return realSession
   }
 
-  // Fall back to dev user
+  // Prefer the real account if present (so local mirrors prod data)
   let devUser = await prisma.user.findFirst({
-    where: { email: 'test@test.com' }
+    where: { email: 'khouston@thebasketballfactorynj.com' }
   })
+
+  // Fall back to dev user
+  if (!devUser) {
+    devUser = await prisma.user.findFirst({
+      where: { email: 'test@test.com' }
+    })
+  }
 
   // Create dev user if doesn't exist
   if (!devUser) {

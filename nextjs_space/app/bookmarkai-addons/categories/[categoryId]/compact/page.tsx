@@ -8,6 +8,7 @@ import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { BookmarkCompactCards } from "@/components/bookmark-compact-cards"
+import Image from "next/image"
 import {
   ArrowLeft,
   Search,
@@ -16,8 +17,10 @@ import {
   SortAsc,
   ExternalLink,
   Folder,
+  FolderPlus,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  User
 } from "lucide-react"
 import {
   Select,
@@ -26,6 +29,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { toast } from "sonner"
 
 interface Bookmark {
   id: string
@@ -47,6 +58,7 @@ interface Bookmark {
   visitCount: number
   createdAt: string
   updatedAt: string
+  folderId?: string | null
 }
 
 interface Category {
@@ -54,9 +66,17 @@ interface Category {
   name: string
   color: string
   icon?: string
+  logo?: string
   _count?: {
     bookmarks: number
   }
+}
+
+interface BookmarkFolder {
+  id: string
+  name: string
+  categoryId: string
+  color?: string
 }
 
 type SortBy = "recent" | "oldest" | "title" | "favorites"
@@ -74,49 +94,87 @@ export default function CompactCategoryPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 25
 
+  // Subfolder state
+  const [folders, setFolders] = useState<BookmarkFolder[]>([])
+  const [selectedFolder, setSelectedFolder] = useState<BookmarkFolder | null>(null)
+  const [foldersLoading, setFoldersLoading] = useState(false)
+  const [globalLogo, setGlobalLogo] = useState<string | null>(null)
+
+  // Create/Edit folder dialog state
+  const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false)
+  const [newFolderName, setNewFolderName] = useState("")
+  const [newFolderColor, setNewFolderColor] = useState("#3B82F6")
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false)
+  const [editingFolder, setEditingFolder] = useState<BookmarkFolder | null>(null)
+
+  const FOLDER_COLORS = [
+    "#3B82F6", // Blue
+    "#8B5CF6", // Purple
+    "#10B981", // Green
+    "#F59E0B", // Orange
+    "#EF4444", // Red
+    "#EC4899", // Pink
+    "#14B8A6", // Teal
+    "#6B7280", // Gray
+    "#F97316", // Orange-Red
+    "#06B6D4", // Cyan
+  ]
+
   useEffect(() => {
     if (categoryId) {
       fetchCategoryData()
+      if (categoryId !== 'all') {
+        fetchFolders(categoryId)
+      }
+      fetchGlobalLogo()
     }
   }, [categoryId])
 
+  const fetchGlobalLogo = async () => {
+    try {
+      const res = await fetch('/api/user/custom-logo')
+      if (res.ok) {
+        const data = await res.json()
+        setGlobalLogo(data.customLogo || null)
+      }
+    } catch (e) {
+      console.error('Failed to fetch global logo:', e)
+    }
+  }
+
   const fetchCategoryData = async () => {
     try {
-      // Handle "all" special case
       if (categoryId === 'all') {
         setCategory({
           id: 'all',
           name: 'ALL BOOKMARKS',
           color: '#3B82F6',
-          _count: {
-            bookmarks: 0 // Will be set after fetching
-          }
+          _count: { bookmarks: 0 }
         })
         
-        // Fetch all bookmarks (no category filter)
         const bookmarksRes = await fetch(`/api/bookmarks`)
         const bookmarksData = await bookmarksRes.json()
         setBookmarks(bookmarksData)
         
-        // Update count
         setCategory(prev => ({
           ...prev!,
-          _count: {
-            bookmarks: bookmarksData.length
-          }
+          _count: { bookmarks: bookmarksData.length }
         }))
       } else {
-        // Fetch category details
-        const categoryRes = await fetch(`/api/categories?id=${categoryId}`)
+        // Fetch all categories and find the one we need
+        const categoryRes = await fetch(`/api/categories`)
         const categoryData = await categoryRes.json()
         
-        if (Array.isArray(categoryData) && categoryData.length > 0) {
-          setCategory(categoryData[0])
-        } else if (!Array.isArray(categoryData)) {
-          setCategory(categoryData)
+        // API returns { categories: [...] }
+        const categories = categoryData.categories || categoryData || []
+        const foundCategory = categories.find((c: Category) => c.id === categoryId)
+        
+        if (foundCategory) {
+          setCategory(foundCategory)
+        } else {
+          console.error("Category not found:", categoryId)
         }
 
-        // Fetch bookmarks for this specific category
         const bookmarksRes = await fetch(`/api/bookmarks?category=${categoryId}`)
         const bookmarksData = await bookmarksRes.json()
         setBookmarks(bookmarksData)
@@ -128,20 +186,133 @@ export default function CompactCategoryPage() {
     }
   }
 
+  const fetchFolders = async (catId: string) => {
+    try {
+      setFoldersLoading(true)
+      const res = await fetch(`/api/bookmark-folders?categoryId=${catId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setFolders(data)
+      } else {
+        setFolders([])
+      }
+    } catch (e) {
+      setFolders([])
+    } finally {
+      setFoldersLoading(false)
+    }
+  }
+
+  const openCreateFolderDialog = () => {
+    setNewFolderName("")
+    setNewFolderColor("#3B82F6")
+    setEditingFolder(null)
+    setIsCreateFolderOpen(true)
+  }
+
+  const openEditFolderDialog = (folder: BookmarkFolder, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setNewFolderName(folder.name)
+    setNewFolderColor(folder.color || "#3B82F6")
+    setEditingFolder(folder)
+    setIsCreateFolderOpen(true)
+  }
+
+  const createOrUpdateFolder = async () => {
+    if (!category || category.id === "all" || !newFolderName.trim()) {
+      return
+    }
+    setIsCreatingFolder(true)
+    try {
+      if (editingFolder) {
+        // Update existing folder
+        const res = await fetch(`/api/bookmark-folders`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingFolder.id, name: newFolderName.trim(), color: newFolderColor })
+        })
+        if (res.ok) {
+          await fetchFolders(category.id)
+          toast.success("Folder updated")
+          setIsCreateFolderOpen(false)
+          setNewFolderName("")
+          setEditingFolder(null)
+        } else {
+          const errorData = await res.json().catch(() => ({}))
+          toast.error(errorData.error || "Failed to update folder")
+        }
+      } else {
+        // Create new folder
+        const res = await fetch(`/api/bookmark-folders`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: newFolderName.trim(), categoryId: category.id, color: newFolderColor })
+        })
+        if (res.ok) {
+          await fetchFolders(category.id)
+          toast.success("Folder created")
+          setIsCreateFolderOpen(false)
+          setNewFolderName("")
+        } else {
+          const errorData = await res.json().catch(() => ({}))
+          toast.error(errorData.error || "Failed to create folder")
+        }
+      }
+    } catch (e) {
+      toast.error("Failed to save folder")
+    } finally {
+      setIsCreatingFolder(false)
+    }
+  }
+
+  const deleteFolder = async (folderId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!confirm("Delete this folder? Bookmarks inside will be moved out.")) return
+    
+    try {
+      const res = await fetch(`/api/bookmark-folders`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: folderId })
+      })
+      if (res.ok) {
+        await fetchFolders(category!.id)
+        handleUpdate()
+        toast.success("Folder deleted")
+      } else {
+        toast.error("Failed to delete folder")
+      }
+    } catch (e) {
+      toast.error("Failed to delete folder")
+    }
+  }
+
   const handleUpdate = () => {
     fetchCategoryData()
+    if (categoryId && categoryId !== 'all') {
+      fetchFolders(categoryId)
+    }
   }
 
   const handleBack = () => {
-    router.push('/dashboard')
+    if (selectedFolder) {
+      setSelectedFolder(null)
+    } else {
+      router.push('/dashboard')
+    }
   }
 
-  const filteredBookmarks = bookmarks.filter(bookmark =>
+  // Get bookmarks for current view
+  const currentBookmarks = selectedFolder
+    ? bookmarks.filter(b => b.folderId === selectedFolder.id)
+    : bookmarks // Show ALL bookmarks when not inside a folder
+
+  const searchFiltered = currentBookmarks.filter(bookmark =>
     bookmark.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     bookmark.description?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const sortedBookmarks = [...filteredBookmarks].sort((a, b) => {
+  const sortedBookmarks = [...searchFiltered].sort((a, b) => {
     switch (sortBy) {
       case "recent":
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -162,10 +333,9 @@ export default function CompactCategoryPage() {
   const endIndex = startIndex + itemsPerPage
   const paginatedBookmarks = sortedBookmarks.slice(startIndex, endIndex)
 
-  // Reset to page 1 when search or sort changes
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery, sortBy])
+  }, [searchQuery, sortBy, selectedFolder])
 
   if (loading) {
     return (
@@ -216,7 +386,7 @@ export default function CompactCategoryPage() {
               className="mb-4 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
+              {selectedFolder ? `Back to ${category.name}` : 'Back to Dashboard'}
             </Button>
 
             <div className="flex items-start justify-between">
@@ -231,21 +401,28 @@ export default function CompactCategoryPage() {
                   />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold uppercase tracking-wide mb-2 text-gray-900 uppercase">
-                    {category.name}
+                  <h1 className="text-3xl font-bold uppercase tracking-wide mb-2 text-gray-900">
+                    {selectedFolder ? selectedFolder.name : category.name}
                   </h1>
                   <p className="text-sm text-gray-600 font-medium">
-                    {bookmarks.length} BOOKMARK{bookmarks.length !== 1 ? 'S' : ''}
+                    {sortedBookmarks.length} BOOKMARK{sortedBookmarks.length !== 1 ? 'S' : ''}
+                    {!selectedFolder && folders.length > 0 && ` • ${folders.length} SUBFOLDER${folders.length !== 1 ? 'S' : ''}`}
                   </p>
                 </div>
               </div>
+              {categoryId !== 'all' && !selectedFolder && (
+                <Button onClick={openCreateFolderDialog} className="gap-2">
+                  <FolderPlus className="h-4 w-4" />
+                  New Subfolder
+                </Button>
+              )}
             </div>
           </div>
 
           {/* Controls */}
           <div className="mb-6 space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="relative flex-1 max-w-md">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="relative flex-1 min-w-[220px] max-w-md">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   type="text"
@@ -289,10 +466,71 @@ export default function CompactCategoryPage() {
             </div>
           </div>
 
-          {/* Bookmarks in Compact View */}
+          {/* Subfolder Cards - Show at top when not inside a folder */}
+          {!selectedFolder && folders.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Subfolders</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                {folders.map((folder) => {
+                  const folderCount = bookmarks.filter(b => b.folderId === folder.id).length
+                  return (
+                    <div
+                      key={folder.id}
+                      onClick={() => setSelectedFolder(folder)}
+                      className="bg-white border-2 border-gray-300 hover:border-black rounded-lg p-4 hover:shadow-lg transition-all cursor-pointer relative group"
+                    >
+                      {/* Edit/Delete buttons on hover */}
+                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                        <button
+                          onClick={(e) => openEditFolderDialog(folder, e)}
+                          className="p-1 bg-white rounded shadow hover:bg-gray-100"
+                          title="Edit folder"
+                        >
+                          <svg className="w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={(e) => deleteFolder(folder.id, e)}
+                          className="p-1 bg-white rounded shadow hover:bg-red-100"
+                          title="Delete folder"
+                        >
+                          <svg className="w-3 h-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <div
+                          className="w-10 h-10 rounded-md flex items-center justify-center"
+                          style={{ backgroundColor: folder.color || category.color || '#60A5FA' }}
+                        >
+                          <Folder className="w-6 h-6 text-white" strokeWidth={2} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-sm uppercase truncate">{folder.name}</h4>
+                          <p className="text-xs text-gray-500">{folderCount} bookmark{folderCount !== 1 ? 's' : ''}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Bookmarks */}
           {sortedBookmarks.length > 0 ? (
             <>
-              <BookmarkCompactCards bookmarks={paginatedBookmarks} onUpdate={handleUpdate} />
+              {!selectedFolder && folders.length > 0 && (
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">All Bookmarks</h3>
+              )}
+              <BookmarkCompactCards 
+                bookmarks={paginatedBookmarks} 
+                onUpdate={handleUpdate}
+                categoryId={categoryId}
+                folders={folders}
+              />
               
               {/* Pagination Controls */}
               {totalPages > 1 && (
@@ -312,7 +550,7 @@ export default function CompactCategoryPage() {
                       Previous
                     </Button>
                     <div className="flex items-center gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                      {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map(page => (
                         <Button
                           key={page}
                           variant={currentPage === page ? "default" : "outline"}
@@ -339,21 +577,92 @@ export default function CompactCategoryPage() {
               )}
             </>
           ) : (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center bg-gray-100">
-                <ExternalLink className="h-8 w-8 text-gray-400" />
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <ExternalLink className="w-8 h-8 text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold mb-2 text-gray-900">
-                {searchQuery ? "No bookmarks found" : "No bookmarks in this category"}
-              </h3>
-              <p className="text-gray-600">
-                {searchQuery
-                  ? "Try adjusting your search query"
-                  : "Add bookmarks to this category to see them here"}
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No bookmarks found</h3>
+              <p className="text-gray-500">
+                {selectedFolder ? 'Move bookmarks to this folder to see them here' : 'Add bookmarks to get started'}
               </p>
             </div>
           )}
         </div>
+
+        {/* Create/Edit Folder Dialog */}
+        <Dialog open={isCreateFolderOpen} onOpenChange={(open) => {
+          setIsCreateFolderOpen(open)
+          if (!open) setEditingFolder(null)
+        }}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>{editingFolder ? "Edit Subfolder" : "Create New Subfolder"}</DialogTitle>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Folder Name</label>
+                <Input
+                  placeholder="Enter folder name..."
+                  value={newFolderName}
+                  onChange={(e) => setNewFolderName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newFolderName.trim()) {
+                      createOrUpdateFolder()
+                    }
+                  }}
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Folder Color</label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {FOLDER_COLORS.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => setNewFolderColor(color)}
+                      className={`w-8 h-8 rounded-full border-2 transition-all ${
+                        newFolderColor === color ? 'border-gray-900 scale-110' : 'border-transparent hover:scale-105'
+                      }`}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={newFolderColor}
+                    onChange={(e) => setNewFolderColor(e.target.value)}
+                    className="w-10 h-10 rounded cursor-pointer border-0 p-0"
+                  />
+                  <Input
+                    value={newFolderColor}
+                    onChange={(e) => setNewFolderColor(e.target.value)}
+                    placeholder="#3B82F6"
+                    className="w-28 font-mono text-sm"
+                  />
+                  <div 
+                    className="w-10 h-10 rounded-md flex items-center justify-center"
+                    style={{ backgroundColor: newFolderColor }}
+                  >
+                    <Folder className="w-6 h-6 text-white" strokeWidth={2} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsCreateFolderOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={createOrUpdateFolder} 
+                disabled={!newFolderName.trim() || isCreatingFolder}
+              >
+                {isCreatingFolder ? "Saving..." : (editingFolder ? "Save Changes" : "Create Folder")}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </DashboardLayout>
     </DashboardAuth>
   )

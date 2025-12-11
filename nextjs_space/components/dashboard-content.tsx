@@ -17,7 +17,7 @@ import { BookmarkGoals } from "@/components/bookmark-goals"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Grid3x3, List, Clock, FolderTree, Folders, Target, Kanban, ChevronLeft, ChevronRight, ChevronDown, LucideIcon } from "lucide-react"
+import { Search, Grid3x3, List, Clock, FolderTree, Folders, Trophy, Kanban, ChevronLeft, ChevronRight, ChevronDown, LucideIcon } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import type { Bookmark, Category } from "@/types/bookmark"
@@ -30,9 +30,9 @@ const viewModes: { id: ViewMode; label: string; icon: LucideIcon }[] = [
   { id: "LIST", label: "LIST", icon: List },
   { id: "TIMELINE", label: "TIMELINE", icon: Clock },
   { id: "HIERARCHY", label: "HIERARCHY", icon: FolderTree },
-  { id: "FOLDER", label: "FOLDER 2.0", icon: Folders },
-  { id: "GOAL", label: "GOAL 2.0", icon: Target },
-  { id: "KANBAN", label: "KANBAN 2.0", icon: Kanban },
+  { id: "FOLDER", label: "FOLDERS", icon: Folders },
+  { id: "GOAL", label: "GOALS", icon: Trophy },
+  { id: "KANBAN", label: "KANBAN", icon: Kanban },
 ]
 
 // Using Category from shared types - local extension for icon field
@@ -249,11 +249,14 @@ export function DashboardContent() {
       case "LIST":
         return <BookmarkList bookmarks={currentBookmarks} onUpdate={fetchBookmarks} />
       case "TIMELINE":
-        return <BookmarkTimeline bookmarks={currentBookmarks} onUpdate={fetchBookmarks} />
+        // Timeline has its own filtering/search, so give it ALL bookmarks
+        return <BookmarkTimeline bookmarks={bookmarks || []} onUpdate={fetchBookmarks} />
       case "HIERARCHY":
-        return <BookmarkHierarchy bookmarks={currentBookmarks} onUpdate={fetchBookmarks} />
+        // Use full set so hierarchy has all categories/folders
+        return <BookmarkHierarchy bookmarks={bookmarks || []} onUpdate={fetchBookmarks} />
       case "FOLDER":
-        return <BookmarkFolders bookmarks={currentBookmarks} onUpdate={fetchBookmarks} />
+        // Use full bookmarks set so all categories show
+        return <BookmarkFolders bookmarks={bookmarks || []} onUpdate={fetchBookmarks} />
       case "GOAL":
         return <BookmarkGoals bookmarks={currentBookmarks} onUpdate={fetchBookmarks} />
       case "KANBAN":

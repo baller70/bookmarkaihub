@@ -1,20 +1,35 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Eye, ExternalLink, Star, Trash2, Edit } from "lucide-react"
+import { Eye, ExternalLink, Star, Trash2, Edit, Folder, FolderInput, Check, X } from "lucide-react"
 import Image from "next/image"
 import { FallbackImage } from "@/components/ui/fallback-image"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { BookmarkDetailModal } from "./bookmark-detail-modal"
 import { FitnessRings, RingData } from "@/components/ui/fitness-rings"
+import { FitnessRingsModal } from "@/components/ui/fitness-rings-modal"
+import { RingColorCustomizer } from "@/components/ui/ring-color-customizer"
+import { toast } from "sonner"
 
 // Default ring colors
 const DEFAULT_RING_COLORS = {
@@ -58,6 +73,9 @@ interface Bookmark {
 interface BookmarkCompactCardsProps {
   bookmarks: Bookmark[]
   onUpdate: () => void
+  categoryId?: string
+  folders?: { id: string; name: string }[]
+  onMoveBookmark?: (bookmarkId: string, folderId: string | null) => void
 }
 
 const priorityColors: Record<string, string> = {
@@ -67,10 +85,104 @@ const priorityColors: Record<string, string> = {
   urgent: "bg-red-100 text-red-800 border-red-200",
 }
 
-export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCardsProps) {
+export function BookmarkCompactCards({ bookmarks, onUpdate, categoryId, folders = [], onMoveBookmark }: BookmarkCompactCardsProps) {
   const [selectedBookmark, setSelectedBookmark] = useState<Bookmark | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [ringColors, setRingColors] = useState<Record<string, string>>(DEFAULT_RING_COLORS)
+  const [availableFolders, setAvailableFolders] = useState<{ id: string; name: string }[]>(folders)
+  
+  // Selection state for bulk actions
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
+  
+  // Fitness rings modal state
+  const [showRingsModal, setShowRingsModal] = useState(false)
+  const [showColorCustomizer, setShowColorCustomizer] = useState(false)
+  const [selectedBookmarkForRings, setSelectedBookmarkForRings] = useState<Bookmark | null>(null)
+
+  // Fetch folders for category if not provided
+  useEffect(() => {
+    if (categoryId && categoryId !== 'all' && folders.length === 0) {
+      fetch(`/api/bookmark-folders?categoryId=${categoryId}`)
+        .then(res => res.ok ? res.json() : [])
+        .then(data => setAvailableFolders(data))
+        .catch(() => setAvailableFolders([]))
+    } else {
+      setAvailableFolders(folders)
+    }
+  }, [categoryId, folders])
+
+  const toggleSelection = (bookmarkId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setSelectedIds(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(bookmarkId)) {
+        newSet.delete(bookmarkId)
+      } else {
+        newSet.add(bookmarkId)
+      }
+      return newSet
+    })
+  }
+
+  const selectAll = () => {
+    setSelectedIds(new Set(bookmarks.map(b => b.id)))
+  }
+
+  const clearSelection = () => {
+    setSelectedIds(new Set())
+    setIsSelectionMode(false)
+  }
+
+  const moveSelectedToFolder = async (folderId: string | null) => {
+    if (selectedIds.size === 0) return
+    
+    const promises = Array.from(selectedIds).map(async (bookmarkId) => {
+      try {
+        const res = await fetch(`/api/bookmarks/${bookmarkId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ folderId })
+        })
+        return res.ok
+      } catch {
+        return false
+      }
+    })
+
+    const results = await Promise.all(promises)
+    const successCount = results.filter(Boolean).length
+
+    if (successCount > 0) {
+      toast.success(`Moved ${successCount} bookmark${successCount > 1 ? 's' : ''} to folder`)
+      clearSelection()
+      onUpdate()
+    } else {
+      toast.error("Failed to move bookmarks")
+    }
+  }
+
+  const moveToFolder = async (bookmarkId: string, folderId: string | null) => {
+    if (onMoveBookmark) {
+      onMoveBookmark(bookmarkId, folderId)
+      return
+    }
+    try {
+      const res = await fetch(`/api/bookmarks/${bookmarkId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ folderId })
+      })
+      if (res.ok) {
+        toast.success(folderId ? "Moved to folder" : "Removed from folder")
+        onUpdate()
+      } else {
+        toast.error("Failed to move bookmark")
+      }
+    } catch (e) {
+      toast.error("Failed to move bookmark")
+    }
+  }
 
   // Load ring colors from localStorage on mount
   useEffect(() => {
@@ -176,20 +288,87 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
 
   return (
     <>
+      {/* Bulk Action Bar - Shows when folders are available */}
+      {availableFolders.length > 0 && (
+        <div className="mb-4 flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
+          <Button
+            variant={isSelectionMode ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setIsSelectionMode(!isSelectionMode)
+              if (isSelectionMode) clearSelection()
+            }}
+          >
+            {isSelectionMode ? "Cancel Selection" : "Select Bookmarks"}
+          </Button>
+          
+          {isSelectionMode && (
+            <>
+              <Button variant="outline" size="sm" onClick={selectAll}>
+                Select All
+              </Button>
+              
+              {selectedIds.size > 0 && (
+                <>
+                  <span className="text-sm text-gray-600">
+                    {selectedIds.size} selected
+                  </span>
+                  <Select onValueChange={(value) => moveSelectedToFolder(value === "__none__" ? null : value)}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Move to folder..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">Remove from folder</SelectItem>
+                      {availableFolders.map((folder) => (
+                        <SelectItem key={folder.id} value={folder.id}>
+                          {folder.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {bookmarks.map((bookmark) => {
           const domain = getDomain(bookmark.url)
           const engagementPct = getEngagementPercentage(bookmark.visitCount)
+          const isSelected = selectedIds.has(bookmark.id)
 
           return (
             <div
               key={bookmark.id}
-              className="relative bg-white border border-black rounded-lg overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-black group"
+              className={cn(
+                "relative bg-white border rounded-lg overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-lg group",
+                isSelected ? "border-2 border-blue-500 ring-2 ring-blue-200" : "border border-black hover:border-black"
+              )}
               style={{ aspectRatio: '1', minHeight: '200px' }}
-              onClick={() => openDetailModal(bookmark)}
+              onClick={() => isSelectionMode ? toggleSelection(bookmark.id, { stopPropagation: () => {} } as any) : openDetailModal(bookmark)}
             >
-              {/* Top Left - Small Favicon */}
-              <div className="absolute top-2.5 left-2.5 w-7 h-7 bg-black rounded-md flex items-center justify-center overflow-hidden z-10">
+              {/* Selection Checkbox - Top Left when in selection mode */}
+              {isSelectionMode && (
+                <div 
+                  className="absolute top-2 left-2 z-20"
+                  onClick={(e) => toggleSelection(bookmark.id, e)}
+                >
+                  <div className={cn(
+                    "w-6 h-6 rounded border-2 flex items-center justify-center transition-colors",
+                    isSelected ? "bg-blue-500 border-blue-500" : "bg-white border-gray-400 hover:border-blue-400"
+                  )}>
+                    {isSelected && <Check className="w-4 h-4 text-white" />}
+                  </div>
+                </div>
+              )}
+
+              {/* Top Left - Small Favicon (shifted right when in selection mode) */}
+              <div className={cn(
+                "absolute top-2.5 w-7 h-7 bg-black rounded-md flex items-center justify-center overflow-hidden z-10",
+                isSelectionMode ? "left-10" : "left-2.5"
+              )}>
                 {bookmark.favicon ? (
                   <Image
                     src={bookmark.favicon}
@@ -203,13 +382,19 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
                 )}
               </div>
 
-              {/* Middle Right - Activity Rings Badge (moved from top-right to avoid drag handle conflict) */}
-              <div className="absolute top-1/2 -translate-y-1/2 right-2 z-10">
+              {/* Middle Right - Activity Rings Badge */}
+              <div className="absolute top-1/2 -translate-y-1/2 right-2 z-30">
                 <FitnessRings
                   rings={createRingsData(bookmark)}
                   size={36}
                   strokeWidth={3}
                   animated={false}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    e.preventDefault()
+                    setSelectedBookmarkForRings(bookmark)
+                    setShowRingsModal(true)
+                  }}
                 />
               </div>
 
@@ -325,6 +510,41 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
                       <Trash2 className="w-4 h-4 mr-2" />
                       Delete
                     </DropdownMenuItem>
+                    {availableFolders.length > 0 && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger onClick={(e) => e.stopPropagation()}>
+                            <FolderInput className="w-4 h-4 mr-2" />
+                            Move to Folder
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuSubContent>
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                moveToFolder(bookmark.id, null)
+                              }}
+                            >
+                              <Folder className="w-4 h-4 mr-2 text-gray-400" />
+                              Remove from folder
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            {availableFolders.map((folder) => (
+                              <DropdownMenuItem
+                                key={folder.id}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  moveToFolder(bookmark.id, folder.id)
+                                }}
+                              >
+                                <Folder className="w-4 h-4 mr-2" />
+                                {folder.name}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuSubContent>
+                        </DropdownMenuSub>
+                      </>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -342,6 +562,39 @@ export function BookmarkCompactCards({ bookmarks, onUpdate }: BookmarkCompactCar
             if (!open) setSelectedBookmark(null)
           }}
           onUpdate={onUpdate}
+        />
+      )}
+
+      {/* Fitness Rings Detail Modal */}
+      {selectedBookmarkForRings && (
+        <FitnessRingsModal
+          open={showRingsModal}
+          onOpenChange={(open) => {
+            setShowRingsModal(open)
+            if (!open) setSelectedBookmarkForRings(null)
+          }}
+          rings={createRingsData(selectedBookmarkForRings)}
+          onCustomize={() => {
+            setShowRingsModal(false)
+            setShowColorCustomizer(true)
+          }}
+        />
+      )}
+
+      {/* Ring Color Customizer Modal */}
+      {selectedBookmarkForRings && (
+        <RingColorCustomizer
+          open={showColorCustomizer}
+          onOpenChange={(open) => {
+            setShowColorCustomizer(open)
+            if (!open) setSelectedBookmarkForRings(null)
+          }}
+          rings={createRingsData(selectedBookmarkForRings)}
+          onSave={(colors) => {
+            toast.success("Ring colors saved!")
+            setShowColorCustomizer(false)
+            setSelectedBookmarkForRings(null)
+          }}
         />
       )}
     </>

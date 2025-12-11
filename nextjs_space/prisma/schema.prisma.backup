@@ -277,7 +277,7 @@ model BookmarkHistory {
   createdAt DateTime @default(now())
 }
 
-// Goal system (Goal 2.0)
+// Goal system (Goals)
 model GoalFolder {
   id          String   @id @default(cuid())
   name        String

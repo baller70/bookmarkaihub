@@ -25,16 +25,19 @@ export interface FitnessRingsProps {
 export function FitnessRings({
   rings,
   size = 70,
-  strokeWidth = 6,
+  strokeWidth: propStrokeWidth,
   className,
   onClick,
   animated = true,
   showCenterValue = true,
 }: FitnessRingsProps) {
+  // Adjust stroke width based on size for better proportions
+  const strokeWidth = propStrokeWidth ?? (size <= 40 ? 3 : size <= 50 ? 4 : 6)
+  
   const [animatedProgress, setAnimatedProgress] = useState<number[]>(rings.map(() => 0))
 
   const center = size / 2
-  const gap = strokeWidth + 2 // Gap between rings
+  const gap = strokeWidth + (size <= 40 ? 1 : 2) // Smaller gap for small sizes
 
   // Calculate overall average progress for center display
   const getOverallProgress = () => {
@@ -163,39 +166,31 @@ export function FitnessRings({
       </svg>
       
       {/* Center with percentage display */}
-      {showCenterValue && (() => {
-        // Calculate the inner radius of the innermost ring
-        const innermostRingRadius = getRadius(rings.length - 1)
-        // Subtract strokeWidth to get inside the ring, plus extra padding
-        const padding = strokeWidth * 1.5
-        const centerSize = (innermostRingRadius - strokeWidth / 2 - padding) * 2
-
-        return (
+      {showCenterValue && (
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          style={{
+            pointerEvents: 'none',
+          }}
+        >
           <div
-            className="absolute inset-0 flex items-center justify-center"
+            className="flex items-center justify-center rounded-full bg-white/90 shadow-sm"
             style={{
-              pointerEvents: 'none',
+              width: size * 0.38,
+              height: size * 0.38,
             }}
           >
-            <div
-              className="flex items-center justify-center"
+            <span
+              className="font-bold text-gray-800 leading-none"
               style={{
-                width: Math.max(centerSize, 0),
-                height: Math.max(centerSize, 0),
+                fontSize: Math.max(size * 0.14, 8),
               }}
             >
-              <span
-                className="font-bold text-gray-800 leading-none"
-                style={{
-                  fontSize: Math.max(size * 0.15, 10),
-                }}
-              >
-                {getOverallProgress()}%
-              </span>
-            </div>
+              {getOverallProgress()}%
+            </span>
           </div>
-        )
-      })()}
+        </div>
+      )}
     </div>
   )
 }

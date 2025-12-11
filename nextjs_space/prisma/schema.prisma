@@ -1,7 +1,6 @@
 generator client {
     provider = "prisma-client-js"
-    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
-    output = "/home/ubuntu/bookmarkhub_clone/nextjs_space/node_modules/.prisma/client"
+    binaryTargets = ["native"]
 }
 
 datasource db {
@@ -47,6 +46,7 @@ model User {
   fullName      String?
   isAdmin       Boolean   @default(false)
   customLogo    String?   @db.Text // S3 cloud storage path for global custom logo
+  goalsViewLogo String?   @db.Text // S3 cloud storage path for Goals view global logo
   subscriptionTier  SubscriptionTier @default(BASIC)
   
   accounts      Account[]
@@ -159,6 +159,8 @@ model Bookmark {
   user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   companyId    String?
   company      Company?            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  folderId     String?
+  folder       BookmarkFolder?     @relation(fields: [folderId], references: [id], onDelete: SetNull)
   categories   BookmarkCategory[]
   tags         BookmarkTag[]
   tasks        Task[]
@@ -207,6 +209,23 @@ model Bookmark {
 
   @@index([userId, createdAt])
   @@index([userId, priority])
+  @@index([folderId])
+}
+
+// Bookmark subfolders within a category
+model BookmarkFolder {
+  id         String    @id @default(cuid())
+  name       String
+  color      String?   @default("#3B82F6") // Folder color
+  categoryId String
+  userId     String
+  companyId  String?
+  bookmarks  Bookmark[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([categoryId, userId])
+  @@index([userId])
 }
 
 model Category {
@@ -352,12 +371,13 @@ model BookmarkHistory {
   createdAt DateTime @default(now())
 }
 
-// Goal system (Goal 2.0)
+// Goal system (Goals)
 model GoalFolder {
   id          String   @id @default(cuid())
   name        String
   description String?  @db.Text
   color       String   @default("#3B82F6") // Blue default
+  logo        String?  @db.Text // Per-folder custom logo
   
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -377,6 +397,7 @@ model Goal {
   description String?    @db.Text
   goalType    String     @default("Custom") // Custom, Learning, Project, Health, etc.
   color       String     @default("#3b82f6") // Hex color
+  logo        String?    @db.Text // Per-goal custom logo
   priority    Priority   @default(MEDIUM)
   status      GoalStatus @default(NOT_STARTED)
   deadline    DateTime?

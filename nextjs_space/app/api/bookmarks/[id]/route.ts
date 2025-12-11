@@ -172,7 +172,7 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const { categoryId, ...updateData } = body
+    const { categoryId, folderId, ...updateData } = body
 
     // Verify the bookmark belongs to the user
     const existingBookmark = await prisma.bookmark.findFirst({
@@ -215,6 +215,37 @@ export async function PATCH(
             bookmarkId: params.id,
             categoryId: categoryId,
           },
+        })
+      }
+    }
+
+    // Handle folder assignment separately
+    if (folderId !== undefined) {
+      if (folderId === null) {
+        // Remove folder
+        await prisma.bookmark.update({
+          where: { id: params.id },
+          data: { folderId: null },
+        })
+      } else {
+        // Verify folder exists and belongs to user & same category
+        const folder = await prisma.bookmarkFolder.findFirst({
+          where: {
+            id: folderId,
+            userId: session.user.id,
+          },
+          include: {
+            category: true,
+          },
+        })
+
+        if (!folder) {
+          return NextResponse.json({ error: "Folder not found" }, { status: 404 })
+        }
+
+        await prisma.bookmark.update({
+          where: { id: params.id },
+          data: { folderId },
         })
       }
     }

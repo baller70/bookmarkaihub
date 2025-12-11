@@ -81,7 +81,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, description, color } = body;
+    const { name, description, color, logo } = body;
 
     const folder = await prisma.goalFolder.updateMany({
       where: {
@@ -92,6 +92,7 @@ export async function PUT(
         ...(name && { name }),
         ...(description !== undefined && { description }),
         ...(color && { color }),
+        ...(logo !== undefined && { logo }),
       },
     });
 

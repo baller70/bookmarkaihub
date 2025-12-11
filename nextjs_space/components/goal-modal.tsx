@@ -1,7 +1,8 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -11,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Badge } from './ui/badge';
 import { Slider } from './ui/slider';
 import { Checkbox } from './ui/checkbox';
-import { Target, TrendingUp, Plus, X, Search } from 'lucide-react';
+import { Trophy, TrendingUp, Plus, X, Search, Upload, ImageIcon, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Goal {
@@ -20,6 +21,7 @@ interface Goal {
   description?: string;
   goalType: string;
   color: string;
+  logo?: string | null;
   priority: string;
   status: string;
   deadline?: string;
@@ -78,12 +80,15 @@ const GOAL_TYPES = [
 
 export function GoalModal({ open, onClose, onSuccess, goal, folders, selectedFolderId }: GoalModalProps) {
   const isEditing = !!goal;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Basic Info State
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [goalType, setGoalType] = useState('Custom');
   const [color, setColor] = useState('#3b82f6');
+  const [logo, setLogo] = useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = useState('');
   const [priority, setPriority] = useState('MEDIUM');
   const [status, setStatus] = useState('NOT_STARTED');
   const [deadline, setDeadline] = useState('');
@@ -111,6 +116,8 @@ export function GoalModal({ open, onClose, onSuccess, goal, folders, selectedFol
       setDescription(goal.description || '');
       setGoalType(goal.goalType);
       setColor(goal.color);
+      setLogo(goal.logo || null);
+      setLogoUrl('');
       setPriority(goal.priority);
       setStatus(goal.status);
       setDeadline(goal.deadline ? new Date(goal.deadline).toISOString().split('T')[0] : '');
@@ -127,6 +134,34 @@ export function GoalModal({ open, onClose, onSuccess, goal, folders, selectedFol
       setFolderId('');
     }
   }, [goal, open, selectedFolderId]);
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        setLogo(base64);
+        setLogoUrl('');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleLogoUrlChange = (url: string) => {
+    setLogoUrl(url);
+    if (url) {
+      setLogo(url);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setLogo(null);
+    setLogoUrl('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   // Fetch all bookmarks for connection
   useEffect(() => {
@@ -179,6 +214,7 @@ export function GoalModal({ open, onClose, onSuccess, goal, folders, selectedFol
         description: description.trim() || null,
         goalType,
         color,
+        logo: logo || null,
         priority,
         status,
         deadline: deadline || null,
@@ -219,6 +255,8 @@ export function GoalModal({ open, onClose, onSuccess, goal, folders, selectedFol
       setDescription('');
       setGoalType('Custom');
       setColor('#3b82f6');
+      setLogo(null);
+      setLogoUrl('');
       setPriority('MEDIUM');
       setStatus('NOT_STARTED');
       setDeadline('');
@@ -281,7 +319,7 @@ export function GoalModal({ open, onClose, onSuccess, goal, folders, selectedFol
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
-            <Target className="w-5 h-5" />
+            <Trophy className="w-5 h-5" />
             {isEditing ? 'Edit Goal' : 'Create New Goal'}
           </DialogTitle>
           <p className="text-sm text-gray-500 mt-1">
@@ -349,6 +387,75 @@ export function GoalModal({ open, onClose, onSuccess, goal, folders, selectedFol
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+
+            {/* Goal Logo */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Goal Logo (Optional)
+              </label>
+              <p className="text-xs text-gray-500 mb-2">
+                Upload a custom logo for this goal. Overrides the global Goals view logo.
+              </p>
+              <div className="flex items-start gap-4">
+                {/* Logo Preview */}
+                <div className="w-16 h-16 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50 flex-shrink-0">
+                  {logo ? (
+                    <Image 
+                      src={logo} 
+                      alt="Goal logo" 
+                      width={48} 
+                      height={48} 
+                      className="object-contain"
+                      unoptimized
+                    />
+                  ) : (
+                    <ImageIcon className="w-6 h-6 text-gray-400" />
+                  )}
+                </div>
+                
+                {/* Upload Options */}
+                <div className="flex-1 space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="gap-1"
+                    >
+                      <Upload className="w-3 h-3" />
+                      Upload
+                    </Button>
+                    {logo && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRemoveLogo}
+                        className="gap-1 text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                  <Input
+                    type="text"
+                    placeholder="Or paste image URL..."
+                    value={logoUrl}
+                    onChange={(e) => handleLogoUrlChange(e.target.value)}
+                    className="text-sm h-8"
+                  />
+                </div>
               </div>
             </div>
 

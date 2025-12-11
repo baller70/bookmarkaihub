@@ -187,6 +187,29 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
   const [categories, setCategories] = useState<any[]>([])
   const [showEditCategory, setShowEditCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
+  const [allCategories, setAllCategories] = useState<any[]>([])
+
+  // Fetch all categories so compact view shows every folder (not just those with bookmarks)
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('/api/categories', { cache: 'no-store' })
+        if (res.ok) {
+          const data = await res.json()
+          const categoriesArray = data?.categories || data
+          if (Array.isArray(categoriesArray)) {
+            setAllCategories(categoriesArray)
+            return
+          }
+        }
+        setAllCategories([])
+      } catch {
+        setAllCategories([])
+      }
+    }
+
+    fetchCategories()
+  }, [])
   
   // Save category colors
   const handleSaveColors = async () => {
@@ -248,6 +271,33 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
     const grouped: { category: any; bookmarks: any[] }[] = []
     const indexMap: Record<string, number> = {}
 
+    // Seed with all categories from the backend so every folder shows up
+    const seedCategories = Array.isArray(allCategories) ? [...allCategories] : []
+    const hasUncategorized = seedCategories.some(cat => cat.id === "uncategorized")
+    if (!hasUncategorized) {
+      seedCategories.push({
+        id: "uncategorized",
+        name: "UNCATEGORIZED",
+        color: "#94A3B8",
+        backgroundColor: "#e2e8f0",
+        icon: "folder",
+      })
+    }
+
+    seedCategories.forEach((cat) => {
+      grouped.push({
+        category: {
+          id: cat.id,
+          name: cat.name || "UNCATEGORIZED",
+          color: cat.color || "#94A3B8",
+          backgroundColor: cat.backgroundColor || "#e2e8f0",
+          icon: cat.icon || "folder",
+        },
+        bookmarks: [],
+      })
+      indexMap[cat.id] = grouped.length - 1
+    })
+
     bookmarks?.forEach((bookmark) => {
       const categoryId = bookmark.category?.id || "uncategorized"
       const categoryName = bookmark.category?.name || "UNCATEGORIZED"
@@ -274,7 +324,7 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
 
     setCategories(grouped.map((item: { category: any; bookmarks: any[] }) => item.category))
     return grouped
-  }, [bookmarks])
+  }, [bookmarks, allCategories])
 
   // Get bookmarks for selected category
   const currentCategoryBookmarks = useMemo(() => {
@@ -282,6 +332,78 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
     const found = categorizedBookmarks.find(c => c.category.id === selectedCategory.id)
     return found?.bookmarks || []
   }, [selectedCategory, categorizedBookmarks])
+
+  // Folder / subfolder state for selected category
+  const [folderView, setFolderView] = useState<"flat" | "folders">("flat")
+  const [folders, setFolders] = useState<any[]>([])
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>("all")
+  const [foldersLoading, setFoldersLoading] = useState(false)
+
+  useEffect(() => {
+    if (folderView === "folders" && selectedCategory) {
+      fetchFolders(selectedCategory.id)
+      setSelectedFolderId("all")
+    }
+  }, [folderView, selectedCategory])
+
+  const fetchFolders = async (categoryId: string) => {
+    try {
+      setFoldersLoading(true)
+      const res = await fetch(`/api/bookmark-folders?categoryId=${categoryId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setFolders(data)
+      } else {
+        setFolders([])
+      }
+    } catch (e) {
+      setFolders([])
+    } finally {
+      setFoldersLoading(false)
+    }
+  }
+
+  const createFolder = async () => {
+    if (!selectedCategory) return
+    const name = prompt("Enter subfolder name")
+    if (!name) return
+    try {
+      const res = await fetch(`/api/bookmark-folders`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, categoryId: selectedCategory.id })
+      })
+      if (res.ok) {
+        await fetchFolders(selectedCategory.id)
+        toast.success("Folder created")
+      } else {
+        toast.error("Failed to create folder")
+      }
+    } catch (e) {
+      toast.error("Failed to create folder")
+    }
+  }
+
+  const moveBookmarkToFolder = async (bookmarkId: string, folderId: string | null) => {
+    try {
+      const res = await fetch(`/api/bookmarks/${bookmarkId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ folderId })
+      })
+      if (res.ok) {
+        onUpdate()
+        if (folderView === "folders" && selectedCategory) {
+          fetchFolders(selectedCategory.id)
+        }
+        toast.success(folderId ? "Moved to folder" : "Removed from folder")
+      } else {
+        toast.error("Failed to move bookmark")
+      }
+    } catch (e) {
+      toast.error("Failed to move bookmark")
+    }
+  }
 
   const handleToggleFavorite = async (bookmarkId: string, isFavorite: boolean) => {
     try {
@@ -354,6 +476,23 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
 
   // Second level: Show individual bookmarks as square cards
   if (selectedCategory) {
+    const filteredBookmarks = useMemo(() => {
+      if (folderView === "flat") return currentCategoryBookmarks
+      if (selectedFolderId === "all") return currentCategoryBookmarks
+      if (selectedFolderId === "none") return currentCategoryBookmarks.filter((b: any) => !b.folderId)
+      return currentCategoryBookmarks.filter((b: any) => b.folderId === selectedFolderId)
+    }, [folderView, selectedFolderId, currentCategoryBookmarks])
+
+    const folderCounts = useMemo(() => {
+      const counts: Record<string, number> = { all: currentCategoryBookmarks.length, none: 0 }
+      currentCategoryBookmarks.forEach((b: any) => {
+        const fid = b.folderId
+        if (!fid) counts.none = (counts.none || 0) + 1
+        if (fid) counts[fid] = (counts[fid] || 0) + 1
+      })
+      return counts
+    }, [currentCategoryBookmarks])
+
     return (
       <div className="space-y-6">
         {/* Header with back button */}
@@ -379,9 +518,103 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
           </div>
         </div>
 
+        {/* Folder controls */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant={folderView === "flat" ? "default" : "outline"}
+              onClick={() => setFolderView("flat")}
+            >
+              Flat view
+            </Button>
+            <Button
+              size="sm"
+              variant={folderView === "folders" ? "default" : "outline"}
+              onClick={() => setFolderView("folders")}
+            >
+              Subfolder view
+            </Button>
+          </div>
+          {folderView === "folders" && (
+            <>
+              <Select
+                value={selectedFolderId || "none"}
+                onValueChange={(v) => setSelectedFolderId(v === "none" ? "none" : v === "all" ? "all" : v)}
+              >
+                <SelectTrigger className="w-[220px]">
+                  <SelectValue placeholder="Select folder" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All (all folders)</SelectItem>
+                  <SelectItem value="none">No folder</SelectItem>
+                  {folders.map((f) => (
+                    <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button size="sm" onClick={createFolder} disabled={foldersLoading}>
+                {foldersLoading ? "Loading..." : "New subfolder"}
+              </Button>
+            </>
+          )}
+        </div>
+
+        {/* Folder grid (only in subfolder view) */}
+        {folderView === "folders" && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4">
+            {/* All */}
+            <div
+              onClick={() => setSelectedFolderId("all")}
+              className={`relative bg-white border-2 rounded-xl p-4 cursor-pointer hover:shadow-lg transition ${
+                selectedFolderId === "all" ? "border-black" : "border-gray-300"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <Folder className="w-6 h-6 text-gray-700" />
+                <Badge variant="secondary" className="uppercase">All</Badge>
+              </div>
+              <div className="text-sm font-semibold text-gray-800">ALL BOOKMARKS</div>
+              <div className="text-xs text-gray-500 mt-1">{folderCounts.all || 0} BOOKMARKS</div>
+            </div>
+
+            {/* No folder */}
+            <div
+              onClick={() => setSelectedFolderId("none")}
+              className={`relative bg-white border-2 rounded-xl p-4 cursor-pointer hover:shadow-lg transition ${
+                selectedFolderId === "none" ? "border-black" : "border-gray-300"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <Folder className="w-6 h-6 text-gray-700" />
+                <Badge variant="outline" className="uppercase">No Folder</Badge>
+              </div>
+              <div className="text-sm font-semibold text-gray-800">UNCATEGORIZED</div>
+              <div className="text-xs text-gray-500 mt-1">{folderCounts.none || 0} BOOKMARKS</div>
+            </div>
+
+            {folders.map((f) => (
+              <div
+                key={f.id}
+                onClick={() => setSelectedFolderId(f.id)}
+                className={`relative bg-white border-2 rounded-xl p-4 cursor-pointer hover:shadow-lg transition ${
+                  selectedFolderId === f.id ? "border-black" : "border-gray-300"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <Folder className="w-6 h-6 text-gray-700" />
+                  <Badge variant="outline" className="uppercase">Folder</Badge>
+                </div>
+                <div className="text-sm font-semibold text-gray-800 truncate">{f.name}</div>
+                <div className="text-xs text-gray-500 mt-1">{folderCounts[f.id] || 0} BOOKMARKS</div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Bookmarks as COMPACT square cards - SAME SIZE AS FOLDER CARDS */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4">
-          {currentCategoryBookmarks.map((bookmark: any) => {
+          {filteredBookmarks.map((bookmark: any) => {
             const usagePercentage = bookmark.usagePercentage || 0
             const visitCount = bookmark.analytics?.[0]?.totalVisits || 0
             const cleanUrl = bookmark.url?.replace(/^https?:\/\/(www\.)?/, "") || ""
@@ -451,11 +684,29 @@ export function BookmarkCompact({ bookmarks, onUpdate }: BookmarkCompactProps) {
                     </div>
                   </div>
 
-                  {/* TITLE - MUCH BIGGER Bold uppercase, 2 lines max */}
-                  <div className="relative z-10 mb-1">
+                  {/* TITLE - MUCH BIGGER Bold uppercase, 2 lines max + folder move when in folder view */}
+                  <div className="relative z-10 mb-1 flex items-start justify-between gap-2">
                     <h3 className="font-black text-base text-gray-900 uppercase tracking-tight leading-tight line-clamp-2">
                       {bookmark.title || "Untitled"}
                     </h3>
+                    {folderView === "folders" && (
+                      <Select
+                        value={bookmark.folderId || "none"}
+                        onValueChange={(v) => {
+                          moveBookmarkToFolder(bookmark.id, v === "none" ? null : v)
+                        }}
+                      >
+                        <SelectTrigger className="h-8 w-24 text-xs">
+                          <SelectValue placeholder="Folder" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">No folder</SelectItem>
+                          {folders.map((f) => (
+                            <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
                   </div>
 
                   {/* URL - BIGGER Blue link text */}

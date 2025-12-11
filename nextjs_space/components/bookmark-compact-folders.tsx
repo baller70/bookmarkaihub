@@ -51,10 +51,11 @@ export function BookmarkCompactFolders({ bookmarks, onUpdate }: BookmarkCompactF
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch("/api/categories")
+      const response = await fetch("/api/categories", { cache: "no-store" })
       if (response.ok) {
         const data = await response.json()
-        setCategories(data.categories || [])
+        const categoriesArray = data?.categories || data
+        setCategories(Array.isArray(categoriesArray) ? categoriesArray : [])
       } else {
         toast.error("Failed to load categories")
       }
@@ -95,7 +96,7 @@ export function BookmarkCompactFolders({ bookmarks, onUpdate }: BookmarkCompactF
         onClick={() => handleFolderClick('all')}
         className="bg-white border-2 border-black rounded-lg p-6 hover:shadow-lg transition-all cursor-pointer relative group"
       >
-        {/* Folder Icon - Top Left */}
+        {/* Folder Icon - Top Left (keep default folder) */}
         <div className="flex justify-start mb-5">
           <div
             className="rounded-md p-3 flex items-center justify-center"
@@ -121,12 +122,24 @@ export function BookmarkCompactFolders({ bookmarks, onUpdate }: BookmarkCompactF
           </h3>
         </div>
 
-        {/* Bottom Section - User Icon & Bookmark Count */}
+        {/* Bottom Section - Global Logo & Bookmark Count */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-gray-600">
-            <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
-              <User className="w-5 h-5 text-white" />
-            </div>
+            {globalCustomLogo ? (
+              <div className="relative w-10 h-10 rounded-full overflow-hidden bg-white border-2 border-gray-300 flex-shrink-0">
+                <Image
+                  src={globalCustomLogo}
+                  alt="All Bookmarks"
+                  fill
+                  className="object-contain p-1"
+                  unoptimized
+                />
+              </div>
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center flex-shrink-0">
+                <User className="w-5 h-5 text-white" />
+              </div>
+            )}
             <span className="text-sm font-medium">
               {bookmarks.length} BOOKMARK{bookmarks.length !== 1 ? 'S' : ''}
             </span>
