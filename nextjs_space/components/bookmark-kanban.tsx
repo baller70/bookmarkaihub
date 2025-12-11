@@ -263,14 +263,38 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
     return 'BACKLOG';
   };
 
-  // Initialize or refresh card positions when bookmarks change
+  // Load persisted card positions (so moves stick across renders)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const saved = window.localStorage.getItem('kanban-card-positions');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setCardPositions(parsed);
+      } catch {
+        // ignore parse errors
+      }
+    }
+  }, []);
+
+  // Persist card positions
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem('kanban-card-positions', JSON.stringify(cardPositions));
+  }, [cardPositions]);
+
+  // Initialize or refresh card positions when bookmarks change, preserving existing moves
   useEffect(() => {
     setCards(bookmarks || []);
-    const nextPositions: Record<string, string> = {};
-    bookmarks.forEach((bookmark) => {
-      nextPositions[bookmark.id] = cardPositions[bookmark.id] || getInitialStatusForBookmark(bookmark);
+    setCardPositions((prev) => {
+      const next: Record<string, string> = { ...prev };
+      bookmarks.forEach((bookmark) => {
+        if (!next[bookmark.id]) {
+          next[bookmark.id] = getInitialStatusForBookmark(bookmark);
+        }
+      });
+      return next;
     });
-    setCardPositions(nextPositions);
   }, [bookmarks]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDragStart = (event: DragEvent<HTMLDivElement>, bookmarkId: string) => {
