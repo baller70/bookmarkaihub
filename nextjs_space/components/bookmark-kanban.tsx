@@ -5,6 +5,11 @@ import Image from 'next/image';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { BookmarkDetailModal } from './bookmark-detail-modal';
 import { 
   Search, 
   Filter, 
@@ -24,7 +29,12 @@ import {
   Trash2,
   Edit3,
   ArrowUpDown,
-  X
+  X,
+  SlidersHorizontal,
+  LayoutGrid,
+  Tag,
+  BarChart3,
+  Layers
 } from 'lucide-react';
 
 interface BookmarkKanbanProps {
@@ -132,6 +142,10 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   const [accentColorOverrides, setAccentColorOverrides] = useState<Record<string, string>>({});
   const [cardModalId, setCardModalId] = useState<string | null>(null);
   const [selectedAddIds, setSelectedAddIds] = useState<Set<string>>(new Set());
+  const [selectedBookmark, setSelectedBookmark] = useState<any | null>(null);
+  const [showWipLimit, setShowWipLimit] = useState(false);
+  const [showCardLabels, setShowCardLabels] = useState(true);
+  const [autoSort, setAutoSort] = useState(false);
 
   const getInitialStatusForBookmark = (bookmark: any) => {
     if (bookmark.priority === 'HIGH' || bookmark.priority === 'URGENT') {
@@ -253,7 +267,7 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   ];
 
   const handleOpenCard = (bookmark: any) => {
-    setCardModalId(bookmark.id);
+    setSelectedBookmark(bookmark);
   };
 
   const togglePriorityFilter = (priority: string) => {
@@ -445,174 +459,264 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
         </div>
       )}
 
-      {/* Overlays */}
-      {showFilters && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowFilters(false)}>
-          <div className="w-full max-w-md rounded-lg border bg-white p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-semibold">Filters</div>
-              <Button size="sm" variant="ghost" onClick={() => setShowFilters(false)}>Close</Button>
-            </div>
-            <div className="space-y-2">
-              <div className="text-xs font-semibold text-muted-foreground">Priority</div>
-              <div className="flex flex-wrap gap-2">
-                {['LOW', 'MEDIUM', 'HIGH', 'URGENT'].map((p) => (
+      {/* Filter Dialog */}
+      <Dialog open={showFilters} onOpenChange={setShowFilters}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Filter className="w-5 h-5 text-primary" />
+              Filter Cards
+            </DialogTitle>
+            <DialogDescription>
+              Filter cards by priority and status to focus on what matters.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            <div className="space-y-3">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <Tag className="w-4 h-4 text-muted-foreground" />
+                Priority Level
+              </Label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: 'LOW', label: 'Low', color: 'bg-green-100 text-green-700 border-green-200' },
+                  { value: 'MEDIUM', label: 'Medium', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
+                  { value: 'HIGH', label: 'High', color: 'bg-orange-100 text-orange-700 border-orange-200' },
+                  { value: 'URGENT', label: 'Urgent', color: 'bg-red-100 text-red-700 border-red-200' },
+                ].map((p) => (
                   <button
-                    key={p}
-                    onClick={() => togglePriorityFilter(p)}
-                    className={`text-xs px-2 py-1 rounded border ${
-                      filterPriorities.has(p) ? 'bg-primary text-white border-primary' : 'bg-white'
+                    key={p.value}
+                    onClick={() => togglePriorityFilter(p.value)}
+                    className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-sm font-medium transition-all ${
+                      filterPriorities.has(p.value)
+                        ? `${p.color} ring-2 ring-offset-1 ring-primary/30`
+                        : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
                     }`}
                   >
-                    {p}
+                    {filterPriorities.has(p.value) && <span className="w-1.5 h-1.5 rounded-full bg-current" />}
+                    {p.label}
                   </button>
                 ))}
               </div>
             </div>
-            <div className="space-y-2">
-              <div className="text-xs font-semibold text-muted-foreground">Status</div>
-              <div className="flex flex-wrap gap-2">
-                {['BACKLOG', 'TODO', 'IN_PROGRESS'].map((s) => (
+            <div className="space-y-3">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <Layers className="w-4 h-4 text-muted-foreground" />
+                Column Status
+              </Label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { value: 'BACKLOG', label: 'Backlog', color: 'bg-gray-100 text-gray-700 border-gray-200' },
+                  { value: 'TODO', label: 'To Do', color: 'bg-orange-100 text-orange-700 border-orange-200' },
+                  { value: 'IN_PROGRESS', label: 'In Progress', color: 'bg-blue-100 text-blue-700 border-blue-200' },
+                ].map((s) => (
                   <button
-                    key={s}
-                    onClick={() => toggleStatusFilter(s)}
-                    className={`text-xs px-2 py-1 rounded border ${
-                      filterStatuses.has(s) ? 'bg-primary text-white border-primary' : 'bg-white'
+                    key={s.value}
+                    onClick={() => toggleStatusFilter(s.value)}
+                    className={`flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-lg border text-xs font-medium transition-all ${
+                      filterStatuses.has(s.value)
+                        ? `${s.color} ring-2 ring-offset-1 ring-primary/30`
+                        : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
                     }`}
                   >
-                    {s.replace('_', ' ')}
+                    {filterStatuses.has(s.value) && <span className="w-1.5 h-1.5 rounded-full bg-current" />}
+                    {s.label}
                   </button>
                 ))}
               </div>
-            </div>
-            <div className="flex justify-end">
-              <Button size="sm" onClick={() => setShowFilters(false)}>Apply</Button>
             </div>
           </div>
-        </div>
-      )}
+          <div className="flex items-center justify-between pt-4 border-t">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setFilterPriorities(new Set());
+                setFilterStatuses(new Set());
+              }}
+            >
+              Clear All
+            </Button>
+            <Button onClick={() => setShowFilters(false)}>
+              Apply Filters
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-      {showAddMenu && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowAddMenu(false)}>
-          <div className="w-full max-w-2xl rounded-lg border bg-white p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between gap-2">
-              <div className="text-sm font-semibold">Add bookmarked cards</div>
-              <div className="text-xs text-muted-foreground">{selectedAddIds.size} selected</div>
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline" onClick={() => setShowAddMenu(false)}>Cancel</Button>
-                <Button size="sm" onClick={handleAddSelectedCards} disabled={selectedAddIds.size === 0}>Add</Button>
-              </div>
-            </div>
+      {/* Add Card Dialog */}
+      <Dialog open={showAddMenu} onOpenChange={setShowAddMenu}>
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="w-5 h-5 text-primary" />
+              Add Cards to Board
+            </DialogTitle>
+            <DialogDescription>
+              Select bookmarks to add as cards to your Kanban board.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Search bookmarks..."
+              placeholder="Search your bookmarks..."
               value={addMenuQuery}
               onChange={(e) => setAddMenuQuery(e.target.value)}
-              className="h-9 text-sm"
+              className="pl-10"
             />
-            <div className="max-h-[60vh] overflow-y-auto space-y-2">
-              {addableBookmarks.length === 0 ? (
-                <div className="text-xs text-muted-foreground px-1 py-2">No bookmarks available</div>
-              ) : (
-                addableBookmarks.map((b) => (
-                  <label key={b.id} className="flex items-start gap-3 border rounded-md px-3 py-2 hover:bg-muted/50 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="mt-1"
+          </div>
+          <div className="flex-1 overflow-y-auto min-h-0 -mx-6 px-6">
+            {addableBookmarks.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <LayoutGrid className="w-12 h-12 text-muted-foreground/50 mb-3" />
+                <p className="text-sm text-muted-foreground">No bookmarks available to add</p>
+              </div>
+            ) : (
+              <div className="space-y-2 py-2">
+                {addableBookmarks.map((b) => (
+                  <label
+                    key={b.id}
+                    className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                      selectedAddIds.has(b.id)
+                        ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Checkbox
                       checked={selectedAddIds.has(b.id)}
-                      onChange={() => handleSelectAddCard(b)}
+                      onCheckedChange={() => handleSelectAddCard(b)}
+                      className="mt-0.5"
                     />
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium truncate">{b.title}</div>
-                      <div className="text-xs text-muted-foreground line-clamp-2">{b.description}</div>
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <div className="relative w-10 h-10 rounded-md overflow-hidden bg-gray-100 border flex-shrink-0">
+                        <Image
+                          src={b.favicon || '/favicon.svg'}
+                          alt={b.title}
+                          fill
+                          className="object-contain p-1"
+                          unoptimized
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-sm truncate">{b.title}</div>
+                        <div className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{b.description || b.url}</div>
+                      </div>
                     </div>
                   </label>
-                ))
-              )}
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center justify-between pt-4 border-t">
+            <span className="text-sm text-muted-foreground">
+              {selectedAddIds.size} bookmark{selectedAddIds.size !== 1 ? 's' : ''} selected
+            </span>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setShowAddMenu(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAddSelectedCards} disabled={selectedAddIds.size === 0}>
+                Add to Board
+              </Button>
             </div>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
 
-      {showSettings && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowSettings(false)}>
-      {cardModalId && (() => {
-        const card = cards.find((c) => c.id === cardModalId);
-        if (!card) return null;
-        return (
-          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4" onClick={() => setCardModalId(null)}>
-            <div className="w-full max-w-lg rounded-lg border bg-white p-4 space-y-3 shadow-lg" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="relative w-8 h-8 rounded-md overflow-hidden bg-white border">
-                    <Image
-                      src={card.favicon || '/favicon.svg'}
-                      alt={card.title}
-                      fill
-                      className="object-contain p-1"
-                      unoptimized
-                    />
-                  </div>
-                  <div className="font-semibold text-sm sm:text-base line-clamp-2">{card.title}</div>
+      {/* Settings Dialog */}
+      <Dialog open={showSettings} onOpenChange={setShowSettings}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings className="w-5 h-5 text-primary" />
+              Board Settings
+            </DialogTitle>
+            <DialogDescription>
+              Customize how your Kanban board looks and behaves.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            <div className="space-y-4">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <LayoutGrid className="w-4 h-4 text-muted-foreground" />
+                Card Display
+              </Label>
+              <div className="space-y-3 pl-6">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="progress" className="text-sm text-gray-600 cursor-pointer">Show progress bar</Label>
+                  <Switch
+                    id="progress"
+                    checked={showProgressBar}
+                    onCheckedChange={setShowProgressBar}
+                  />
                 </div>
-                <Button size="sm" variant="ghost" onClick={() => setCardModalId(null)}>Close</Button>
-              </div>
-              <p className="text-sm text-muted-foreground whitespace-pre-line">
-                {card.description || 'No description available.'}
-              </p>
-              {card.url && (
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs text-muted-foreground truncate">{card.url}</span>
-                  <Button size="sm" variant="outline" onClick={() => window.open(card.url, '_blank', 'noopener,noreferrer')}>
-                    Open website
-                  </Button>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="tags" className="text-sm text-gray-600 cursor-pointer">Show tags</Label>
+                  <Switch
+                    id="tags"
+                    checked={showTags}
+                    onCheckedChange={setShowTags}
+                  />
                 </div>
-              )}
-              {card.tags?.length ? (
-                <div className="flex flex-wrap gap-2">
-                  {card.tags.map((tag: any, idx: number) => (
-                    <Badge key={idx} variant="secondary" className="text-xs">
-                      {tag.tag?.name || tag.name || `tag${idx + 1}`}
-                    </Badge>
-                  ))}
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="compact" className="text-sm text-gray-600 cursor-pointer">Compact cards</Label>
+                  <Switch
+                    id="compact"
+                    checked={compactCards}
+                    onCheckedChange={setCompactCards}
+                  />
                 </div>
-              ) : null}
-            </div>
-          </div>
-        );
-      })()}
-          <div className="w-full max-w-md rounded-lg border bg-white p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-semibold">Kanban Settings</div>
-              <Button size="sm" variant="ghost" onClick={() => setShowSettings(false)}>Close</Button>
-            </div>
-            <div className="space-y-2">
-              <div className="text-xs font-semibold text-muted-foreground">Card Display</div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  className={`text-xs px-2 py-1 rounded border ${showProgressBar ? 'bg-primary text-white border-primary' : 'bg-white'}`}
-                  onClick={() => toggleSetting(setShowProgressBar)}
-                >
-                  Show Progress
-                </button>
-                <button
-                  className={`text-xs px-2 py-1 rounded border ${showTags ? 'bg-primary text-white border-primary' : 'bg-white'}`}
-                  onClick={() => toggleSetting(setShowTags)}
-                >
-                  Show Tags
-                </button>
-                <button
-                  className={`text-xs px-2 py-1 rounded border ${compactCards ? 'bg-primary text-white border-primary' : 'bg-white'}`}
-                  onClick={() => toggleSetting(setCompactCards)}
-                >
-                  Compact Cards
-                </button>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="labels" className="text-sm text-gray-600 cursor-pointer">Show card labels</Label>
+                  <Switch
+                    id="labels"
+                    checked={showCardLabels}
+                    onCheckedChange={setShowCardLabels}
+                  />
+                </div>
               </div>
             </div>
-            <div className="flex justify-end">
-              <Button size="sm" onClick={() => setShowSettings(false)}>Done</Button>
+            <div className="space-y-4">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
+                Board Behavior
+              </Label>
+              <div className="space-y-3 pl-6">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="wip" className="text-sm text-gray-600 cursor-pointer">Show WIP limits</Label>
+                  <Switch
+                    id="wip"
+                    checked={showWipLimit}
+                    onCheckedChange={setShowWipLimit}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="autosort" className="text-sm text-gray-600 cursor-pointer">Auto-sort by priority</Label>
+                  <Switch
+                    id="autosort"
+                    checked={autoSort}
+                    onCheckedChange={setAutoSort}
+                  />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+          <div className="flex justify-end pt-4 border-t">
+            <Button onClick={() => setShowSettings(false)}>
+              Done
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bookmark Detail Modal */}
+      {selectedBookmark && (
+        <BookmarkDetailModal
+          bookmark={selectedBookmark}
+          open={!!selectedBookmark}
+          onOpenChange={(open) => !open && setSelectedBookmark(null)}
+          onUpdate={onUpdate}
+        />
       )}
 
       {/* Rows Container */}
