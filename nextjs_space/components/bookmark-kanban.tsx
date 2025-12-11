@@ -120,6 +120,7 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   const [showTags, setShowTags] = useState(true);
   const [compactCards, setCompactCards] = useState(false);
   const [cardMenuId, setCardMenuId] = useState<string | null>(null);
+  const [columnMenuId, setColumnMenuId] = useState<string | null>(null);
   const [accentColorOverrides, setAccentColorOverrides] = useState<Record<string, string>>({});
   const [cardModalId, setCardModalId] = useState<string | null>(null);
   const [selectedAddIds, setSelectedAddIds] = useState<Set<string>>(new Set());
@@ -198,7 +199,21 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   };
 
   const handleColumnMenuClick = (rowId: string, columnId: string) => {
-    setActionMessage(`Column menu clicked for ${columnId} in ${rowId}`);
+    const key = `${rowId}:${columnId}`;
+    setColumnMenuId((prev) => (prev === key ? null : key));
+    setActionMessage('');
+  };
+
+  const handleDeleteColumn = (rowId: string, columnId: string) => {
+    setRows((prev) =>
+      prev.map((row) =>
+        row.id === rowId
+          ? { ...row, columns: row.columns.filter((c) => c.id !== columnId) }
+          : row
+      )
+    );
+    setColumnMenuId(null);
+    setActionMessage('Column removed');
   };
 
   const handleCardMenuClick = (bookmarkId: string) => {
@@ -694,6 +709,42 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                           >
                             <MoreVertical className="w-3 h-3 sm:w-4 sm:h-4" />
                           </Button>
+                          {columnMenuId === `${row.id}:${column.id}` && (
+                            <div
+                              className="absolute right-2 top-9 z-20 w-56 rounded-xl border border-slate-200 bg-white shadow-xl p-3 space-y-3"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <div className="text-[11px] font-semibold text-slate-700 uppercase tracking-wide">Column Options</div>
+                                  <div className="text-[11px] text-slate-500">{column.name}</div>
+                                </div>
+                                <button
+                                  className="text-slate-400 hover:text-slate-600"
+                                  onClick={() => setColumnMenuId(null)}
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                              <div className="space-y-2 text-sm text-slate-700">
+                                <button
+                                  className="w-full text-left rounded-lg border border-slate-200 px-3 py-2 hover:border-primary hover:bg-primary/5 transition"
+                                  onClick={() => {
+                                    setColumnMenuId(null);
+                                    startEditingColumn(row.id, column.id, column.name);
+                                  }}
+                                >
+                                  Rename column
+                                </button>
+                                <button
+                                  className="w-full text-left rounded-lg border border-red-200 px-3 py-2 text-red-600 hover:border-red-400 hover:bg-red-50 transition"
+                                  onClick={() => handleDeleteColumn(row.id, column.id)}
+                                >
+                                  Delete column
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
 
                         {/* Cards Container */}
