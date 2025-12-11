@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, DragEvent } from 'react';
+import { useState, useEffect, DragEvent, ChangeEvent } from 'react';
 import Image from 'next/image';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -110,6 +110,7 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string>('');
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [addMenuRowId, setAddMenuRowId] = useState<string | null>(null);
   const [addMenuQuery, setAddMenuQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -120,6 +121,7 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   const [compactCards, setCompactCards] = useState(false);
   const [cardMenuId, setCardMenuId] = useState<string | null>(null);
   const [accentColorOverrides, setAccentColorOverrides] = useState<Record<string, string>>({});
+  const [selectedAddIds, setSelectedAddIds] = useState<Set<string>>(new Set());
 
   const getInitialStatusForBookmark = (bookmark: any) => {
     if (bookmark.priority === 'HIGH' || bookmark.priority === 'URGENT') {
@@ -170,9 +172,11 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
     setActionMessage('Updated favorite');
   };
 
-  const handleAddCard = () => {
-    setShowAddMenu((prev) => !prev);
-    setActionMessage(showAddMenu ? '' : 'Select a card to add');
+  const handleAddCard = (rowId: string) => {
+    setAddMenuRowId(rowId);
+    setShowAddMenu(true);
+    setSelectedAddIds(new Set());
+    setActionMessage('Select cards to add');
   };
 
   const handleAddColumn = (rowId: string) => {
@@ -190,15 +194,6 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
       )
     );
     setActionMessage('Added a new column');
-  };
-
-  const handleFilter = () => {
-    setActionMessage('Filter clicked – implement filters here.');
-  };
-
-  const handleSettings = () => {
-    setShowSettings((prev) => !prev);
-    setActionMessage(showSettings ? '' : 'Settings opened');
   };
 
   const handleColumnMenuClick = (rowId: string, columnId: string) => {
@@ -292,10 +287,35 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
     .slice(0, 12);
 
   const handleSelectAddCard = (bookmark: any) => {
-    setCards((prev) => [...prev, bookmark]);
-    setCardPositions((prev) => ({ ...prev, [bookmark.id]: 'BACKLOG' }));
-    setActionMessage(`Added "${bookmark.title}" to Backlog`);
+    setSelectedAddIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(bookmark.id)) {
+        next.delete(bookmark.id);
+      } else {
+        next.add(bookmark.id);
+      }
+      return next;
+    });
+  };
+
+  const handleAddSelectedCards = () => {
+    if (!addMenuRowId || selectedAddIds.size === 0) {
+      setShowAddMenu(false);
+      return;
+    }
+    const toAdd = bookmarks.filter((b) => selectedAddIds.has(b.id));
+    setCards((prev) => [...prev, ...toAdd]);
+    setCardPositions((prev) => {
+      const next = { ...prev };
+      toAdd.forEach((b) => {
+        next[b.id] = 'BACKLOG';
+      });
+      return next;
+    });
+    setActionMessage(`Added ${toAdd.length} card(s) to Backlog`);
     setShowAddMenu(false);
+    setSelectedAddIds(new Set());
+  };
   };
 
   const toggleSetting = (setter: (val: boolean | ((v: boolean) => boolean)) => void) => {
@@ -389,11 +409,11 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
             <Filter className="w-4 h-4 sm:mr-2" />
             <span className="hidden sm:inline">Filter</span>
           </Button>
-          <Button variant="outline" size="sm" className="flex-shrink-0 h-10 px-3" onClick={handleSettings}>
+          <Button variant="outline" size="sm" className="flex-shrink-0 h-10 px-3" onClick={() => setShowSettings(true)}>
             <Settings className="w-4 h-4 sm:mr-2" />
             <span className="hidden sm:inline">Settings</span>
           </Button>
-          <Button size="sm" className="flex-shrink-0 h-10 px-3" onClick={handleAddCard}>
+          <Button size="sm" className="flex-shrink-0 h-10 px-3" onClick={() => handleAddCard('row-1')}>
             <Plus className="w-4 h-4 sm:mr-2" />
             <span className="hidden sm:inline">Add Card</span>
           </Button>
@@ -406,46 +426,63 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
         </div>
       )}
 
-      {/* Filters Panel */}
+      {/* Overlays */}
       {showFilters && (
-        <div className="px-2">
-          <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
-            <div className="text-xs font-semibold text-muted-foreground">Filters</div>
-            <div className="flex flex-wrap gap-2">
-              {['LOW', 'MEDIUM', 'HIGH', 'URGENT'].map((p) => (
-                <button
-                  key={p}
-                  onClick={() => togglePriorityFilter(p)}
-                  className={`text-xs px-2 py-1 rounded border ${
-                    filterPriorities.has(p) ? 'bg-primary text-white border-primary' : 'bg-white'
-                  }`}
-                >
-                  Priority: {p}
-                </button>
-              ))}
-              {['BACKLOG', 'TODO', 'IN_PROGRESS'].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => toggleStatusFilter(s)}
-                  className={`text-xs px-2 py-1 rounded border ${
-                    filterStatuses.has(s) ? 'bg-primary text-white border-primary' : 'bg-white'
-                  }`}
-                >
-                  Status: {s.replace('_', ' ')}
-                </button>
-              ))}
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowFilters(false)}>
+          <div className="w-full max-w-md rounded-lg border bg-white p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-semibold">Filters</div>
+              <Button size="sm" variant="ghost" onClick={() => setShowFilters(false)}>Close</Button>
+            </div>
+            <div className="space-y-2">
+              <div className="text-xs font-semibold text-muted-foreground">Priority</div>
+              <div className="flex flex-wrap gap-2">
+                {['LOW', 'MEDIUM', 'HIGH', 'URGENT'].map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => togglePriorityFilter(p)}
+                    className={`text-xs px-2 py-1 rounded border ${
+                      filterPriorities.has(p) ? 'bg-primary text-white border-primary' : 'bg-white'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-xs font-semibold text-muted-foreground">Status</div>
+              <div className="flex flex-wrap gap-2">
+                {['BACKLOG', 'TODO', 'IN_PROGRESS'].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => toggleStatusFilter(s)}
+                    className={`text-xs px-2 py-1 rounded border ${
+                      filterStatuses.has(s) ? 'bg-primary text-white border-primary' : 'bg-white'
+                    }`}
+                  >
+                    {s.replace('_', ' ')}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button size="sm" onClick={() => setShowFilters(false)}>Apply</Button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Add Card Panel */}
       {showAddMenu && (
-        <div className="px-2">
-          <div className="rounded-lg border bg-white p-3 space-y-2 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="text-xs font-semibold text-muted-foreground">Add a bookmarked card</div>
-              <Button size="sm" variant="ghost" onClick={() => setShowAddMenu(false)}>Close</Button>
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowAddMenu(false)}>
+          <div className="w-full max-w-2xl rounded-lg border bg-white p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-sm font-semibold">Add bookmarked cards</div>
+              <div className="text-xs text-muted-foreground">{selectedAddIds.size} selected</div>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline" onClick={() => setShowAddMenu(false)}>Cancel</Button>
+                <Button size="sm" onClick={handleAddSelectedCards} disabled={selectedAddIds.size === 0}>Add</Button>
+              </div>
             </div>
             <Input
               placeholder="Search bookmarks..."
@@ -453,18 +490,23 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
               onChange={(e) => setAddMenuQuery(e.target.value)}
               className="h-9 text-sm"
             />
-            <div className="max-h-64 overflow-y-auto space-y-2">
+            <div className="max-h-[60vh] overflow-y-auto space-y-2">
               {addableBookmarks.length === 0 ? (
                 <div className="text-xs text-muted-foreground px-1 py-2">No bookmarks available</div>
               ) : (
                 addableBookmarks.map((b) => (
-                  <div key={b.id} className="flex items-center justify-between gap-2 border rounded-md px-2 py-2">
+                  <label key={b.id} className="flex items-start gap-3 border rounded-md px-3 py-2 hover:bg-muted/50 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="mt-1"
+                      checked={selectedAddIds.has(b.id)}
+                      onChange={() => handleSelectAddCard(b)}
+                    />
                     <div className="min-w-0">
                       <div className="text-sm font-medium truncate">{b.title}</div>
-                      <div className="text-xs text-muted-foreground truncate">{b.description}</div>
+                      <div className="text-xs text-muted-foreground line-clamp-2">{b.description}</div>
                     </div>
-                    <Button size="sm" onClick={() => handleSelectAddCard(b)}>Add</Button>
-                  </div>
+                  </label>
                 ))
               )}
             </div>
@@ -472,30 +514,38 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
         </div>
       )}
 
-      {/* Settings Panel */}
       {showSettings && (
-        <div className="px-2">
-          <div className="rounded-lg border bg-white p-3 space-y-2 shadow-sm">
-            <div className="text-xs font-semibold text-muted-foreground">Kanban Settings</div>
-            <div className="flex flex-wrap gap-2">
-              <button
-                className={`text-xs px-2 py-1 rounded border ${showProgressBar ? 'bg-primary text-white border-primary' : 'bg-white'}`}
-                onClick={() => toggleSetting(setShowProgressBar)}
-              >
-                Toggle Progress Bar
-              </button>
-              <button
-                className={`text-xs px-2 py-1 rounded border ${showTags ? 'bg-primary text-white border-primary' : 'bg-white'}`}
-                onClick={() => toggleSetting(setShowTags)}
-              >
-                Toggle Tags
-              </button>
-              <button
-                className={`text-xs px-2 py-1 rounded border ${compactCards ? 'bg-primary text-white border-primary' : 'bg-white'}`}
-                onClick={() => toggleSetting(setCompactCards)}
-              >
-                Compact Cards
-              </button>
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowSettings(false)}>
+          <div className="w-full max-w-md rounded-lg border bg-white p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-semibold">Kanban Settings</div>
+              <Button size="sm" variant="ghost" onClick={() => setShowSettings(false)}>Close</Button>
+            </div>
+            <div className="space-y-2">
+              <div className="text-xs font-semibold text-muted-foreground">Card Display</div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  className={`text-xs px-2 py-1 rounded border ${showProgressBar ? 'bg-primary text-white border-primary' : 'bg-white'}`}
+                  onClick={() => toggleSetting(setShowProgressBar)}
+                >
+                  Show Progress
+                </button>
+                <button
+                  className={`text-xs px-2 py-1 rounded border ${showTags ? 'bg-primary text-white border-primary' : 'bg-white'}`}
+                  onClick={() => toggleSetting(setShowTags)}
+                >
+                  Show Tags
+                </button>
+                <button
+                  className={`text-xs px-2 py-1 rounded border ${compactCards ? 'bg-primary text-white border-primary' : 'bg-white'}`}
+                  onClick={() => toggleSetting(setCompactCards)}
+                >
+                  Compact Cards
+                </button>
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button size="sm" onClick={() => setShowSettings(false)}>Done</Button>
             </div>
           </div>
         </div>
@@ -525,6 +575,10 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                 <Button variant="ghost" size="sm" className="flex-shrink-0" onClick={() => handleAddColumn(row.id)}>
                   <Plus className="w-4 h-4 sm:mr-2" />
                   <span className="hidden sm:inline">Add Column</span>
+                </Button>
+                <Button variant="outline" size="sm" className="flex-shrink-0" onClick={() => handleAddCard(row.id)}>
+                  <Plus className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Add Card</span>
                 </Button>
               </div>
             </div>
