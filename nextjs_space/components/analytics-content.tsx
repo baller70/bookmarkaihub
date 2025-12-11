@@ -13,7 +13,7 @@ import {
   BookmarkIcon, Eye, TrendingUp, Clock, Target, Zap, 
   Activity, Calendar, Lightbulb, Users, BarChart3, 
   PieChart, Trash2, FileText, AlertTriangle, CheckCircle,
-  Timer, FolderOpen, Star, Loader2, ChevronDown
+  Timer, FolderOpen, Star, Loader2, ChevronDown, RefreshCw, Info
 } from 'lucide-react'
 
 type Tab = 'overview' | 'timeTracking' | 'insights' | 'categories' | 'projects' | 'recommendations'
@@ -74,6 +74,7 @@ export function AnalyticsContent({ showTitle = true }: AnalyticsContentProps) {
   const [timePeriod, setTimePeriod] = useState('30d')
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isRecalculating, setIsRecalculating] = useState(false)
 
   useEffect(() => {
     fetchAnalytics()
@@ -92,6 +93,21 @@ export function AnalyticsContent({ showTitle = true }: AnalyticsContentProps) {
       console.error('Error fetching analytics:', error)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const recalculateEngagement = async () => {
+    setIsRecalculating(true)
+    try {
+      const response = await fetch('/api/analytics/recalculate', { method: 'POST' })
+      if (response.ok) {
+        // Refresh analytics data after recalculation
+        await fetchAnalytics()
+      }
+    } catch (error) {
+      console.error('Error recalculating engagement:', error)
+    } finally {
+      setIsRecalculating(false)
     }
   }
 
@@ -126,6 +142,19 @@ export function AnalyticsContent({ showTitle = true }: AnalyticsContentProps) {
               </p>
             </div>
             <div className="flex gap-3 items-center">
+              {/* Recalculate Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={recalculateEngagement}
+                disabled={isRecalculating}
+                className="bg-white border-gray-300 text-gray-700 hover:!bg-gray-50 hover:!text-gray-900 font-medium"
+                title="Recalculate all engagement scores based on current data"
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${isRecalculating ? 'animate-spin' : ''}`} />
+                {isRecalculating ? 'Updating...' : 'Refresh Scores'}
+              </Button>
+
               {/* Breakdown Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -247,9 +276,20 @@ function OverviewTab({ data }: { data: AnalyticsData | null }) {
                 <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
                   <Activity className="w-4 h-4 text-purple-500" />
                   <span>Engagement Score</span>
+                  <div className="group relative">
+                    <Info className="w-3 h-3 text-gray-400 cursor-help" />
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
+                      <div className="font-semibold mb-1">Score Criteria (0-100):</div>
+                      <div>• Visits: 0-30 pts</div>
+                      <div>• Recency: 0-25 pts</div>
+                      <div>• Time spent: 0-20 pts</div>
+                      <div>• Organization: 0-15 pts</div>
+                      <div>• Favorites/Notes: 0-10 pts</div>
+                    </div>
+                  </div>
                 </div>
                 <div className="text-2xl sm:text-3xl font-bold text-gray-900 uppercase">{data.overview.engagementScore.toFixed(1)}%</div>
-                <div className="text-xs text-gray-600 mt-1">Average</div>
+                <div className="text-xs text-gray-600 mt-1">Average across all bookmarks</div>
               </div>
             </div>
           </CardContent>
@@ -262,9 +302,15 @@ function OverviewTab({ data }: { data: AnalyticsData | null }) {
                 <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
                   <Clock className="w-4 h-4 text-orange-500" />
                   <span>Active Time</span>
+                  <div className="group relative">
+                    <Info className="w-3 h-3 text-gray-400 cursor-help" />
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
+                      Time tracked while viewing bookmarks
+                    </div>
+                  </div>
                 </div>
                 <div className="text-2xl sm:text-3xl font-bold text-gray-900 uppercase">{data.overview.activeTime}h</div>
-                <div className="text-xs text-gray-600 mt-1">Total</div>
+                <div className="text-xs text-gray-600 mt-1">Total time with bookmarks</div>
               </div>
             </div>
           </CardContent>
