@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, DragEvent } from 'react';
 import Image from 'next/image';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -105,16 +105,51 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   ]);
   const [editingColumn, setEditingColumn] = useState<{ rowId: string; columnId: string } | null>(null);
   const [editingValue, setEditingValue] = useState('');
+  const [cardPositions, setCardPositions] = useState<Record<string, string>>({});
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+
+  const getInitialStatusForBookmark = (bookmark: any) => {
+    if (bookmark.priority === 'HIGH' || bookmark.priority === 'URGENT') {
+      return 'TODO';
+    }
+    if (bookmark.visitCount > 5) {
+      return 'IN_PROGRESS';
+    }
+    return 'BACKLOG';
+  };
+
+  // Initialize or refresh card positions when bookmarks change
+  useEffect(() => {
+    const nextPositions: Record<string, string> = {};
+    bookmarks.forEach((bookmark) => {
+      nextPositions[bookmark.id] = cardPositions[bookmark.id] || getInitialStatusForBookmark(bookmark);
+    });
+    setCardPositions(nextPositions);
+  }, [bookmarks]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleDragStart = (event: DragEvent<HTMLDivElement>, bookmarkId: string) => {
+    event.dataTransfer.setData('text/plain', bookmarkId);
+    setDraggingId(bookmarkId);
+  };
+
+  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+  };
+
+  const handleDrop = (event: DragEvent<HTMLDivElement>, columnId: string) => {
+    event.preventDefault();
+    const bookmarkId = event.dataTransfer.getData('text/plain');
+    if (!bookmarkId) return;
+    setCardPositions((prev) => ({
+      ...prev,
+      [bookmarkId]: columnId,
+    }));
+    setDraggingId(null);
+  };
 
   // Group bookmarks by column
   const groupedBookmarks = bookmarks.reduce((groups: any, bookmark: any) => {
-    let status = 'BACKLOG';
-    if (bookmark.priority === 'HIGH' || bookmark.priority === 'URGENT') {
-      status = 'TODO';
-    } else if (bookmark.visitCount > 5) {
-      status = 'IN_PROGRESS';
-    }
-    
+    const status = cardPositions[bookmark.id] || getInitialStatusForBookmark(bookmark);
     if (!groups[status]) {
       groups[status] = [];
     }
@@ -247,7 +282,12 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
               const columnBookmarks = rowIndex === 0 ? (groupedBookmarks[column.id] || []) : [];
               
               return (
-                <div key={column.id} className="min-w-0 space-y-3.5">
+                <div
+                  key={column.id}
+                  className="min-w-0 space-y-3.5"
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, column.id)}
+                >
                   {/* Column Header */}
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-start gap-2 min-w-0 flex-1">
@@ -315,9 +355,12 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                         return (
                           <div
                             key={bookmark.id}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, bookmark.id)}
+                            onDragEnd={() => setDraggingId(null)}
                             className={`group relative bg-white border rounded-lg p-4 sm:p-4.5 hover:shadow-md transition-all cursor-pointer touch-target ${accentColor} ${
                               accentColor ? 'border-l-4' : ''
-                            }`}
+                            } ${draggingId === bookmark.id ? 'opacity-70 ring-2 ring-primary/40' : ''}`}
                           >
                             {/* Card Header with Logo */}
                             <div className="flex items-start gap-2 mb-3 sm:mb-3.5">
