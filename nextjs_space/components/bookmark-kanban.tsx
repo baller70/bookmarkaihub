@@ -16,7 +16,15 @@ import {
   MessageSquare,
   Paperclip,
   Star,
-  Eye
+  Eye,
+  Palette,
+  Heart,
+  ExternalLink,
+  Copy,
+  Trash2,
+  Edit3,
+  ArrowUpDown,
+  X
 } from 'lucide-react';
 
 interface BookmarkKanbanProps {
@@ -711,38 +719,47 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                           </Button>
                           {columnMenuId === `${row.id}:${column.id}` && (
                             <div
-                              className="absolute right-2 top-9 z-20 w-56 rounded-xl border border-slate-200 bg-white shadow-xl p-3 space-y-3"
+                              className="absolute right-0 top-8 z-30 w-48 rounded-md border border-gray-200 bg-white shadow-lg py-1"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <div className="text-[11px] font-semibold text-slate-700 uppercase tracking-wide">Column Options</div>
-                                  <div className="text-[11px] text-slate-500">{column.name}</div>
-                                </div>
-                                <button
-                                  className="text-slate-400 hover:text-slate-600"
-                                  onClick={() => setColumnMenuId(null)}
-                                >
-                                  ✕
-                                </button>
-                              </div>
-                              <div className="space-y-2 text-sm text-slate-700">
-                                <button
-                                  className="w-full text-left rounded-lg border border-slate-200 px-3 py-2 hover:border-primary hover:bg-primary/5 transition"
-                                  onClick={() => {
-                                    setColumnMenuId(null);
-                                    startEditingColumn(row.id, column.id, column.name);
-                                  }}
-                                >
-                                  Rename column
-                                </button>
-                                <button
-                                  className="w-full text-left rounded-lg border border-red-200 px-3 py-2 text-red-600 hover:border-red-400 hover:bg-red-50 transition"
-                                  onClick={() => handleDeleteColumn(row.id, column.id)}
-                                >
-                                  Delete column
-                                </button>
-                              </div>
+                              <button
+                                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                onClick={() => {
+                                  setColumnMenuId(null);
+                                  startEditingColumn(row.id, column.id, column.name);
+                                }}
+                              >
+                                <Edit3 className="w-4 h-4 text-gray-500" />
+                                Rename
+                              </button>
+                              <button
+                                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                onClick={() => {
+                                  setColumnMenuId(null);
+                                  handleAddCard(row.id);
+                                }}
+                              >
+                                <Plus className="w-4 h-4 text-gray-500" />
+                                Add Card
+                              </button>
+                              <button
+                                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                onClick={() => {
+                                  setColumnMenuId(null);
+                                  setActionMessage(`Sort cards in ${column.name}`);
+                                }}
+                              >
+                                <ArrowUpDown className="w-4 h-4 text-gray-500" />
+                                Sort Cards
+                              </button>
+                              <div className="my-1 border-t border-gray-100" />
+                              <button
+                                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                onClick={() => handleDeleteColumn(row.id, column.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                                Delete
+                              </button>
                             </div>
                           )}
                         </div>
@@ -822,60 +839,115 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                                   {/* Card actions menu */}
                                   {cardMenuId === bookmark.id && (
                                     <div
-                                      className="absolute z-20 top-9 right-2 sm:right-3 w-60 rounded-xl border border-slate-200 bg-white shadow-xl p-4 space-y-4"
+                                      className="absolute z-30 top-9 right-2 sm:right-3 w-52 rounded-md border border-gray-200 bg-white shadow-lg py-1"
                                       onClick={(e) => e.stopPropagation()}
                                     >
-                                      <div className="flex items-center justify-between">
-                                        <div>
-                                          <div className="text-[11px] font-semibold text-slate-700 uppercase tracking-wide">Card Options</div>
-                                          <div className="text-[11px] text-slate-500">{bookmark.title || 'Untitled'}</div>
-                                        </div>
+                                      <button
+                                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                        onClick={() => {
+                                          setCardMenuId(null);
+                                          handleOpenCard(bookmark);
+                                        }}
+                                      >
+                                        <Eye className="w-4 h-4 text-gray-500" />
+                                        View Details
+                                      </button>
+                                      <button
+                                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                        onClick={() => {
+                                          if (bookmark.url) window.open(bookmark.url, '_blank');
+                                          setCardMenuId(null);
+                                        }}
+                                      >
+                                        <ExternalLink className="w-4 h-4 text-gray-500" />
+                                        Open Website
+                                      </button>
+                                      <button
+                                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                        onClick={() => {
+                                          if (bookmark.url) navigator.clipboard.writeText(bookmark.url);
+                                          setCardMenuId(null);
+                                          setActionMessage('URL copied');
+                                        }}
+                                      >
+                                        <Copy className="w-4 h-4 text-gray-500" />
+                                        Copy URL
+                                      </button>
+                                      <div className="my-1 border-t border-gray-100" />
+                                      <button
+                                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                        onClick={() => handleToggleFavorite(bookmark.id)}
+                                      >
+                                        <Heart className={`w-4 h-4 ${bookmark.isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
+                                        {bookmark.isFavorite ? 'Remove Favorite' : 'Add to Favorites'}
+                                      </button>
+                                      <div className="relative group/color">
                                         <button
-                                          className="text-slate-400 hover:text-slate-600"
-                                          onClick={() => setCardMenuId(null)}
+                                          className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                                         >
-                                          ✕
+                                          <span className="flex items-center gap-3">
+                                            <Palette className="w-4 h-4 text-gray-500" />
+                                            Change Color
+                                          </span>
+                                          <ChevronDown className="w-4 h-4 text-gray-400 -rotate-90" />
                                         </button>
-                                      </div>
-
-                                      <div className="space-y-2">
-                                        <div className="text-[11px] font-semibold text-slate-600">Accent color</div>
-                                        <div className="grid grid-cols-3 gap-2">
-                                          {presetAccentOptions.map((opt) => (
-                                            <button
-                                              key={opt.label}
-                                              onClick={() => handleAccentChange(bookmark.id, opt.value)}
-                                              className={`h-9 rounded-lg border text-[11px] font-medium transition ${
-                                                accentColorOverrides[bookmark.id] === opt.value
-                                                  ? 'border-primary bg-primary text-white shadow-sm'
-                                                  : 'border-slate-200 bg-slate-50 hover:border-slate-300'
-                                              }`}
-                                              style={opt.value ? { backgroundColor: opt.value } : {}}
-                                            >
-                                              {opt.label}
-                                            </button>
-                                          ))}
+                                        <div className="hidden group-hover/color:block absolute left-full top-0 ml-1 w-32 rounded-md border border-gray-200 bg-white shadow-lg py-1">
+                                          <button
+                                            className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100"
+                                            onClick={() => handleAccentChange(bookmark.id, '')}
+                                          >
+                                            <div className="w-3 h-3 rounded-full bg-gray-300 border border-gray-400" />
+                                            Default
+                                          </button>
+                                          <button
+                                            className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100"
+                                            onClick={() => handleAccentChange(bookmark.id, '#3B82F6')}
+                                          >
+                                            <div className="w-3 h-3 rounded-full bg-blue-500" />
+                                            Blue
+                                          </button>
+                                          <button
+                                            className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100"
+                                            onClick={() => handleAccentChange(bookmark.id, '#22C55E')}
+                                          >
+                                            <div className="w-3 h-3 rounded-full bg-green-500" />
+                                            Green
+                                          </button>
+                                          <button
+                                            className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100"
+                                            onClick={() => handleAccentChange(bookmark.id, '#F97316')}
+                                          >
+                                            <div className="w-3 h-3 rounded-full bg-orange-500" />
+                                            Orange
+                                          </button>
+                                          <button
+                                            className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100"
+                                            onClick={() => handleAccentChange(bookmark.id, '#EF4444')}
+                                          >
+                                            <div className="w-3 h-3 rounded-full bg-red-500" />
+                                            Red
+                                          </button>
+                                          <button
+                                            className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100"
+                                            onClick={() => handleAccentChange(bookmark.id, '#A855F7')}
+                                          >
+                                            <div className="w-3 h-3 rounded-full bg-purple-500" />
+                                            Purple
+                                          </button>
                                         </div>
                                       </div>
-
-                                      <div className="grid grid-cols-2 gap-2">
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          className="text-xs"
-                                          onClick={() => handleToggleFavorite(bookmark.id)}
-                                        >
-                                          {bookmark.isFavorite ? 'Unfavorite' : 'Favorite'}
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          variant="secondary"
-                                          className="text-xs"
-                                          onClick={() => setCardMenuId(null)}
-                                        >
-                                          Done
-                                        </Button>
-                                      </div>
+                                      <div className="my-1 border-t border-gray-100" />
+                                      <button
+                                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                        onClick={() => {
+                                          setCards((prev) => prev.filter((c) => c.id !== bookmark.id));
+                                          setCardMenuId(null);
+                                          setActionMessage('Card removed from board');
+                                        }}
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                        Remove from Board
+                                      </button>
                                     </div>
                                   )}
 
