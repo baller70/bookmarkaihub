@@ -57,6 +57,24 @@ interface KanbanRow {
   columns: KanbanColumn[];
 }
 
+interface KanbanBoard {
+  id: string;
+  name: string;
+  color: string;
+  rows: KanbanRow[];
+}
+
+const BOARD_COLORS = [
+  '#6366f1', // indigo
+  '#8B5CF6', // purple
+  '#EC4899', // pink
+  '#F59E0B', // amber
+  '#10B981', // emerald
+  '#3B82F6', // blue
+  '#EF4444', // red
+  '#14B8A6', // teal
+];
+
 const defaultColumns: KanbanColumn[] = [
   {
     id: 'BACKLOG',
@@ -113,16 +131,43 @@ const getCardAccentColor = (priority: string) => {
 
 export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [rows, setRows] = useState<KanbanRow[]>([
+  
+  // Multiple boards support
+  const [boards, setBoards] = useState<KanbanBoard[]>([
     {
-      id: 'row-1',
-      name: 'Row 1',
-      isExpanded: true,
-      columns: [...defaultColumns],
+      id: 'board-1',
+      name: 'Main Board',
+      color: BOARD_COLORS[0],
+      rows: [
+        {
+          id: 'row-1',
+          name: 'Row 1',
+          isExpanded: true,
+          columns: [...defaultColumns],
+        },
+      ],
     },
   ]);
+  const [activeBoardId, setActiveBoardId] = useState('board-1');
+  
+  // Get active board and its rows
+  const activeBoard = boards.find((b) => b.id === activeBoardId) || boards[0];
+  const rows = activeBoard?.rows || [];
+  
+  // Update rows helper (updates active board's rows)
+  const setRows = (updater: KanbanRow[] | ((prev: KanbanRow[]) => KanbanRow[])) => {
+    setBoards((prev) =>
+      prev.map((b) =>
+        b.id === activeBoardId
+          ? { ...b, rows: typeof updater === 'function' ? updater(b.rows) : updater }
+          : b
+      )
+    );
+  };
+  
   const [cards, setCards] = useState<any[]>(bookmarks || []);
   const [editingColumn, setEditingColumn] = useState<{ rowId: string; columnId: string } | null>(null);
+  const [editingRow, setEditingRow] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
   const [cardPositions, setCardPositions] = useState<Record<string, string>>({});
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -146,6 +191,67 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   const [showWipLimit, setShowWipLimit] = useState(false);
   const [showCardLabels, setShowCardLabels] = useState(true);
   const [autoSort, setAutoSort] = useState(false);
+  const [editingBoardId, setEditingBoardId] = useState<string | null>(null);
+  
+  // Board management functions
+  const createBoard = () => {
+    const newId = `board-${Date.now()}`;
+    const colorIndex = boards.length % BOARD_COLORS.length;
+    const newBoard: KanbanBoard = {
+      id: newId,
+      name: `Board ${boards.length + 1}`,
+      color: BOARD_COLORS[colorIndex],
+      rows: [
+        {
+          id: `row-${Date.now()}`,
+          name: 'Row 1',
+          isExpanded: true,
+          columns: [...defaultColumns],
+        },
+      ],
+    };
+    setBoards((prev) => [...prev, newBoard]);
+    setActiveBoardId(newId);
+  };
+  
+  const deleteBoard = (boardId: string) => {
+    if (boards.length === 1) return;
+    setBoards((prev) => prev.filter((b) => b.id !== boardId));
+    if (boardId === activeBoardId) {
+      const nextBoard = boards.find((b) => b.id !== boardId);
+      if (nextBoard) setActiveBoardId(nextBoard.id);
+    }
+  };
+  
+  const renameBoard = (boardId: string, newName: string) => {
+    setBoards((prev) =>
+      prev.map((b) => (b.id === boardId ? { ...b, name: newName } : b))
+    );
+    setEditingBoardId(null);
+  };
+  
+  // Row editing functions
+  const startEditingRow = (rowId: string, currentName: string) => {
+    setEditingRow(rowId);
+    setEditingValue(currentName);
+  };
+  
+  const saveRowName = (rowId: string) => {
+    if (editingValue.trim()) {
+      setRows((prev) =>
+        prev.map((row) =>
+          row.id === rowId ? { ...row, name: editingValue.trim() } : row
+        )
+      );
+    }
+    setEditingRow(null);
+    setEditingValue('');
+  };
+  
+  const cancelEditingRow = () => {
+    setEditingRow(null);
+    setEditingValue('');
+  };
 
   const getInitialStatusForBookmark = (bookmark: any) => {
     if (bookmark.priority === 'HIGH' || bookmark.priority === 'URGENT') {
@@ -434,6 +540,71 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
         <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
           Advanced task management with visual workflow tracking
         </p>
+      </div>
+
+      {/* Board Tabs */}
+      <div className="flex items-center gap-2 px-2 overflow-x-auto pb-2">
+        {boards.map((board) => (
+          <div
+            key={board.id}
+            className={`group relative flex items-center gap-2 px-4 py-2 rounded-lg border-2 cursor-pointer transition-all min-w-[120px] ${
+              board.id === activeBoardId
+                ? 'border-primary bg-primary/5 shadow-sm'
+                : 'border-gray-200 hover:border-gray-300 bg-white'
+            }`}
+            onClick={() => setActiveBoardId(board.id)}
+          >
+            <div
+              className="w-3 h-3 rounded-full flex-shrink-0"
+              style={{ backgroundColor: board.color }}
+            />
+            {editingBoardId === board.id ? (
+              <Input
+                value={editingValue}
+                onChange={(e) => setEditingValue(e.target.value)}
+                onBlur={() => renameBoard(board.id, editingValue)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') renameBoard(board.id, editingValue);
+                  if (e.key === 'Escape') setEditingBoardId(null);
+                }}
+                className="h-6 w-24 text-xs font-medium"
+                autoFocus
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <span
+                className="text-sm font-medium truncate"
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  setEditingBoardId(board.id);
+                  setEditingValue(board.name);
+                }}
+              >
+                {board.name}
+              </span>
+            )}
+            {boards.length > 1 && (
+              <button
+                className="opacity-0 group-hover:opacity-100 ml-auto text-gray-400 hover:text-red-500 transition-all"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteBoard(board.id);
+                }}
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        ))}
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-shrink-0 h-9"
+          onClick={createBoard}
+        >
+          <Plus className="w-4 h-4 mr-1" />
+          New Board
+        </Button>
       </div>
 
       {/* Control Bar */}
@@ -838,17 +1009,41 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
           <div key={row.id} className="rounded-xl border bg-card text-card-foreground shadow p-2 sm:p-3 md:p-4 space-y-3 sm:space-y-4">
             {/* Row Header */}
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <button
-                onClick={() => toggleRowExpansion(row.id)}
-                className="flex items-center gap-2 hover:bg-muted/50 px-2 py-1 rounded touch-target"
-              >
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform flex-shrink-0 ${
-                    row.isExpanded ? '' : '-rotate-90'
-                  }`}
-                />
-                <span className="font-medium text-sm sm:text-base truncate">{row.name} ({row.columns.length})</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => toggleRowExpansion(row.id)}
+                  className="p-1 hover:bg-muted/50 rounded"
+                >
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform flex-shrink-0 ${
+                      row.isExpanded ? '' : '-rotate-90'
+                    }`}
+                  />
+                </button>
+                {editingRow === row.id ? (
+                  <Input
+                    value={editingValue}
+                    onChange={(e) => setEditingValue(e.target.value)}
+                    onBlur={() => saveRowName(row.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') saveRowName(row.id);
+                      if (e.key === 'Escape') cancelEditingRow();
+                    }}
+                    className="h-7 w-40 text-sm font-medium"
+                    autoFocus
+                  />
+                ) : (
+                  <button
+                    onClick={() => startEditingRow(row.id, row.name)}
+                    className="flex items-center gap-2 hover:bg-muted/50 px-2 py-1 rounded"
+                    title="Click to rename row"
+                  >
+                    <span className="font-medium text-sm sm:text-base">{row.name}</span>
+                    <Edit3 className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100" />
+                  </button>
+                )}
+                <span className="text-xs text-muted-foreground">({row.columns.length} columns)</span>
+              </div>
               <div className="flex items-center gap-2 sm:gap-3">
                 <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
                   {rowIndex === 0 ? totalCards : 0} cards
@@ -860,6 +1055,20 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
                 <Button variant="outline" size="sm" className="flex-shrink-0" onClick={() => handleAddCard(row.id)}>
                   <Plus className="w-4 h-4 sm:mr-2" />
                   <span className="hidden sm:inline">Add Card</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex-shrink-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                  onClick={() => {
+                    if (rows.length > 1) {
+                      setRows((prev) => prev.filter((r) => r.id !== row.id));
+                    }
+                  }}
+                  disabled={rows.length === 1}
+                  title={rows.length === 1 ? 'Cannot delete the last row' : 'Delete row'}
+                >
+                  <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
             </div>
