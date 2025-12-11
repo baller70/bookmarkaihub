@@ -121,6 +121,7 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   const [compactCards, setCompactCards] = useState(false);
   const [cardMenuId, setCardMenuId] = useState<string | null>(null);
   const [accentColorOverrides, setAccentColorOverrides] = useState<Record<string, string>>({});
+  const [cardModalId, setCardModalId] = useState<string | null>(null);
   const [selectedAddIds, setSelectedAddIds] = useState<Set<string>>(new Set());
 
   const getInitialStatusForBookmark = (bookmark: any) => {
@@ -229,11 +230,7 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
   ];
 
   const handleOpenCard = (bookmark: any) => {
-    if (bookmark.url) {
-      window.open(bookmark.url, '_blank', 'noopener,noreferrer');
-      return;
-    }
-    setActionMessage(`Open card: ${bookmark.title || bookmark.id}`);
+    setCardModalId(bookmark.id);
   };
 
   const togglePriorityFilter = (priority: string) => {
@@ -515,6 +512,51 @@ export function BookmarkKanban({ bookmarks, onUpdate }: BookmarkKanbanProps) {
 
       {showSettings && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowSettings(false)}>
+      {cardModalId && (() => {
+        const card = cards.find((c) => c.id === cardModalId);
+        if (!card) return null;
+        return (
+          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4" onClick={() => setCardModalId(null)}>
+            <div className="w-full max-w-lg rounded-lg border bg-white p-4 space-y-3 shadow-lg" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="relative w-8 h-8 rounded-md overflow-hidden bg-white border">
+                    <Image
+                      src={card.favicon || '/favicon.svg'}
+                      alt={card.title}
+                      fill
+                      className="object-contain p-1"
+                      unoptimized
+                    />
+                  </div>
+                  <div className="font-semibold text-sm sm:text-base line-clamp-2">{card.title}</div>
+                </div>
+                <Button size="sm" variant="ghost" onClick={() => setCardModalId(null)}>Close</Button>
+              </div>
+              <p className="text-sm text-muted-foreground whitespace-pre-line">
+                {card.description || 'No description available.'}
+              </p>
+              {card.url && (
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs text-muted-foreground truncate">{card.url}</span>
+                  <Button size="sm" variant="outline" onClick={() => window.open(card.url, '_blank', 'noopener,noreferrer')}>
+                    Open website
+                  </Button>
+                </div>
+              )}
+              {card.tags?.length ? (
+                <div className="flex flex-wrap gap-2">
+                  {card.tags.map((tag: any, idx: number) => (
+                    <Badge key={idx} variant="secondary" className="text-xs">
+                      {tag.tag?.name || tag.name || `tag${idx + 1}`}
+                    </Badge>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        );
+      })()}
           <div className="w-full max-w-md rounded-lg border bg-white p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <div className="text-sm font-semibold">Kanban Settings</div>
